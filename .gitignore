@@ -1,0 +1,27 @@
+node_modules
+.expo
+.expo-shared/
+dist
+web-build
+
+# Local env files: Expo loads .env.local / .env.<mode>, keep the template only
+.env
+.env.*
+!.env.example
+
+# Signing material - never commit these
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.cer
+google-services.json
+GoogleService-Info.plist
+
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+.idea/

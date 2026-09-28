@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "PG Manager",
+    "slug": "pg-manager-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "pgmanager",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#20322b"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-status-bar"
+    ]
+  }
+}
