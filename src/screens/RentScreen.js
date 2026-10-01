@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, Linking, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, QueryState, Row, Screen, typography, theme } from '../components/ui';
+import { Button, Field, QueryState, Row, Screen, Segmented, typography, theme } from '../components/ui';
+import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -12,32 +13,16 @@ export default function RentScreen({ navigation, route }) {
   const queryClient = useQueryClient();
   const { propertyId } = route.params;
   const [payingId, setPayingId] = useState('');
+  const [payment, setPayment] = useState(null);
+  const [paymentForm, setPaymentForm] = useState({amount:'',method:'UPI',note:''});
 
   const cycles = useQuery({
     queryKey: ['rentCycles', propertyId],
     queryFn: async () => (await api.get('/rent-cycles', { params: { propertyId } })).data.data,
   });
 
-  async function markPaid(cycle) {
-    const outstanding = cycle.amountDue - cycle.amountPaid;
-    // Guard against a double tap recording the payment twice.
-    if (outstanding <= 0 || payingId) return;
-    try {
-      setPayingId(cycle._id);
-      await api.post(`/rent-cycles/${cycle._id}/payments`, {
-        amount: outstanding,
-        method: 'UPI',
-        date: new Date().toISOString(),
-      });
-      queryClient.invalidateQueries({ queryKey: ['rentCycles', propertyId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success('Payment recorded.');
-    } catch (error) {
-      toast.error(errorMessage(error));
-    } finally {
-      setPayingId('');
-    }
-  }
+  function openPayment(cycle){const outstanding=cycle.amountDue-cycle.amountPaid;setPayment(cycle);setPaymentForm({amount:String(outstanding),method:'UPI',note:''})}
+  async function recordPayment(){const amount=Number(paymentForm.amount);if(!payment||!(amount>0))return;try{setPayingId(payment._id);await api.post(`/rent-cycles/${payment._id}/payments`,{amount,method:paymentForm.method,date:new Date().toISOString(),note:paymentForm.note.trim()||undefined});queryClient.invalidateQueries({queryKey:['rentCycles',propertyId]});queryClient.invalidateQueries({queryKey:['dashboard']});setPayment(null);toast.success('Payment recorded.')}catch(error){toast.error(errorMessage(error))}finally{setPayingId('')}}
 
   async function open(url, missingMessage) {
     if (!url) {
@@ -81,7 +66,7 @@ export default function RentScreen({ navigation, route }) {
                   WhatsApp
                 </Button>
                 {cycle.status !== 'PAID' && (
-                  <Button style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => markPaid(cycle)}>
+                  <Button style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
                     Mark paid
                   </Button>
                 )}
@@ -90,6 +75,12 @@ export default function RentScreen({ navigation, route }) {
           );
         })}
       </QueryState>
+      <Sheet visible={!!payment} onClose={()=>setPayment(null)} title="Record payment">
+        <Field label="Amount" value={paymentForm.amount} onChangeText={v=>setPaymentForm(p=>({...p,amount:v}))} keyboardType="numeric"/>
+        <Segmented label="Payment method" value={paymentForm.method} onChange={v=>setPaymentForm(p=>({...p,method:v}))} options={[{label:'UPI',value:'UPI'},{label:'Cash',value:'CASH'},{label:'Bank',value:'BANK_TRANSFER'}]}/>
+        <Field label="Note (optional)" value={paymentForm.note} onChangeText={v=>setPaymentForm(p=>({...p,note:v}))} autoCapitalize="sentences"/>
+        <Button onPress={recordPayment} loading={!!payingId}>Record payment</Button>
+      </Sheet>
     </Screen>
   );
 }

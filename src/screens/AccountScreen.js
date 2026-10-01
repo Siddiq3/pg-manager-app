@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Screen, theme, typography, radius, spacing } from '../components/ui';
 
 export default function AccountScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user, logout, activePropertyId } = useAuth();
   const confirmLogout = () => Alert.alert('Sign out?', 'You will need to sign in again to manage your PG.', [
     { text: 'Stay', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: logout },
   ]);
@@ -17,6 +17,8 @@ export default function AccountScreen({ navigation }) {
     </View>
     <Group title="YOU">
       <Item icon="person-outline" label="Profile" value={user?.phone} onPress={() => navigation.navigate('Profile')} />
+      {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value="Recommended" onPress={() => navigation.navigate('EmailVerification')} />
+      {activePropertyId && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings',{propertyId:activePropertyId})} />}
       <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
     </Group>
     <Group title="SUPPORT">

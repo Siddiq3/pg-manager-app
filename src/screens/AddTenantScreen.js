@@ -19,6 +19,7 @@ export default function AddTenantScreen({ navigation, route }) {
     rentAmount: '',
     depositAmount: '',
     joinedDate: new Date().toISOString().slice(0, 10),
+    idProofUrl: '', noticeGivenDate: '', expectedVacateDate: '', depositPaid: false,
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -66,6 +67,10 @@ export default function AddTenantScreen({ navigation, route }) {
         rentAmount: Number(form.rentAmount),
         depositAmount: Number(form.depositAmount || 0),
         joinedDate: new Date(form.joinedDate).toISOString(),
+        idProofUrl: form.idProofUrl.trim(),
+        noticeGivenDate: form.noticeGivenDate ? new Date(form.noticeGivenDate).toISOString() : undefined,
+        expectedVacateDate: form.expectedVacateDate ? new Date(form.expectedVacateDate).toISOString() : undefined,
+        depositPaid: form.depositPaid,
       });
       queryClient.invalidateQueries();
       navigation.popToTop();
@@ -84,6 +89,11 @@ export default function AddTenantScreen({ navigation, route }) {
       <Field label="Monthly rent" value={form.rentAmount} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
       <Field label="Deposit amount" value={form.depositAmount} onChangeText={set('depositAmount')} keyboardType="numeric" error={errors.depositAmount} />
       <Field label="Joined date" value={form.joinedDate} onChangeText={set('joinedDate')} placeholder="YYYY-MM-DD" error={errors.joinedDate} />
+
+      <Field label="ID proof URL (optional)" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" placeholder="https://..." />
+      <Field label="Notice given date (optional)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
+      <Field label="Expected vacate date (optional)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
+      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit marked paid' : 'Mark deposit as paid'}</Button>
 
       <SectionTitle>Pick a vacant bed</SectionTitle>
       <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">

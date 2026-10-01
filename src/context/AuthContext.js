@@ -20,6 +20,8 @@ export function AuthProvider({ children }) {
     }
   }
 
+  function updateUser(nextUser) { setUser(nextUser); }
+
   async function clearSession() {
     setAccessToken('');
     setUser(null);
@@ -121,6 +123,7 @@ export function AuthProvider({ children }) {
         restoring,
         sendOtp,
         user,
+        updateUser,
       }}
     >
       {children}
