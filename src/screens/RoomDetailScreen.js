@@ -106,8 +106,8 @@ export default function RoomDetailScreen({ navigation, route }) {
               key={bed._id}
               title={`Bed ${bed.bedLabel}`}
               badge={bed.status}
-              right={bed.status === 'VACANT' ? 'Edit' : 'Occupied'}
-              onPress={() => bed.status === 'VACANT' ? Alert.prompt?.('Rename bed', 'Enter a new bed label', value => value?.trim() && updateBed.mutate({id:bed._id,body:{bedLabel:value.trim()}}), 'plain-text', bed.bedLabel) || confirmRemoveBed(bed) : confirmRemoveBed(bed)}
+              right={bed.status === 'VACANT' ? 'Delete' : 'Occupied'}
+              onPress={() => confirmRemoveBed(bed)}
             />
           ))
         )}
