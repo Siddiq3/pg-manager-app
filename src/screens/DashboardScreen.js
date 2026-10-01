@@ -9,9 +9,10 @@ import { errorMessage, money } from '../lib/format';
 
 export default function DashboardScreen({ navigation }) {
   const toast = useToast();
-  const { api, logout, user } = useAuth();
+  const { api, user, activePropertyId, setActivePropertyId } = useAuth();
   const queryClient = useQueryClient();
-  const [propertyId, setPropertyId] = useState('');
+  const propertyId = activePropertyId;
+  const setPropertyId = setActivePropertyId;
   const [newProperty, setNewProperty] = useState('');
   const [creating, setCreating] = useState(false);
 
