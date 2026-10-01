@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState('');
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
+  const [activePropertyId, setActivePropertyId] = useState('');
 
   async function setSession(data) {
     setAccessToken(data.accessToken);
@@ -107,6 +108,8 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         accessToken,
+        activePropertyId,
+        setActivePropertyId,
         api,
         clearSession,
         forgotPassword,
