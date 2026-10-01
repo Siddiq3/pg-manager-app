@@ -15,7 +15,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#20322b"
-      }
+      },
+      "package": "com.siddiqkolimi.pgmanagerapp"
     },
     "plugins": [
       "expo-secure-store",
