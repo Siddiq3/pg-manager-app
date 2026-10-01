@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
-import { Button, Field, theme, typography } from '../components/ui';
+import { Button, Field, PasswordField, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { OtpInput } from '../components/OtpInput';
 
 export default function ForgotPasswordScreen({ navigation, route }) {
   const { forgotPassword, resetPassword } = useAuth();
@@ -50,9 +51,9 @@ export default function ForgotPasswordScreen({ navigation, route }) {
       <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
       <Button variant="secondary" onPress={sendCode} loading={busy && !sent} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : sent ? 'Resend code' : 'Send reset code'}</Button>
       {sent && <>
-        <Field label="6-digit code" value={form.otp} onChangeText={set('otp')} keyboardType="number-pad" maxLength={6} />
-        <Field label="New password" value={form.newPassword} onChangeText={set('newPassword')} secureTextEntry textContentType="newPassword" />
-        <Field label="Confirm new password" value={form.confirmPassword} onChangeText={set('confirmPassword')} secureTextEntry textContentType="newPassword" />
+        <OtpInput value={form.otp} onChangeText={set('otp')} />
+        <PasswordField label="New password" value={form.newPassword} onChangeText={set('newPassword')} textContentType="newPassword" />
+        <PasswordField label="Confirm new password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
         <Button onPress={reset} loading={busy} style={{ minHeight: 54, borderRadius: 14 }}>Update password</Button>
       </>}
     </AuthShell>
