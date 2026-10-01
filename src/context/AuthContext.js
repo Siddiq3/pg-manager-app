@@ -12,99 +12,56 @@ export function AuthProvider({ children }) {
   const [restoring, setRestoring] = useState(true);
   const [activePropertyId, setActivePropertyId] = useState('');
   const [entitlement, setEntitlement] = useState(null);
-  const [entitlementLoading, setEntitlementLoading] = useState(false);
+  const [entitlementState, setEntitlementState] = useState('idle');
+  const [entitlementError, setEntitlementError] = useState('');
 
   async function setSession(data) {
     setAccessToken(data.accessToken);
     setUser(data.user);
-    if (data.refreshToken) {
-      await SecureStore.setItemAsync(REFRESH_KEY, data.refreshToken);
-    }
+    if (data.refreshToken) await SecureStore.setItemAsync(REFRESH_KEY, data.refreshToken);
   }
-
   function updateUser(nextUser) { setUser(nextUser); }
-
   async function clearSession() {
-    setAccessToken('');
-    setUser(null);
+    setAccessToken(''); setUser(null); setEntitlement(null); setEntitlementState('idle'); setEntitlementError('');
     await SecureStore.deleteItemAsync(REFRESH_KEY);
   }
 
-  // Refresh tokens live for days, so a stored one resumes the session on
-  // launch instead of asking the owner to sign in again.
   useEffect(() => {
     (async () => {
       try {
         const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
-        if (refreshToken) {
-          const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
-          await setSession(data);
-        }
-      } catch {
-        await clearSession().catch(() => null);
-      } finally {
-        setRestoring(false);
-      }
+        if (refreshToken) { const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken }); await setSession(data); }
+      } catch { await clearSession().catch(() => null); }
+      finally { setRestoring(false); }
     })();
   }, []);
 
-  const api = useMemo(
-    () =>
-      buildApi({
-        getAccessToken: () => accessToken,
-        setSession,
-        getRefreshToken: () => SecureStore.getItemAsync(REFRESH_KEY),
-        clearSession,
-      }),
-    [accessToken]
-  );
+  const api = useMemo(() => buildApi({ getAccessToken: () => accessToken, setSession, getRefreshToken: () => SecureStore.getItemAsync(REFRESH_KEY), clearSession }), [accessToken]);
 
-  /** Email or mobile number, plus password. */
-  async function login({ identifier, password }) {
-    const { data } = await axios.post(`${API_URL}/auth/login`, { identifier, password });
-    await setSession(data);
+  async function login({ identifier, password }) { const { data } = await axios.post(`${API_URL}/auth/login`, { identifier, password }); await setSession(data); }
+  async function loginWithOtp({ email, otp }) { const { data } = await axios.post(`${API_URL}/auth/login-otp`, { email, otp }); await setSession(data); }
+  async function sendOtp({ email }) { const { data } = await axios.post(`${API_URL}/auth/send-otp`, { email }); return data; }
+  async function register({ name, email, phone, password, confirmPassword }) { const { data } = await axios.post(`${API_URL}/auth/register`, { name, email, phone, password, confirmPassword }); await setSession(data); }
+  async function forgotPassword({ email }) { const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { email }); return data; }
+  async function resetPassword({ email, otp, newPassword, confirmPassword }) { const { data } = await axios.post(`${API_URL}/auth/reset-password`, { email, otp, newPassword, confirmPassword }); return data; }
+
+  async function refreshEntitlement() {
+    if (!accessToken) return null;
+    setEntitlementState('loading'); setEntitlementError('');
+    try {
+      const { data } = await api.get('/billing/status');
+      setEntitlement(data.entitlement); setEntitlementState('ready'); return data.entitlement;
+    } catch (error) {
+      setEntitlement(null); setEntitlementState('error');
+      setEntitlementError(error?.uiMessage || error?.response?.data?.message || 'Unable to verify your subscription right now.');
+      throw error;
+    }
   }
 
-  /** Email + the 6-digit code from /auth/send-otp. */
-  async function loginWithOtp({ email, otp }) {
-    const { data } = await axios.post(`${API_URL}/auth/login-otp`, { email, otp });
-    await setSession(data);
-  }
-
-  async function sendOtp({ email }) {
-    const { data } = await axios.post(`${API_URL}/auth/send-otp`, { email });
-    return data;
-  }
-
-  async function register({ name, email, phone, password, confirmPassword }) {
-    const { data } = await axios.post(`${API_URL}/auth/register`, {
-      name,
-      email,
-      phone,
-      password,
-      confirmPassword,
-    });
-    await setSession(data);
-  }
-
-  async function forgotPassword({ email }) {
-    const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { email });
-    return data;
-  }
-
-  async function resetPassword({ email, otp, newPassword, confirmPassword }) {
-    const { data } = await axios.post(`${API_URL}/auth/reset-password`, {
-      email,
-      otp,
-      newPassword,
-      confirmPassword,
-    });
-    return data;
-  }
-
-  async function refreshEntitlement() { if (!accessToken) return null; setEntitlementLoading(true); try { const { data } = await api.get('/billing/status'); setEntitlement(data.entitlement); return data.entitlement; } finally { setEntitlementLoading(false); } }
-
-  useEffect(() => { if (accessToken) refreshEntitlement().catch(() => setEntitlement(null)); else setEntitlement(null); }, [accessToken]);
+  useEffect(() => {
+    if (accessToken) refreshEntitlement().catch(() => null);
+    else { setEntitlement(null); setEntitlementState('idle'); setEntitlementError(''); }
+  }, [accessToken]);
 
   async function logout() {
     const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
@@ -112,34 +69,6 @@ export function AuthProvider({ children }) {
     await clearSession();
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        accessToken,
-        activePropertyId,
-        setActivePropertyId,
-        api,
-        clearSession,
-        entitlement,
-        entitlementLoading,
-        refreshEntitlement,
-        forgotPassword,
-        login,
-        loginWithOtp,
-        logout,
-        register,
-        resetPassword,
-        restoring,
-        sendOtp,
-        user,
-        updateUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ accessToken, activePropertyId, setActivePropertyId, api, clearSession, entitlement, entitlementError, entitlementLoading: entitlementState === 'loading', entitlementState, refreshEntitlement, forgotPassword, login, loginWithOtp, logout, register, resetPassword, restoring, sendOtp, user, updateUser }}>{children}</AuthContext.Provider>;
 }
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export function useAuth() { return useContext(AuthContext); }
