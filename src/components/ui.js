@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SkeletonScreen } from './Skeleton';
+import { Ionicons } from '@expo/vector-icons';
 
 export const colors = {
   primary: '#e2511e', primaryPressed: '#b83e15', primarySubtle: '#fef1ea',
@@ -74,7 +75,7 @@ export function Screen({ children, scroll = false, refreshControl }) {
   );
 }
 
-export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style }) {
+export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style, icon }) {
   const blocked = disabled || loading;
   return (
     <Pressable
@@ -94,6 +95,7 @@ export function Button({ children, onPress, variant = 'primary', disabled = fals
       ]}
     >
       {loading && <ActivityIndicator size="small" color={blocked ? theme.textDisabled : variant === 'primary' ? '#fff' : theme.brand} />}
+      {!loading && icon}
       <Text style={[styles.buttonText, variant !== 'primary' && styles.ghostText, variant === 'secondary' && { color: theme.textSecondary }, variant === 'danger' && styles.dangerText, blocked && { color: theme.textDisabled }]}>
         {children}
       </Text>
@@ -101,30 +103,29 @@ export function Button({ children, onPress, variant = 'primary', disabled = fals
   );
 }
 
-export function Field({ label, value, onChangeText, keyboardType, secureTextEntry, placeholder, error, autoCapitalize = 'none', ...rest }) {
+export function Field({ label, value, onChangeText, keyboardType, secureTextEntry, placeholder, error, hint, right, autoCapitalize = 'none', ...rest }) {
   const [focused, setFocused] = useState(false);
   const { onFocus, onBlur, style: inputStyle, ...inputProps } = rest;
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        placeholder={placeholder || label}
-        placeholderTextColor={theme.textDisabled}
-        accessibilityLabel={label}
-        onFocus={(event) => { setFocused(true); onFocus?.(event); }}
-        onBlur={(event) => { setFocused(false); onBlur?.(event); }}
-        style={[styles.input, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError, inputStyle]}
-        autoCapitalize={autoCapitalize}
-        {...inputProps}
-      />
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
+  return <View style={styles.field}>
+    {!!label && <Text style={styles.label}>{label}</Text>}
+    <View style={[styles.inputBox, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError]}>
+      <TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} secureTextEntry={secureTextEntry} placeholder={placeholder || label} placeholderTextColor={theme.textDisabled} accessibilityLabel={label}
+        onFocus={e=>{setFocused(true);onFocus?.(e)}} onBlur={e=>{setFocused(false);onBlur?.(e)}} style={[styles.input,inputStyle]} autoCapitalize={autoCapitalize} {...inputProps}/>
+      {right}
     </View>
-  );
+    {!!error && <Text style={styles.errorText}>{error}</Text>}
+    {!error && !!hint && <Text style={styles.hintText}>{hint}</Text>}
+  </View>;
 }
+
+export function PasswordField(props) {
+  const [visible,setVisible]=useState(false);
+  return <Field {...props} secureTextEntry={!visible} autoCapitalize="none" autoCorrect={false} right={<Pressable accessibilityRole="button" accessibilityLabel={visible?'Hide password':'Show password'} onPress={()=>setVisible(v=>!v)} style={styles.fieldAction}><Ionicons name={visible?'eye-off-outline':'eye-outline'} size={20} color={theme.muted}/></Pressable>}/>;
+}
+
+export function Card({children,style,padded=true}) { return <View style={[styles.card,padded&&styles.cardPadded,style]}>{children}</View>; }
+export function Divider({style}) { return <View style={[styles.divider,style]}/>; }
+export function Pill({children,tone='muted'}) { const p={ok:[theme.okWeak,theme.ok],warn:[theme.warnWeak,theme.warn],danger:[theme.dangerWeak,theme.danger],muted:[theme.surfaceMuted,theme.muted]}[tone]||[theme.surfaceMuted,theme.muted]; return <View style={[styles.pill,{backgroundColor:p[0]}]}><Text style={[styles.pillText,{color:p[1]}]}>{children}</Text></View>; }
 
 export function Stat({ label, value, hint, tone = 'default' }) {
   return (
@@ -238,21 +239,19 @@ export const styles = StyleSheet.create({
   dangerText: { color: theme.danger },
   field: { gap: 6 },
   label: { ...typography.label, color: theme.textSecondary },
-  input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: theme.borderStrong,
-    borderRadius: 10,
-    backgroundColor: theme.surface,
-    paddingHorizontal: 12,
-    color: theme.text,
-    fontSize: 16,
-    paddingVertical: 12,
-  },
+  inputBox: { minHeight: 50, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: theme.borderStrong, borderRadius: radius.sm, backgroundColor: theme.surface },
+  input: { flex: 1, minHeight: 48, paddingHorizontal: 14, color: theme.text, fontSize: 16, paddingVertical: 12 },
+  fieldAction: { width: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   inputFocused: { borderColor: theme.primary, backgroundColor: theme.primarySubtle },
   inputDisabled: { backgroundColor: theme.surfaceMuted, color: theme.textDisabled },
   inputError: { borderColor: theme.danger },
   errorText: { color: theme.danger, fontSize: 12 },
+  hintText: { ...typography.caption, color: theme.muted },
+  card: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: radius.lg },
+  cardPadded: { padding: spacing.lg },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
+  pill: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill },
+  pillText: { ...typography.caption, fontWeight: '600' },
   stat: {
     flex: 1,
     minHeight: 108,
