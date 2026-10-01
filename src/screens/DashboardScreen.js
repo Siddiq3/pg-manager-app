@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function DashboardScreen({ navigation }) {
+  const toast = useToast();
   const { api, logout, user } = useAuth();
   const queryClient = useQueryClient();
   const [propertyId, setPropertyId] = useState('');
@@ -36,8 +38,9 @@ export default function DashboardScreen({ navigation }) {
       setNewProperty('');
       setPropertyId(data.data._id);
       await properties.refetch();
+      toast.success('Property created.');
     } catch (error) {
-      Alert.alert('Property not added', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setCreating(false);
     }
