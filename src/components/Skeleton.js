@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { theme } from './ui';
+import { theme } from './tokens';
 
 export function Skeleton({ width = '100%', height = 12, radius = 8, style }) {
   const opacity = useRef(new Animated.Value(1)).current;
