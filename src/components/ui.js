@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonScreen } from './Skeleton';
 
 export const colors = {
   primary: '#176b70', primaryPressed: '#105257', primarySubtle: '#e8f3f3',
@@ -30,7 +31,9 @@ export const typography = {
   label: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
   caption: { fontSize: 12, lineHeight: 18, fontWeight: '400' },
 };
-export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
+export const radius = { xs: 6, sm: 12, md: 16, lg: 20, xl: 26, pill: 999 };
+export const motion = { fast: 180, base: 280, slow: 440 };
 
 /** Respect the OS setting before enabling navigation motion. */
 export function useReducedMotion() {
@@ -177,21 +180,33 @@ export function SectionTitle({ children, action }) {
   );
 }
 
-/** One place to render the loading / failed / nothing-here states of a query. */
+/** Consistent loading / offline / timeout / server / empty states for every query. */
 export function QueryState({ query, empty, children }) {
-  if (query.isLoading) return <ActivityIndicator style={{ marginTop: 24 }} color={theme.brand} />;
+  if (query.isLoading) return <SkeletonScreen rows={4} />;
   if (query.isError) {
-    return (
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>{query.error?.response?.data?.message || 'Could not load this. Pull down to retry.'}</Text>
-        <Button variant="ghost" onPress={() => query.refetch()}>
-          Retry
-        </Button>
-      </View>
-    );
+    const kind = query.error?.uiKind;
+    const title = kind === 'network' ? 'You’re offline'
+      : kind === 'timeout' ? 'This is taking too long'
+      : kind === 'server' ? 'Server unavailable'
+      : kind === 'rate' ? 'Please wait a moment'
+      : 'Couldn’t load this';
+    const message = query.error?.uiMessage || query.error?.response?.data?.message || 'Something went wrong while loading this screen.';
+    return <StateView title={title} message={message} actionLabel="Try again" onAction={() => query.refetch()} tone="error" />;
   }
-  if (empty && !(query.data || []).length) return <View style={styles.emptyState}><Text style={styles.empty}>{empty}</Text></View>;
+  if (empty && !(query.data || []).length) return <StateView title="Nothing here yet" message={empty} />;
   return children;
+}
+
+export function StateView({ title, message, actionLabel, onAction, tone = 'neutral' }) {
+  const error = tone === 'error';
+  return (
+    <View style={[styles.stateView, error && styles.stateError]}>
+      <View style={[styles.stateIcon, error && { backgroundColor: theme.dangerWeak }]}><Text style={{ fontSize: 20 }}>{error ? '!' : '·'}</Text></View>
+      <Text style={styles.stateTitle}>{title}</Text>
+      {!!message && <Text style={styles.stateMessage}>{message}</Text>}
+      {!!actionLabel && <Button variant={error ? 'ghost' : 'secondary'} onPress={onAction}>{actionLabel}</Button>}
+    </View>
+  );
 }
 
 export const styles = StyleSheet.create({
@@ -206,7 +221,7 @@ export const styles = StyleSheet.create({
     minHeight: 48,
     flexDirection: 'row',
     gap: 8,
-    borderRadius: 10,
+    borderRadius: radius.md,
     backgroundColor: theme.brand,
     alignItems: 'center',
     justifyContent: 'center',
@@ -241,7 +256,7 @@ export const styles = StyleSheet.create({
   stat: {
     flex: 1,
     minHeight: 108,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: theme.border,
     backgroundColor: theme.surface,
@@ -274,4 +289,9 @@ export const styles = StyleSheet.create({
   emptyState: { padding: 20, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
   notice: { backgroundColor: theme.dangerWeak, borderRadius: 12, padding: 14, gap: 10 },
   noticeText: { color: theme.danger },
+  stateView: { minHeight: 210, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.borderSubtle },
+  stateError: { backgroundColor: theme.dangerWeak, borderColor: theme.border },
+  stateIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surfaceMuted },
+  stateTitle: { ...typography.h3, color: theme.text, textAlign: 'center' },
+  stateMessage: { ...typography.small, color: theme.muted, textAlign: 'center', maxWidth: 320 },
 });
