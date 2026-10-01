@@ -1,0 +1,27 @@
+name: Mobile CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: Expo dependency and bundle verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Validate Expo dependency versions
+        run: npx expo install --check
+      - name: Expo project diagnostics
+        run: npx expo-doctor
+      - name: Verify Android JS export
+        run: npx expo export --platform android --output-dir /tmp/pg-manager-dist --non-interactive
