@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function RoomsScreen({ navigation, route }) {
+  const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { propertyId } = route.params;
@@ -28,6 +30,7 @@ export default function RoomsScreen({ navigation, route }) {
       setForm({ roomNumber: '', type: '', monthlyRent: '' });
       queryClient.invalidateQueries({ queryKey: ['rooms', propertyId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Room added.');
     },
     onError: (error) => Alert.alert('Room not added', errorMessage(error)),
   });
