@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, RefreshControl, Text, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
@@ -62,11 +63,15 @@ export default function DashboardScreen({ navigation }) {
         />
       }
     >
-      <View>
-        <Text style={{ color: theme.muted }}>Welcome, {user?.name}</Text>
-        <Text style={{ ...typography.h1, color: theme.text }}>
-          {dashboard.data?.property?.name || 'Your PG'}
-        </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...typography.caption, color: theme.muted }}>WELCOME BACK</Text>
+          <Text style={{ ...typography.display, fontSize: 29, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
+          <Text style={{ ...typography.small, color: theme.muted }}>{user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'PG Manager'}</Text>
+        </View>
+        <Pressable onPress={() => navigation.navigate('Account')} style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="person-outline" size={20} color={theme.textSecondary} />
+        </Pressable>
       </View>
 
       <QueryState query={properties}>
@@ -126,7 +131,7 @@ export default function DashboardScreen({ navigation }) {
         )}
       </QueryState>
 
-      <Button variant="tertiary" onPress={logout}>Log out</Button>
+      
     </Screen>
   );
 }
