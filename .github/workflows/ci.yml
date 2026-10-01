@@ -10,10 +10,14 @@ permissions:
   contents: read
 jobs:
   verify:
-    name: Expo dependency and bundle verification
+    name: Expo dependency and native release verification
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -22,7 +26,12 @@ jobs:
       - name: Validate Expo dependency versions
         run: npx expo install --check
       - name: Expo project diagnostics
-        # Native android/ios folders are committed intentionally; app.json/prebuild sync is handled by the native build workflow.
-        run: npx expo-doctor || echo 'Expo Doctor reported native/app-config sync guidance; continuing to bundle verification.'
+        run: npx expo-doctor
       - name: Verify Android JS export
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.invalid/api/v1
         run: npx expo export --platform android --output-dir /tmp/pg-manager-dist --non-interactive
+      - name: Verify unsigned native release AAB
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.invalid/api/v1
+        run: cd android && ./gradlew :app:bundleRelease
