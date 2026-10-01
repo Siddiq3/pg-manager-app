@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
-import { Button, Field, theme, typography } from '../components/ui';
+import { Button, Field, PasswordField, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { OtpInput } from '../components/OtpInput';
 
 export default function LoginScreen({ navigation, route }) {
   const { login, loginWithOtp, sendOtp } = useAuth();
@@ -61,12 +62,12 @@ export default function LoginScreen({ navigation, route }) {
       <AuthNotice message={error} />
       {method === 'password' ? <>
         <Field label="Email or mobile number" value={form.identifier} onChangeText={set('identifier')} textContentType="username" autoComplete="username" />
-        <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry textContentType="password" autoComplete="password" />
+        <PasswordField label="Password" value={form.password} onChangeText={set('password')} textContentType="password" autoComplete="password" />
         <View style={styles.forgot}><AuthLink onPress={() => navigation.navigate('ForgotPassword', { email: form.identifier.includes('@') ? form.identifier : '' })}>Forgot password?</AuthLink></View>
       </> : <>
         <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
         <Button variant="secondary" onPress={requestCode} loading={busy && !cooldown} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : 'Send sign-in code'}</Button>
-        <Field label="6-digit code" value={form.otp} onChangeText={set('otp')} keyboardType="number-pad" maxLength={6} />
+        <OtpInput value={form.otp} onChangeText={set('otp')} />
       </>}
       <Button onPress={submit} loading={busy} style={styles.submit}>Sign in</Button>
     </AuthShell>
