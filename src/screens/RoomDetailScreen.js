@@ -12,6 +12,7 @@ export default function RoomDetailScreen({ navigation, route }) {
   const queryClient = useQueryClient();
   const { roomId, propertyId } = route.params;
   const [bedLabel, setBedLabel] = useState('');
+  const [roomEdits, setRoomEdits] = useState({});
 
   const room = useQuery({
     queryKey: ['room', roomId],
@@ -33,6 +34,10 @@ export default function RoomDetailScreen({ navigation, route }) {
     },
     onError: (error) => toast.error(errorMessage(error)),
   });
+
+  const updateRoom = useMutation({ mutationFn: (body) => api.patch(`/rooms/${roomId}`, body), onSuccess: () => { setRoomEdits({}); refreshAll(); toast.success('Room updated.'); }, onError: (error) => toast.error(errorMessage(error)) });
+
+  const updateBed = useMutation({ mutationFn: ({id,body}) => api.patch(`/beds/${id}`, body), onSuccess: refreshAll, onError: (error) => toast.error(errorMessage(error)) });
 
   const removeBed = useMutation({
     mutationFn: (bedId) => api.delete(`/beds/${bedId}`),
@@ -85,6 +90,13 @@ export default function RoomDetailScreen({ navigation, route }) {
       )}
 
       <QueryState query={room}>
+        <SectionTitle>Room details</SectionTitle>
+        <Field label="Room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
+        <Field label="Floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
+        <Field label="Type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
+        <Field label="Monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
+        <Field label="Notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
+        <Button variant="secondary" disabled={!Object.keys(roomEdits).length} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
         <SectionTitle>Beds</SectionTitle>
         {beds.length === 0 ? (
           <Text style={{ color: theme.muted }}>No beds yet. Add the first one below.</Text>
@@ -94,8 +106,8 @@ export default function RoomDetailScreen({ navigation, route }) {
               key={bed._id}
               title={`Bed ${bed.bedLabel}`}
               badge={bed.status}
-              right={bed.status === 'VACANT' ? 'Delete' : ''}
-              onPress={() => confirmRemoveBed(bed)}
+              right={bed.status === 'VACANT' ? 'Edit' : 'Occupied'}
+              onPress={() => bed.status === 'VACANT' ? Alert.prompt?.('Rename bed', 'Enter a new bed label', value => value?.trim() && updateBed.mutate({id:bed._id,body:{bedLabel:value.trim()}}), 'plain-text', bed.bedLabel) || confirmRemoveBed(bed) : confirmRemoveBed(bed)}
             />
           ))
         )}
