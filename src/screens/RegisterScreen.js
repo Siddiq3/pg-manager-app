@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Text } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
-import { Button, Field, theme, typography } from '../components/ui';
+import { Button, Field, PasswordField, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { OtpInput } from '../components/OtpInput';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -30,8 +31,8 @@ export default function RegisterScreen({ navigation }) {
       <Field label="Owner name" value={form.name} onChangeText={set('name')} autoCapitalize="words" textContentType="name" />
       <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
       <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" textContentType="telephoneNumber" />
-      <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry textContentType="newPassword" />
-      <Field label="Confirm password" value={form.confirmPassword} onChangeText={set('confirmPassword')} secureTextEntry textContentType="newPassword" />
+      <PasswordField label="Password" value={form.password} onChangeText={set('password')} textContentType="newPassword" />
+      <PasswordField label="Confirm password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
       <Text style={{ ...typography.caption, color: theme.muted }}>Use 8+ characters with uppercase, lowercase, number and symbol.</Text>
       <Button onPress={submit} loading={busy} style={{ minHeight: 54, borderRadius: 14 }}>Create account</Button>
     </AuthShell>
