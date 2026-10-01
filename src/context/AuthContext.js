@@ -11,6 +11,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
   const [activePropertyId, setActivePropertyId] = useState('');
+  const [entitlement, setEntitlement] = useState(null);
+  const [entitlementLoading, setEntitlementLoading] = useState(false);
 
   async function setSession(data) {
     setAccessToken(data.accessToken);
@@ -100,6 +102,10 @@ export function AuthProvider({ children }) {
     return data;
   }
 
+  async function refreshEntitlement() { if (!accessToken) return null; setEntitlementLoading(true); try { const { data } = await api.get('/billing/status'); setEntitlement(data.entitlement); return data.entitlement; } finally { setEntitlementLoading(false); } }
+
+  useEffect(() => { if (accessToken) refreshEntitlement().catch(() => setEntitlement(null)); else setEntitlement(null); }, [accessToken]);
+
   async function logout() {
     const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
     await api.post('/auth/logout', { refreshToken }).catch(() => null);
@@ -114,6 +120,9 @@ export function AuthProvider({ children }) {
         setActivePropertyId,
         api,
         clearSession,
+        entitlement,
+        entitlementLoading,
+        refreshEntitlement,
         forgotPassword,
         login,
         loginWithOtp,
