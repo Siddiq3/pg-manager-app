@@ -4,13 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SkeletonScreen } from './Skeleton';
 
 export const colors = {
-  primary: '#176b70', primaryPressed: '#105257', primarySubtle: '#e8f3f3',
-  secondary: '#465c72', background: '#f5f7f9', surface: '#ffffff',
-  surfaceElevated: '#ffffff', surfaceMuted: '#eef2f5',
-  textPrimary: '#1b2a36', textSecondary: '#526370', textMuted: '#5c6d7a', textDisabled: '#7f8d98',
-  border: '#dce4e9', borderSubtle: '#eaf0f3', borderStrong: '#8294a1',
-  success: '#26704e', successSubtle: '#edf6f0', warning: '#8a5b16', warningSubtle: '#fbf3e5',
-  error: '#ad3e3e', errorSubtle: '#fbeeee', info: '#365f91', infoSubtle: '#edf3fb',
+  primary: '#e2511e', primaryPressed: '#b83e15', primarySubtle: '#fef1ea',
+  secondary: '#45454f', background: '#f4f4f6', surface: '#ffffff',
+  surfaceElevated: '#ffffff', surfaceMuted: '#eeeef1',
+  textPrimary: '#101014', textSecondary: '#45454f', textMuted: '#5b5b66', textDisabled: '#8a8a95',
+  border: '#e6e6ea', borderSubtle: '#eeeeF1', borderStrong: '#d3d3d9',
+  success: '#15803d', successSubtle: '#f0fdf4', warning: '#b45309', warningSubtle: '#fffbeb',
+  error: '#be123c', errorSubtle: '#fef2f2', info: '#1d4ed8', infoSubtle: '#eff6ff',
 };
 // Existing screen aliases preserve the component API without duplicating token values.
 export const theme = {
@@ -22,17 +22,17 @@ export const theme = {
 
 // Native system fonts support the user's language and Dynamic Type without a font-loading gate.
 export const typography = {
-  display: { fontSize: 32, lineHeight: 40, fontWeight: '600', letterSpacing: -1 },
-  h1: { fontSize: 26, lineHeight: 34, fontWeight: '600', letterSpacing: -0.6 },
+  display: { fontSize: 34, lineHeight: 40, fontWeight: '700', letterSpacing: -1 },
+  h1: { fontSize: 24, lineHeight: 30, fontWeight: '700', letterSpacing: -0.6 },
   h2: { fontSize: 22, lineHeight: 30, fontWeight: '600', letterSpacing: -0.4 },
   h3: { fontSize: 18, lineHeight: 26, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  body: { fontSize: 15.5, lineHeight: 23, fontWeight: '400' },
   small: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
   label: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
   caption: { fontSize: 12, lineHeight: 18, fontWeight: '400' },
 };
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
-export const radius = { xs: 6, sm: 12, md: 16, lg: 20, xl: 26, pill: 999 };
+export const radius = { xs: 6, sm: 12, md: 18, lg: 22, xl: 28, pill: 999 };
 export const motion = { fast: 180, base: 280, slow: 440 };
 
 /** Respect the OS setting before enabling navigation motion. */
