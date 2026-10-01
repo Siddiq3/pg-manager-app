@@ -68,6 +68,25 @@ react {
  */
 def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()
 
+// Production signing is injected by the build environment. No signing secret or
+// keystore path is committed to source control. Local debug builds remain unchanged.
+def releaseStoreFile = System.getenv('PG_UPLOAD_STORE_FILE')
+def releaseStorePassword = System.getenv('PG_UPLOAD_STORE_PASSWORD')
+def releaseKeyAlias = System.getenv('PG_UPLOAD_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('PG_UPLOAD_KEY_PASSWORD')
+def releaseSigningValues = [releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword]
+def hasAnyReleaseSigningValue = releaseSigningValues.any { it }
+def hasReleaseSigning = releaseSigningValues.every { it }
+if (hasAnyReleaseSigningValue && !hasReleaseSigning) {
+    throw new GradleException('Incomplete PG Manager release signing environment. Set all PG_UPLOAD_* signing variables or none.')
+}
+if (hasReleaseSigning) {
+    def releaseApiUrl = System.getenv('EXPO_PUBLIC_API_URL')
+    if (!releaseApiUrl || !releaseApiUrl.startsWith('https://')) {
+        throw new GradleException('Signed release builds require EXPO_PUBLIC_API_URL to be an explicit HTTPS production API URL.')
+    }
+}
+
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
  *
@@ -104,15 +123,23 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // CI can build an unsigned release AAB for configuration verification.
+            // Production publishing must provide all PG_UPLOAD_* signing variables.
+            if (hasReleaseSigning) signingConfig signingConfigs.release
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds
