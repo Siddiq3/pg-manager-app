@@ -46,7 +46,7 @@ export default function TenantDetailScreen({ navigation, route }) {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Tenant details updated.');
     } catch (error) {
-      Alert.alert('Not saved', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setBusy('');
     }
@@ -67,7 +67,7 @@ export default function TenantDetailScreen({ navigation, route }) {
       toast.success('Tenant checked out. The bed is vacant now.');
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Not checked out', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setBusy('');
     }
