@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
+import { Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
@@ -74,7 +74,7 @@ export default function RoomDetailScreen({ navigation, route }) {
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={room.isRefetching} onRefresh={room.refetch} tintColor={theme.brand} />}>
-      <Text style={{ fontSize: 24, fontWeight: '900', color: theme.text }}>Room {room.data?.roomNumber || ''}</Text>
+      <Text style={{ ...typography.h2, color: theme.text }}>Room {room.data?.roomNumber || ''}</Text>
       {!!room.data && (
         <Text style={{ color: theme.muted }}>
           {[room.data.type, room.data.floor && `Floor ${room.data.floor}`, money(room.data.monthlyRent)].filter(Boolean).join(' · ')}
