@@ -32,7 +32,7 @@ export default function RoomsScreen({ navigation, route }) {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Room added.');
     },
-    onError: (error) => Alert.alert('Room not added', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const set = (field) => (value) => {
