@@ -20,8 +20,7 @@ export default function WelcomeScreen({ navigation }) {
               <View><Text style={styles.statValue}>₹</Text><Text style={styles.statLabel}>Rent tracking</Text></View>
             </View>
           </View>
-          <Text style={styles.title}>Run your PG,{'
-'}from your pocket.</Text>
+          <Text style={styles.title}>Run your PG,{'\n'}from your pocket.</Text>
           <Text style={styles.subtitle}>Manage rooms, tenants and rent from one simple place.</Text>
         </View>
       </View>

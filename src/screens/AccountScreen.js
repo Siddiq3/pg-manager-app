@@ -18,7 +18,7 @@ export default function AccountScreen({ navigation }) {
     {entitlement?.status === 'TRIAL' && <View style={styles.trial}><Ionicons name="time-outline" size={20} color={theme.brand}/><View style={{flex:1}}><Text style={styles.name}>Free trial</Text><Text style={styles.caption}>{entitlement.daysRemaining} day{entitlement.daysRemaining===1?'':'s'} remaining</Text></View></View>}
     <Group title="YOU">
       <Item icon="person-outline" label="Profile" value={user?.phone} onPress={() => navigation.navigate('Profile')} />
-      {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value="Recommended" onPress={() => navigation.navigate('EmailVerification')} />
+      {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value="Recommended" onPress={() => navigation.navigate('EmailVerification')} />}
       {activePropertyId && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings',{propertyId:activePropertyId})} />}
       <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
     </Group>
