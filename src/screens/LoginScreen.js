@@ -1,193 +1,84 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
-import { Button, Field, Screen, Segmented, typography, theme } from '../components/ui';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
+import { Button, Field, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
-const emptyForm = {
-  name: '',
-  identifier: '',
-  email: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
-  otp: '',
-  newPassword: '',
-};
-
-/** Prefers the API's field-level validation messages over the generic one. */
-function errorMessage(error, fallback) {
-  const data = error.response?.data;
-  const fieldErrors = data?.details?.fieldErrors;
-  if (fieldErrors) {
-    const messages = Object.values(fieldErrors).flat().filter(Boolean);
-    if (messages.length) return messages.join('\n');
-  }
-  return data?.message || fallback;
-}
-
-export default function LoginScreen() {
-  const { forgotPassword, login, loginWithOtp, register, resetPassword, sendOtp } = useAuth();
-  // 'login' | 'register' | 'forgot'
-  const [mode, setMode] = useState('login');
-  // 'password' | 'otp'
-  const [loginMethod, setLoginMethod] = useState('password');
-  const [form, setForm] = useState(emptyForm);
+export default function LoginScreen({ navigation, route }) {
+  const { login, loginWithOtp, sendOtp } = useAuth();
+  const [method, setMethod] = useState('password');
+  const [form, setForm] = useState({ identifier: route.params?.identifier || '', email: '', password: '', otp: '' });
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [error, setError] = useState('');
+  const set = (key) => (value) => setForm((current) => ({ ...current, [key]: value }));
 
   useEffect(() => {
-    if (cooldown <= 0) return undefined;
-    const timer = setInterval(() => setCooldown((value) => Math.max(0, value - 1)), 1000);
-    return () => clearInterval(timer);
+    if (!cooldown) return undefined;
+    const id = setInterval(() => setCooldown((v) => Math.max(0, v - 1)), 1000);
+    return () => clearInterval(id);
   }, [cooldown]);
 
-  const set = (field) => (value) => setForm({ ...form, [field]: value });
-
-  function switchMode(nextMode) {
-    setMode(nextMode);
-    setForm({ ...emptyForm, email: form.email, identifier: form.identifier });
-  }
-
-  async function requestCode(purpose) {
-    const email = (purpose === 'reset' ? form.email : form.email || form.identifier).trim();
-    if (!email) {
-      Alert.alert('Email needed', 'Enter your email address to receive the code.');
-      return;
-    }
-
+  async function requestCode() {
+    if (!form.email.trim()) return setError('Enter your email address to receive a sign-in code.');
     try {
-      setBusy(true);
-      const data = purpose === 'reset' ? await forgotPassword({ email }) : await sendOtp({ email });
+      setBusy(true); setError('');
+      const data = await sendOtp({ email: form.email.trim() });
       setCooldown(data?.resendAfterSeconds || 60);
-      Alert.alert('Check your email', data?.message || 'If an account exists for this email, a code has been sent.');
-    } catch (error) {
-      Alert.alert('Could not send the code', errorMessage(error, 'Please try again in a moment.'));
-    } finally {
-      setBusy(false);
-    }
+    } catch (e) { setError(getAuthError(e, 'Could not send the code.')); }
+    finally { setBusy(false); }
   }
 
   async function submit() {
+    setError('');
     try {
       setBusy(true);
-
-      if (mode === 'register') {
-        await register({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          password: form.password,
-          confirmPassword: form.confirmPassword,
-        });
-        return;
-      }
-
-      if (mode === 'forgot') {
-        await resetPassword({
-          email: form.email.trim(),
-          otp: form.otp.trim(),
-          newPassword: form.newPassword,
-          confirmPassword: form.confirmPassword,
-        });
-        setMode('login');
-        setLoginMethod('password');
-        setForm({ ...emptyForm, identifier: form.email.trim() });
-        Alert.alert('Password updated', 'Sign in with your new password.');
-        return;
-      }
-
-      if (loginMethod === 'password') {
+      if (method === 'password') {
+        if (!form.identifier.trim() || !form.password) throw new Error('LOCAL');
         await login({ identifier: form.identifier.trim(), password: form.password });
       } else {
+        if (!form.email.trim() || !form.otp.trim()) throw new Error('LOCAL_OTP');
         await loginWithOtp({ email: form.email.trim(), otp: form.otp.trim() });
       }
-    } catch (error) {
-      const title = mode === 'register' ? 'Could not create the account' : 'Could not sign in';
-      Alert.alert(title, errorMessage(error, 'Please check the details and try again.'));
-    } finally {
-      setBusy(false);
-    }
+    } catch (e) {
+      if (e.message === 'LOCAL') setError('Enter your email or mobile number and password.');
+      else if (e.message === 'LOCAL_OTP') setError('Enter your email and 6-digit code.');
+      else setError(getAuthError(e, 'Could not sign in. Check your details and try again.'));
+    } finally { setBusy(false); }
   }
 
-  const codeLabel = cooldown > 0 ? `Resend in ${cooldown}s` : 'Send code to email';
-  const submitLabel = { login: 'Login', register: 'Create account', forgot: 'Set new password' }[mode];
-
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <Screen scroll>
-        <Text style={{ ...typography.display, color: theme.text }}>PG Manager</Text>
-        <Text style={{ color: theme.muted, marginBottom: 12 }}>Run your PG from the phone in your hand.</Text>
-
-        <Segmented label="Account access" value={mode} onChange={switchMode}
-          options={[{ value: 'login', label: 'Sign in' }, { value: 'register', label: 'Create account' }]} />
-
-        {mode === 'register' && (
-          <>
-            <Field label="Owner name" value={form.name} onChangeText={set('name')} />
-            <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" />
-            <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" />
-            <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry />
-            <Field
-              label="Confirm password"
-              value={form.confirmPassword}
-              onChangeText={set('confirmPassword')}
-              secureTextEntry
-            />
-            <Text style={{ color: theme.muted, fontSize: 12 }}>
-              At least 8 characters with an uppercase letter, a lowercase letter, a number and a symbol.
-            </Text>
-          </>
-        )}
-
-        {mode === 'login' && (
-          <>
-            <Segmented label="Sign-in method" value={loginMethod} onChange={setLoginMethod}
-              options={[{ value: 'password', label: 'Password' }, { value: 'otp', label: 'Email OTP' }]} />
-
-            {loginMethod === 'password' ? (
-              <>
-                <Field label="Email or mobile number" value={form.identifier} onChangeText={set('identifier')} />
-                <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry />
-                <Button variant="tertiary" onPress={() => switchMode('forgot')}>
-                  Forgot password?
-                </Button>
-              </>
-            ) : (
-              <>
-                <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" />
-                <Button onPress={() => requestCode('login')} disabled={busy || cooldown > 0}>
-                  {codeLabel}
-                </Button>
-                <Field label="6-digit code" value={form.otp} onChangeText={set('otp')} keyboardType="number-pad" />
-              </>
-            )}
-          </>
-        )}
-
-        {mode === 'forgot' && (
-          <>
-            <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" />
-            <Button onPress={() => requestCode('reset')} disabled={busy || cooldown > 0}>
-              {codeLabel}
-            </Button>
-            <Field label="6-digit code" value={form.otp} onChangeText={set('otp')} keyboardType="number-pad" />
-            <Field label="New password" value={form.newPassword} onChangeText={set('newPassword')} secureTextEntry />
-            <Field
-              label="Confirm new password"
-              value={form.confirmPassword}
-              onChangeText={set('confirmPassword')}
-              secureTextEntry
-            />
-            <Button variant="tertiary" onPress={() => switchMode('login')}>
-              Back to login
-            </Button>
-          </>
-        )}
-
-        <Button onPress={submit} loading={busy}>
-          {busy ? 'Please wait...' : submitLabel}
-        </Button>
-      </Screen>
-    </KeyboardAvoidingView>
+    <AuthShell title="Welcome back" subtitle="Sign in to manage your PG, rooms, tenants and rent."
+      footer={<Text style={{ ...typography.small, color: theme.muted }}>New to PG Manager? <AuthLink onPress={() => navigation.navigate('Register')}>Create an account</AuthLink></Text>}>
+      {route.params?.reset && <AuthNotice tone="success" message="Password updated. Sign in with your new password." />}
+      <View style={styles.switcher}>
+        {['password', 'otp'].map((value) => (
+          <Pressable key={value} onPress={() => { setMethod(value); setError(''); }} style={[styles.switch, method === value && styles.switchActive]}>
+            <Text style={[styles.switchText, method === value && styles.switchTextActive]}>{value === 'password' ? 'Password' : 'Email OTP'}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <AuthNotice message={error} />
+      {method === 'password' ? <>
+        <Field label="Email or mobile number" value={form.identifier} onChangeText={set('identifier')} textContentType="username" autoComplete="username" />
+        <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry textContentType="password" autoComplete="password" />
+        <View style={styles.forgot}><AuthLink onPress={() => navigation.navigate('ForgotPassword', { email: form.identifier.includes('@') ? form.identifier : '' })}>Forgot password?</AuthLink></View>
+      </> : <>
+        <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
+        <Button variant="secondary" onPress={requestCode} loading={busy && !cooldown} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : 'Send sign-in code'}</Button>
+        <Field label="6-digit code" value={form.otp} onChangeText={set('otp')} keyboardType="number-pad" maxLength={6} />
+      </>}
+      <Button onPress={submit} loading={busy} style={styles.submit}>Sign in</Button>
+    </AuthShell>
   );
 }
+
+const styles = StyleSheet.create({
+  switcher: { flexDirection: 'row', padding: 4, borderRadius: 12, backgroundColor: theme.surfaceMuted },
+  switch: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
+  switchActive: { backgroundColor: theme.surface },
+  switchText: { ...typography.small, color: theme.muted, fontWeight: '600' },
+  switchTextActive: { color: theme.brand },
+  forgot: { alignItems: 'flex-end', marginTop: -4 },
+  submit: { minHeight: 54, borderRadius: 14, marginTop: 4 },
+});
