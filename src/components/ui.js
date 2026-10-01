@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonScreen } from './Skeleton';
+import { Ionicons } from '@expo/vector-icons';
 
 export const colors = {
-  primary: '#176b70', primaryPressed: '#105257', primarySubtle: '#e8f3f3',
-  secondary: '#465c72', background: '#f5f7f9', surface: '#ffffff',
-  surfaceElevated: '#ffffff', surfaceMuted: '#eef2f5',
-  textPrimary: '#1b2a36', textSecondary: '#526370', textMuted: '#5c6d7a', textDisabled: '#7f8d98',
-  border: '#dce4e9', borderSubtle: '#eaf0f3', borderStrong: '#8294a1',
-  success: '#26704e', successSubtle: '#edf6f0', warning: '#8a5b16', warningSubtle: '#fbf3e5',
-  error: '#ad3e3e', errorSubtle: '#fbeeee', info: '#365f91', infoSubtle: '#edf3fb',
+  primary: '#e2511e', primaryPressed: '#b83e15', primarySubtle: '#fef1ea',
+  secondary: '#45454f', background: '#f4f4f6', surface: '#ffffff',
+  surfaceElevated: '#ffffff', surfaceMuted: '#eeeef1',
+  textPrimary: '#101014', textSecondary: '#45454f', textMuted: '#5b5b66', textDisabled: '#8a8a95',
+  border: '#e6e6ea', borderSubtle: '#eeeeF1', borderStrong: '#d3d3d9',
+  success: '#15803d', successSubtle: '#f0fdf4', warning: '#b45309', warningSubtle: '#fffbeb',
+  error: '#be123c', errorSubtle: '#fef2f2', info: '#1d4ed8', infoSubtle: '#eff6ff',
 };
 // Existing screen aliases preserve the component API without duplicating token values.
 export const theme = {
@@ -21,16 +23,18 @@ export const theme = {
 
 // Native system fonts support the user's language and Dynamic Type without a font-loading gate.
 export const typography = {
-  display: { fontSize: 32, lineHeight: 40, fontWeight: '600', letterSpacing: -1 },
-  h1: { fontSize: 26, lineHeight: 34, fontWeight: '600', letterSpacing: -0.6 },
+  display: { fontSize: 34, lineHeight: 40, fontWeight: '700', letterSpacing: -1 },
+  h1: { fontSize: 24, lineHeight: 30, fontWeight: '700', letterSpacing: -0.6 },
   h2: { fontSize: 22, lineHeight: 30, fontWeight: '600', letterSpacing: -0.4 },
   h3: { fontSize: 18, lineHeight: 26, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  body: { fontSize: 15.5, lineHeight: 23, fontWeight: '400' },
   small: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
   label: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
   caption: { fontSize: 12, lineHeight: 18, fontWeight: '400' },
 };
-export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
+export const radius = { xs: 6, sm: 12, md: 18, lg: 22, xl: 28, pill: 999 };
+export const motion = { fast: 180, base: 280, slow: 440 };
 
 /** Respect the OS setting before enabling navigation motion. */
 export function useReducedMotion() {
@@ -71,7 +75,7 @@ export function Screen({ children, scroll = false, refreshControl }) {
   );
 }
 
-export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style }) {
+export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style, icon }) {
   const blocked = disabled || loading;
   return (
     <Pressable
@@ -91,6 +95,7 @@ export function Button({ children, onPress, variant = 'primary', disabled = fals
       ]}
     >
       {loading && <ActivityIndicator size="small" color={blocked ? theme.textDisabled : variant === 'primary' ? '#fff' : theme.brand} />}
+      {!loading && icon}
       <Text style={[styles.buttonText, variant !== 'primary' && styles.ghostText, variant === 'secondary' && { color: theme.textSecondary }, variant === 'danger' && styles.dangerText, blocked && { color: theme.textDisabled }]}>
         {children}
       </Text>
@@ -98,30 +103,29 @@ export function Button({ children, onPress, variant = 'primary', disabled = fals
   );
 }
 
-export function Field({ label, value, onChangeText, keyboardType, secureTextEntry, placeholder, error, autoCapitalize = 'none', ...rest }) {
+export function Field({ label, value, onChangeText, keyboardType, secureTextEntry, placeholder, error, hint, right, autoCapitalize = 'none', ...rest }) {
   const [focused, setFocused] = useState(false);
   const { onFocus, onBlur, style: inputStyle, ...inputProps } = rest;
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        placeholder={placeholder || label}
-        placeholderTextColor={theme.textDisabled}
-        accessibilityLabel={label}
-        onFocus={(event) => { setFocused(true); onFocus?.(event); }}
-        onBlur={(event) => { setFocused(false); onBlur?.(event); }}
-        style={[styles.input, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError, inputStyle]}
-        autoCapitalize={autoCapitalize}
-        {...inputProps}
-      />
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
+  return <View style={styles.field}>
+    {!!label && <Text style={styles.label}>{label}</Text>}
+    <View style={[styles.inputBox, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError]}>
+      <TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} secureTextEntry={secureTextEntry} placeholder={placeholder || label} placeholderTextColor={theme.textDisabled} accessibilityLabel={label}
+        onFocus={e=>{setFocused(true);onFocus?.(e)}} onBlur={e=>{setFocused(false);onBlur?.(e)}} style={[styles.input,inputStyle]} autoCapitalize={autoCapitalize} {...inputProps}/>
+      {right}
     </View>
-  );
+    {!!error && <Text style={styles.errorText}>{error}</Text>}
+    {!error && !!hint && <Text style={styles.hintText}>{hint}</Text>}
+  </View>;
 }
+
+export function PasswordField(props) {
+  const [visible,setVisible]=useState(false);
+  return <Field {...props} secureTextEntry={!visible} autoCapitalize="none" autoCorrect={false} right={<Pressable accessibilityRole="button" accessibilityLabel={visible?'Hide password':'Show password'} onPress={()=>setVisible(v=>!v)} style={styles.fieldAction}><Ionicons name={visible?'eye-off-outline':'eye-outline'} size={20} color={theme.muted}/></Pressable>}/>;
+}
+
+export function Card({children,style,padded=true}) { return <View style={[styles.card,padded&&styles.cardPadded,style]}>{children}</View>; }
+export function Divider({style}) { return <View style={[styles.divider,style]}/>; }
+export function Pill({children,tone='muted'}) { const p={ok:[theme.okWeak,theme.ok],warn:[theme.warnWeak,theme.warn],danger:[theme.dangerWeak,theme.danger],muted:[theme.surfaceMuted,theme.muted]}[tone]||[theme.surfaceMuted,theme.muted]; return <View style={[styles.pill,{backgroundColor:p[0]}]}><Text style={[styles.pillText,{color:p[1]}]}>{children}</Text></View>; }
 
 export function Stat({ label, value, hint, tone = 'default' }) {
   return (
@@ -177,21 +181,33 @@ export function SectionTitle({ children, action }) {
   );
 }
 
-/** One place to render the loading / failed / nothing-here states of a query. */
+/** Consistent loading / offline / timeout / server / empty states for every query. */
 export function QueryState({ query, empty, children }) {
-  if (query.isLoading) return <ActivityIndicator style={{ marginTop: 24 }} color={theme.brand} />;
+  if (query.isLoading) return <SkeletonScreen rows={4} />;
   if (query.isError) {
-    return (
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>{query.error?.response?.data?.message || 'Could not load this. Pull down to retry.'}</Text>
-        <Button variant="ghost" onPress={() => query.refetch()}>
-          Retry
-        </Button>
-      </View>
-    );
+    const kind = query.error?.uiKind;
+    const title = kind === 'network' ? 'You’re offline'
+      : kind === 'timeout' ? 'This is taking too long'
+      : kind === 'server' ? 'Server unavailable'
+      : kind === 'rate' ? 'Please wait a moment'
+      : 'Couldn’t load this';
+    const message = query.error?.uiMessage || query.error?.response?.data?.message || 'Something went wrong while loading this screen.';
+    return <StateView title={title} message={message} actionLabel="Try again" onAction={() => query.refetch()} tone="error" />;
   }
-  if (empty && !(query.data || []).length) return <View style={styles.emptyState}><Text style={styles.empty}>{empty}</Text></View>;
+  if (empty && !(query.data || []).length) return <StateView title="Nothing here yet" message={empty} />;
   return children;
+}
+
+export function StateView({ title, message, actionLabel, onAction, tone = 'neutral' }) {
+  const error = tone === 'error';
+  return (
+    <View style={[styles.stateView, error && styles.stateError]}>
+      <View style={[styles.stateIcon, error && { backgroundColor: theme.dangerWeak }]}><Text style={{ fontSize: 20 }}>{error ? '!' : '·'}</Text></View>
+      <Text style={styles.stateTitle}>{title}</Text>
+      {!!message && <Text style={styles.stateMessage}>{message}</Text>}
+      {!!actionLabel && <Button variant={error ? 'ghost' : 'secondary'} onPress={onAction}>{actionLabel}</Button>}
+    </View>
+  );
 }
 
 export const styles = StyleSheet.create({
@@ -206,7 +222,7 @@ export const styles = StyleSheet.create({
     minHeight: 48,
     flexDirection: 'row',
     gap: 8,
-    borderRadius: 10,
+    borderRadius: radius.md,
     backgroundColor: theme.brand,
     alignItems: 'center',
     justifyContent: 'center',
@@ -223,25 +239,23 @@ export const styles = StyleSheet.create({
   dangerText: { color: theme.danger },
   field: { gap: 6 },
   label: { ...typography.label, color: theme.textSecondary },
-  input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: theme.borderStrong,
-    borderRadius: 10,
-    backgroundColor: theme.surface,
-    paddingHorizontal: 12,
-    color: theme.text,
-    fontSize: 16,
-    paddingVertical: 12,
-  },
+  inputBox: { minHeight: 50, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: theme.borderStrong, borderRadius: radius.sm, backgroundColor: theme.surface },
+  input: { flex: 1, minHeight: 48, paddingHorizontal: 14, color: theme.text, fontSize: 16, paddingVertical: 12 },
+  fieldAction: { width: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   inputFocused: { borderColor: theme.primary, backgroundColor: theme.primarySubtle },
   inputDisabled: { backgroundColor: theme.surfaceMuted, color: theme.textDisabled },
   inputError: { borderColor: theme.danger },
   errorText: { color: theme.danger, fontSize: 12 },
+  hintText: { ...typography.caption, color: theme.muted },
+  card: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: radius.lg },
+  cardPadded: { padding: spacing.lg },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
+  pill: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill },
+  pillText: { ...typography.caption, fontWeight: '600' },
   stat: {
     flex: 1,
     minHeight: 108,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: theme.border,
     backgroundColor: theme.surface,
@@ -274,4 +288,9 @@ export const styles = StyleSheet.create({
   emptyState: { padding: 20, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
   notice: { backgroundColor: theme.dangerWeak, borderRadius: 12, padding: 14, gap: 10 },
   noticeText: { color: theme.danger },
+  stateView: { minHeight: 210, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.borderSubtle },
+  stateError: { backgroundColor: theme.dangerWeak, borderColor: theme.border },
+  stateIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surfaceMuted },
+  stateTitle: { ...typography.h3, color: theme.text, textAlign: 'center' },
+  stateMessage: { ...typography.small, color: theme.muted, textAlign: 'center', maxWidth: 320 },
 });

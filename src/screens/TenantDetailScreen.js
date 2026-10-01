@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, QueryState, Screen, SectionTitle, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function TenantDetailScreen({ navigation, route }) {
+  const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { tenantId } = route.params;
@@ -42,9 +44,9 @@ export default function TenantDetailScreen({ navigation, route }) {
       setEdits({});
       await queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      Alert.alert('Saved', 'Tenant details updated.');
+      toast.success('Tenant details updated.');
     } catch (error) {
-      Alert.alert('Not saved', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setBusy('');
     }
@@ -62,10 +64,10 @@ export default function TenantDetailScreen({ navigation, route }) {
       setBusy('checkout');
       await api.post(`/tenants/${tenantId}/checkout`, { vacatedDate: new Date().toISOString() });
       queryClient.invalidateQueries();
-      Alert.alert('Checked out', 'The bed is vacant now.');
+      toast.success('Tenant checked out. The bed is vacant now.');
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Not checked out', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setBusy('');
     }

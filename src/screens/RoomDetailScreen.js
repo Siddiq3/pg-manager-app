@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function RoomDetailScreen({ navigation, route }) {
+  const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { roomId, propertyId } = route.params;
@@ -29,13 +31,13 @@ export default function RoomDetailScreen({ navigation, route }) {
       setBedLabel('');
       refreshAll();
     },
-    onError: (error) => Alert.alert('Bed not added', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const removeBed = useMutation({
     mutationFn: (bedId) => api.delete(`/beds/${bedId}`),
     onSuccess: refreshAll,
-    onError: (error) => Alert.alert('Bed not deleted', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const deleteRoom = useMutation({
@@ -44,7 +46,7 @@ export default function RoomDetailScreen({ navigation, route }) {
       refreshAll();
       navigation.goBack();
     },
-    onError: (error) => Alert.alert('Room not deleted', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const beds = room.data?.beds || [];

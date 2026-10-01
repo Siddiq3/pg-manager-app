@@ -1,0 +1,7 @@
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Screen, theme, typography, radius } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
+export default function ProfileScreen(){const {user}=useAuth();return <Screen scroll><Text style={styles.title}>Your profile</Text><Text style={styles.sub}>Account details used to identify your PG Manager account.</Text><View style={styles.card}><Item label="Name" value={user?.name}/><Item label="Email" value={user?.email}/><Item label="Mobile number" value={user?.phone} last/></View><Text style={styles.note}>Profile editing is not exposed by the current PG backend, so these details are read-only rather than adding unsupported business behavior.</Text></Screen>}
+function Item({label,value,last}){return <View style={[styles.item,!last&&styles.border]}><Text style={styles.label}>{label}</Text><Text style={styles.value}>{value||'—'}</Text></View>}
+const styles=StyleSheet.create({title:{...typography.h1,color:theme.text},sub:{...typography.body,color:theme.muted},card:{backgroundColor:theme.surface,borderRadius:radius.lg,borderWidth:1,borderColor:theme.border,overflow:'hidden'},item:{padding:16,gap:4},border:{borderBottomWidth:1,borderBottomColor:theme.border},label:{...typography.caption,color:theme.muted},value:{...typography.body,color:theme.text,fontWeight:'600'},note:{...typography.caption,color:theme.muted}});

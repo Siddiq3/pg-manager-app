@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Alert, Linking, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, QueryState, Row, Screen, typography, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function RentScreen({ navigation, route }) {
+  const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { propertyId } = route.params;
@@ -29,8 +31,9 @@ export default function RentScreen({ navigation, route }) {
       });
       queryClient.invalidateQueries({ queryKey: ['rentCycles', propertyId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Payment recorded.');
     } catch (error) {
-      Alert.alert('Payment not recorded', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setPayingId('');
     }

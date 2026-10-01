@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Field, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../lib/format';
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function AddTenantScreen({ navigation, route }) {
+  const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { propertyId } = route.params;
@@ -68,7 +70,7 @@ export default function AddTenantScreen({ navigation, route }) {
       queryClient.invalidateQueries();
       navigation.popToTop();
     } catch (error) {
-      Alert.alert('Tenant not added', errorMessage(error));
+      toast.error(errorMessage(error));
     } finally {
       setSaving(false);
     }

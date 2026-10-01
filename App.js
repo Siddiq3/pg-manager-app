@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/components/ui';
+import { ToastProvider } from './src/components/Toast';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const navigationTheme = {
   ...DefaultTheme,
@@ -26,12 +28,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <AuthProvider>
           <NavigationContainer theme={navigationTheme}>
             <StatusBar style="dark" />
             <AppNavigator />
           </NavigationContainer>
-        </AuthProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </ErrorBoundary>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
