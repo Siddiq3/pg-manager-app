@@ -31,13 +31,13 @@ export default function RoomDetailScreen({ navigation, route }) {
       setBedLabel('');
       refreshAll();
     },
-    onError: (error) => Alert.alert('Bed not added', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const removeBed = useMutation({
     mutationFn: (bedId) => api.delete(`/beds/${bedId}`),
     onSuccess: refreshAll,
-    onError: (error) => Alert.alert('Bed not deleted', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const deleteRoom = useMutation({
@@ -46,7 +46,7 @@ export default function RoomDetailScreen({ navigation, route }) {
       refreshAll();
       navigation.goBack();
     },
-    onError: (error) => Alert.alert('Room not deleted', errorMessage(error)),
+    onError: (error) => toast.error(errorMessage(error)),
   });
 
   const beds = room.data?.beds || [];
