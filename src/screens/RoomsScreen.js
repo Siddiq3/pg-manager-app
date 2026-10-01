@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
+import { Sheet } from '../components/Sheet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
@@ -13,6 +14,7 @@ export default function RoomsScreen({ navigation, route }) {
   const { propertyId } = route.params;
   const [form, setForm] = useState({ roomNumber: '', type: '', monthlyRent: '' });
   const [errors, setErrors] = useState({});
+  const [adding, setAdding] = useState(false);
 
   const rooms = useQuery({
     queryKey: ['rooms', propertyId],
@@ -31,6 +33,7 @@ export default function RoomsScreen({ navigation, route }) {
       queryClient.invalidateQueries({ queryKey: ['rooms', propertyId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Room added.');
+      setAdding(false);
     },
     onError: (error) => toast.error(errorMessage(error)),
   });
@@ -76,13 +79,7 @@ export default function RoomsScreen({ navigation, route }) {
     >
       <Text style={{ ...typography.h2, color: theme.text }}>Rooms</Text>
 
-      <SectionTitle>Add a room</SectionTitle>
-      <Field label="Room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
-      <Field label="Type (optional)" value={form.type} onChangeText={set('type')} placeholder="Double sharing" autoCapitalize="sentences" />
-      <Field label="Monthly rent (optional)" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
-      <Button onPress={submit} loading={addRoom.isPending}>Add room</Button>
-
-      <SectionTitle>{`${(rooms.data || []).length} rooms`}</SectionTitle>
+      <SectionTitle action={<Button variant="tertiary" onPress={() => setAdding(true)}>+ Add room</Button>}>{`${(rooms.data || []).length} rooms`}</SectionTitle>
       <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);
@@ -105,6 +102,12 @@ export default function RoomsScreen({ navigation, route }) {
           <Text style={{ color: theme.muted, fontSize: 12 }}>Open a room to add or remove its beds.</Text>
         </View>
       )}
+      <Sheet visible={adding} onClose={() => setAdding(false)} title="Add a room">
+        <Field label="Room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
+        <Field label="Type (optional)" value={form.type} onChangeText={set('type')} placeholder="Double sharing" autoCapitalize="sentences" />
+        <Field label="Monthly rent (optional)" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
+        <Button onPress={submit} loading={addRoom.isPending}>Add room</Button>
+      </Sheet>
     </Screen>
   );
 }
