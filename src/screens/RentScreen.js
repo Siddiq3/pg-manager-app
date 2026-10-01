@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Linking, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, QueryState, Row, Screen, theme } from '../components/ui';
+import { Button, QueryState, Row, Screen, typography, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
@@ -54,7 +54,7 @@ export default function RentScreen({ navigation, route }) {
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={cycles.isRefetching} onRefresh={cycles.refetch} tintColor={theme.brand} />}>
-      <Text style={{ fontSize: 24, fontWeight: '900', color: theme.text }}>Rent</Text>
+      <Text style={{ ...typography.h2, color: theme.text }}>Rent</Text>
       <QueryState query={cycles} empty="No rent cycles yet. They start when you add a tenant.">
         {(cycles.data || []).map((cycle) => {
           const phone = phoneOf(cycle);

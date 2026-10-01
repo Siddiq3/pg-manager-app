@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
+import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
@@ -71,7 +71,7 @@ export default function RoomsScreen({ navigation, route }) {
         />
       }
     >
-      <Text style={{ fontSize: 24, fontWeight: '900', color: theme.text }}>Rooms</Text>
+      <Text style={{ ...typography.h2, color: theme.text }}>Rooms</Text>
 
       <SectionTitle>Add a room</SectionTitle>
       <Field label="Room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />

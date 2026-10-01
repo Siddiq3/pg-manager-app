@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, theme } from '../components/ui';
+import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
@@ -61,7 +61,7 @@ export default function DashboardScreen({ navigation }) {
     >
       <View>
         <Text style={{ color: theme.muted }}>Welcome, {user?.name}</Text>
-        <Text style={{ fontSize: 26, fontWeight: '900', color: theme.text }}>
+        <Text style={{ ...typography.h1, color: theme.text }}>
           {dashboard.data?.property?.name || 'Your PG'}
         </Text>
       </View>
@@ -123,7 +123,7 @@ export default function DashboardScreen({ navigation }) {
         )}
       </QueryState>
 
-      <Button variant="ghost" onPress={logout}>Log out</Button>
+      <Button variant="tertiary" onPress={logout}>Log out</Button>
     </Screen>
   );
 }

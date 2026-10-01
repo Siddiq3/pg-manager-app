@@ -1,10 +1,16 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import { theme } from './src/components/ui';
+
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, primary: theme.primary, background: theme.background, card: theme.surface, text: theme.textPrimary, border: theme.border, notification: theme.error },
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +27,7 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <NavigationContainer>
+          <NavigationContainer theme={navigationTheme}>
             <StatusBar style="dark" />
             <AppNavigator />
           </NavigationContainer>

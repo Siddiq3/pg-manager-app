@@ -76,6 +76,7 @@ export default function AddTenantScreen({ navigation, route }) {
 
   return (
     <Screen scroll>
+      <SectionTitle>Tenant details</SectionTitle>
       <Field label="Name" value={form.name} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
       <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
       <Field label="Monthly rent" value={form.rentAmount} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />

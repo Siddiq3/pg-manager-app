@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
-import { Button, Field, Screen, theme } from '../components/ui';
+import { Button, Field, Screen, Segmented, typography, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
 const emptyForm = {
@@ -115,17 +115,11 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <Screen scroll>
-        <Text style={{ fontSize: 34, fontWeight: '900', color: theme.text }}>PG Manager</Text>
+        <Text style={{ ...typography.display, color: theme.text }}>PG Manager</Text>
         <Text style={{ color: theme.muted, marginBottom: 12 }}>Run your PG from the phone in your hand.</Text>
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Button variant={mode === 'login' ? 'primary' : 'ghost'} onPress={() => switchMode('login')}>
-            Login
-          </Button>
-          <Button variant={mode === 'register' ? 'primary' : 'ghost'} onPress={() => switchMode('register')}>
-            Register
-          </Button>
-        </View>
+        <Segmented label="Account access" value={mode} onChange={switchMode}
+          options={[{ value: 'login', label: 'Sign in' }, { value: 'register', label: 'Create account' }]} />
 
         {mode === 'register' && (
           <>
@@ -147,20 +141,14 @@ export default function LoginScreen() {
 
         {mode === 'login' && (
           <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Button variant={loginMethod === 'password' ? 'primary' : 'ghost'} onPress={() => setLoginMethod('password')}>
-                Password
-              </Button>
-              <Button variant={loginMethod === 'otp' ? 'primary' : 'ghost'} onPress={() => setLoginMethod('otp')}>
-                Email OTP
-              </Button>
-            </View>
+            <Segmented label="Sign-in method" value={loginMethod} onChange={setLoginMethod}
+              options={[{ value: 'password', label: 'Password' }, { value: 'otp', label: 'Email OTP' }]} />
 
             {loginMethod === 'password' ? (
               <>
                 <Field label="Email or mobile number" value={form.identifier} onChangeText={set('identifier')} />
                 <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry />
-                <Button variant="ghost" onPress={() => switchMode('forgot')}>
+                <Button variant="tertiary" onPress={() => switchMode('forgot')}>
                   Forgot password?
                 </Button>
               </>
@@ -190,13 +178,13 @@ export default function LoginScreen() {
               onChangeText={set('confirmPassword')}
               secureTextEntry
             />
-            <Button variant="ghost" onPress={() => switchMode('login')}>
+            <Button variant="tertiary" onPress={() => switchMode('login')}>
               Back to login
             </Button>
           </>
         )}
 
-        <Button onPress={submit} disabled={busy}>
+        <Button onPress={submit} loading={busy}>
           {busy ? 'Please wait...' : submitLabel}
         </Button>
       </Screen>

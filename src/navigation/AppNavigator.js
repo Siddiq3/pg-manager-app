@@ -10,22 +10,25 @@ import RoomDetailScreen from '../screens/RoomDetailScreen';
 import RoomsScreen from '../screens/RoomsScreen';
 import TenantDetailScreen from '../screens/TenantDetailScreen';
 
+import { theme, useReducedMotion } from '../components/ui';
+
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  const reducedMotion = useReducedMotion();
   const { accessToken, restoring } = useAuth();
 
   // Avoid flashing the login screen while a stored session is being restored.
   if (restoring) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f7f8fa' }}>
-        <ActivityIndicator size="large" color="#2f6f4f" />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg }}>
+        <ActivityIndicator size="large" color={theme.brand} />
       </View>
     );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShadowVisible: false, headerTitleStyle: { color: '#17211b' } }}>
+    <Stack.Navigator screenOptions={{ animation: reducedMotion ? 'none' : 'slide_from_right', headerShadowVisible: false, headerStyle: { backgroundColor: theme.bg }, headerTintColor: theme.brand, headerTitleStyle: { color: theme.text, fontSize: 18, fontWeight: '600' }, contentStyle: { backgroundColor: theme.bg } }}>
       {!accessToken ? (
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       ) : (
