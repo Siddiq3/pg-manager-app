@@ -20,7 +20,8 @@ export default function AccountScreen({ navigation }) {
       <Item icon="person-outline" label="Profile" value={user?.phone} onPress={() => navigation.navigate('Profile')} />
       {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value="Recommended" onPress={() => navigation.navigate('EmailVerification')} />}
       {activePropertyId && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings',{propertyId:activePropertyId})} />}
-      <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
+      <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} />
+      <Item icon="trash-outline" label="Delete account" onPress={() => navigation.navigate('DeleteAccount')} last />
     </Group>
     <Group title="SUPPORT">
       <Item icon="help-circle-outline" label="Help centre" onPress={() => navigation.navigate('Help')} />
