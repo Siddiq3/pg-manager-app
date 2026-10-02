@@ -1,48 +1,30 @@
-# PG Manager visual system
+# PG Manager — production mobile UI
 
-PG Manager uses a restrained teal identity for property, room, tenant, and rent management. Slate typography and neutral surfaces keep dense operational information readable. Both applications retain their existing light-only theme and product workflows.
+Applies the latest StitchBook production-app redesign principles to the PG app: compact operational screens, practical hierarchy, consistent shared components and clear states. Existing APIs, payloads, validation, permissions, billing and authentication remain in place.
 
-## Semantic palette
+## Visual system
 
-| Role | Color | Usage |
-| --- | --- | --- |
-| Primary / pressed / subtle | `#176b70` / `#105257` / `#e8f3f3` | Main actions, active selection, focus |
-| Secondary | `#465c72` | Supporting controls and icons |
-| Background | `#f5f7f9` | Screen canvas |
-| Surface / elevated / muted | `#ffffff` / `#ffffff` / `#eef2f5` | Content, raised forms, quiet grouping |
-| Text primary / secondary / muted / disabled | `#1b2a36` / `#526370` / `#5c6d7a` / `#7f8d98` | Information hierarchy |
-| Border / subtle / strong | `#dce4e9` / `#eaf0f3` / `#8294a1` | Groups, dividers, input boundaries |
-| Success / subtle | `#26704e` / `#edf6f0` | Paid, active, vacant |
-| Warning / subtle | `#8a5b16` / `#fbf3e5` | Pending, partial, upcoming vacancy |
-| Error / subtle | `#ad3e3e` / `#fbeeee` | Validation errors, overdue, destructive actions |
-| Info / subtle | `#365f91` / `#edf3fb` | Occupied and informational statuses |
+| Role | Token |
+| --- | --- |
+| Primary / pressed / subtle | `#146650` / `#0d4b3a` / `#e9f4ef` |
+| Canvas / surface / muted surface | `#f5f7f6` / `#ffffff` / `#edf1ef` |
+| Main / secondary / muted text | `#182923` / `#43544e` / `#61716a` |
+| Border / strong border | `#dde5e1` / `#bdcbc4` |
+| Success / warning / error / info | `#15803d` / `#b45309` / `#be123c` / `#1d4ed8` |
 
-Checked normal text combinations exceed 4.5:1: primary on white 6.23, primary text on white 14.67, secondary on white 6.22, muted on page background 4.98, success/warning/error/info on their subtle surfaces 5.25–5.87. This is a palette check, not a claim of a complete accessibility audit. Status labels always remain visible; meaning does not depend on color alone.
+System typography avoids added font dependencies. Operational page headings use 24 px, body 15 px, labels 13 px; numbers use tabular figures. Spacing uses 4/8/12/16/24/32/48 px. Radii use 4/8/12/16/20 px. Buttons retain 48 px minimum height, inputs 50 px, and interactive rows 68 px. Controls grow with text.
 
-## Typography and layout
+## Layout and interaction
 
-Use system fonts for familiar rendering, language coverage, and no font-loading dependency. Use regular body text, medium labels, and semibold headings. Use a 4/8/12/16/24/32 spacing scale and 8–12 pixel control/group radii. Display type belongs to branding; operational headings are smaller. Use tabular numerals for financial and occupancy metrics.
+- Shared Screen centers content to a maximum 720 px on tablets, retains safe areas, avoids duplicate native header/tab insets, and supports keyboard avoidance and scrolling.
+- Dashboard shows four compact operational metrics, a primary tenant action and contextual room/rent links. Dashboard requests have their own loading/error presentation.
+- Rooms use one header action and compact occupancy rows. Bed-query loading/errors are visible before reporting vacancy.
+- Rent groups each tenant, cycle status and payment/contact actions on one surface. Payment sheets identify the tenant, month and outstanding amount.
+- Tenant and room forms group personal details, rent/deposit, and dates/documents into readable sections. Every field, mutation and confirmation is retained. Bed selection includes a visible selected state.
+- Auth inherits the same controls and spacing; welcome and entitlement/support screens scroll on short displays. Sample welcome content does not imply real account metrics.
+- Settings, profile, security, help, support, legal and account deletion consume the same tokens. User copy avoids backend or platform implementation explanations.
+- Native stack and sheet animations respect reduced motion. Status text retains meaning independent of color and presents API enums in readable sentence case.
 
-Keep meaningful groups, such as rent tables and room management, on a single surface. Avoid nested floating cards. Separate rows with whitespace and subtle dividers. Use color for selected actions and semantic status, not decorative saturation.
+## Validation
 
-## Controls and feedback
-
-Primary actions are teal, secondary actions use neutral borders, tertiary actions use minimal emphasis, and destructive actions use subdued red. Inputs have persistent labels, visible focus, and inline error feedback. Buttons retain disabled/loading behavior and touch targets. Keep existing confirmation dialogs and mutation feedback.
-
-Motion is short and purposeful. Respect reduced-motion preferences. Avoid scaling operational metric cards on hover. Loading remains visible independently of animation.
-
-## Product boundaries
-
-Authentication, authorization, API clients, request payloads, validation, calculations, query invalidation, and route destinations are preserved. No dark-mode feature, new navigation destination, settings page, or subscription behavior was added. The current repositories do not contain a dedicated settings screen or custom modal/bottom-sheet component; existing native confirmation alerts remain native.
-
-## Validation and remaining review
-
-The web production build and Android/iOS Metro exports pass. Shared web controls were rendered to verify loading/disabled semantics, field-error associations, semantic statuses, and empty-table behavior. Source comparison confirmed that all ten screen components retain the same non-render business logic. API and authentication modules were not changed.
-
-A rendered screenshot comparison remains pending: the cloud browser rejected access to the workspace's localhost preview, and a local Chromium installation was unavailable. Builds do not substitute for device or browser visual review. Live API workflows were not exercised because the backend was unavailable in this session.
-
-Before merging, compare the actual login, registration/password reset, dashboard, room list/details, create/edit form, empty/error state, and confirmation alert at desktop/phone widths or on Android/iOS. Check keyboard focus, larger text settings, long names and currency amounts, reduced motion, and successful/error responses using a development backend.
-
-## Implementation
-
-Semantic tokens, typography, spacing, inputs, buttons, statuses, segmented selection, and reduced-motion preferences live in `src/components/ui.js`. Screen headings consume the same scale; navigation chrome consumes the same colors. Existing component aliases remain compatible. React Native system alerts are intentionally preserved.
+See the pull request for checks actually run. Source parsing/build checks do not substitute for native visual QA or authenticated backend testing. Review Android/iOS phones and tablets with a keyboard, larger text, long tenant names and large rupee amounts before release.

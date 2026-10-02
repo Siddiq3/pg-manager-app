@@ -25,6 +25,6 @@ export function SkeletonScreen({ rows = 4 }) {
 
 const styles = StyleSheet.create({
   screen: { gap: 12, paddingVertical: 4 },
-  row: { minHeight: 76, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle },
+  row: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle },
   body: { flex: 1, gap: 10 },
 });

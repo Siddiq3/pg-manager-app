@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SkeletonScreen } from './Skeleton';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,15 +37,33 @@ export function Segmented({ options, value, onChange, label }) {
 }
 
 /** Screen chrome: safe-area insets (notch/home bar) plus the standard padding. */
-export function Screen({ children, scroll = false, refreshControl }) {
-  if (!scroll) return <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>{children}</SafeAreaView>;
+export function Screen({ children, scroll = false, refreshControl, contentStyle }) {
+  const headerHeight = useHeaderHeight();
+  const tabBarHeight = useContext(BottomTabBarHeightContext);
+  const edges = [...(headerHeight ? [] : ['top']), 'left', 'right', ...(tabBarHeight ? [] : ['bottom'])];
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.screenPlain}>
-      <ScrollView contentContainerStyle={styles.scrollBody} refreshControl={refreshControl} keyboardShouldPersistTaps="handled">
-        {children}
-      </ScrollView>
+    <SafeAreaView edges={edges} style={styles.screenPlain}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight}>
+        {scroll ? <ScrollView contentContainerStyle={[styles.scrollBody, contentStyle]} refreshControl={refreshControl}
+          keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>{children}</ScrollView>
+          : <View style={[styles.screen, contentStyle]}>{children}</View>}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+export function PageHeader({ title, subtitle, action }) {
+  return <View style={styles.pageHeader}><View style={{ flex: 1, minWidth: 0 }}>
+    <Text accessibilityRole="header" style={styles.pageTitle}>{title}</Text>
+    {!!subtitle && <Text style={styles.pageSubtitle}>{subtitle}</Text>}
+  </View>{action}</View>;
+}
+
+export function FormSection({ title, description, children }) {
+  return <View style={styles.formSection}><View style={{ gap: 4 }}>
+    <Text accessibilityRole="header" style={styles.formTitle}>{title}</Text>
+    {!!description && <Text style={styles.hintText}>{description}</Text>}
+  </View>{children}</View>;
 }
 
 export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style, icon }) {
@@ -121,17 +141,18 @@ export function Badge({ children }) {
   }[tone];
   return (
     <View style={[styles.badge, { backgroundColor: colors[0] }]}>
-      <Text style={[styles.badgeText, { color: colors[1] }]}>{children}</Text>
+      <Text style={[styles.badgeText, { color: colors[1] }]}>{String(children).replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase())}</Text>
     </View>
   );
 }
 
-export function Row({ title, subtitle, right, badge, onPress }) {
+export function Row({ title, subtitle, right, badge, onPress, selected = false, flat = false }) {
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityState={selected ? { selected: true } : undefined}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && onPress && styles.pressed]}
+      style={({ pressed }) => [styles.row, flat && { borderWidth: 0, padding: 0, backgroundColor: 'transparent', minHeight: 52 }, selected && { borderColor: theme.brand, backgroundColor: theme.brandWeak }, pressed && onPress && styles.pressed]}
     >
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.rowTitle}>{title}</Text>
@@ -173,7 +194,7 @@ export function StateView({ title, message, actionLabel, onAction, tone = 'neutr
   const error = tone === 'error';
   return (
     <View style={[styles.stateView, error && styles.stateError]}>
-      <View style={[styles.stateIcon, error && { backgroundColor: theme.dangerWeak }]}><Text style={{ fontSize: 20 }}>{error ? '!' : '·'}</Text></View>
+      <View style={[styles.stateIcon, error && { backgroundColor: theme.dangerWeak }]}><Ionicons name={error ? 'alert-circle-outline' : 'file-tray-outline'} size={22} color={error ? theme.danger : theme.brand} /></View>
       <Text style={styles.stateTitle}>{title}</Text>
       {!!message && <Text style={styles.stateMessage}>{message}</Text>}
       {!!actionLabel && <Button variant={error ? 'ghost' : 'secondary'} onPress={onAction}>{actionLabel}</Button>}
@@ -182,13 +203,18 @@ export function StateView({ title, message, actionLabel, onAction, tone = 'neutr
 }
 
 export const styles = StyleSheet.create({
+  pageHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+  pageTitle: { ...typography.h1, color: theme.text },
+  pageSubtitle: { ...typography.small, color: theme.muted, marginTop: 4 },
+  formSection: { gap: spacing.md, backgroundColor: theme.surface, padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.border },
+  formTitle: { ...typography.h3, color: theme.text },
   segmented: { flexDirection: 'row', padding: 4, gap: 4, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
   segment: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: 7 },
   segmentSelected: { backgroundColor: theme.surface },
   segmentText: { ...typography.small, color: theme.textSecondary, fontWeight: '600' },
-  screen: { flex: 1, backgroundColor: theme.bg, padding: 20, gap: 16 },
+  screen: { flex: 1, padding: spacing.lg, gap: spacing.lg, width: '100%', maxWidth: 720, alignSelf: 'center' },
   screenPlain: { flex: 1, backgroundColor: theme.bg },
-  scrollBody: { padding: 20, gap: 16, paddingBottom: 40 },
+  scrollBody: { flexGrow: 1, padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl, width: '100%', maxWidth: 720, alignSelf: 'center' },
   button: {
     minHeight: 48,
     flexDirection: 'row',
@@ -205,7 +231,7 @@ export const styles = StyleSheet.create({
   dangerButton: { backgroundColor: theme.dangerWeak },
   pressed: { opacity: 0.8 },
   disabledButton: { backgroundColor: theme.surfaceMuted, borderColor: theme.borderSubtle },
-  buttonText: { ...typography.small, color: '#fff', fontWeight: '600', textAlign: 'center' },
+  buttonText: { flexShrink: 1, paddingVertical: 10, ...typography.small, color: '#fff', fontWeight: '600', textAlign: 'center' },
   ghostText: { color: theme.brand },
   dangerText: { color: theme.danger },
   field: { gap: 6 },
@@ -225,24 +251,25 @@ export const styles = StyleSheet.create({
   pillText: { ...typography.caption, fontWeight: '600' },
   stat: {
     flex: 1,
-    minHeight: 108,
+    minWidth: 140,
+    minHeight: 94,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: theme.border,
     backgroundColor: theme.surface,
-    padding: 16,
+    padding: 14,
     gap: 6,
     justifyContent: 'center',
   },
   statLabel: { color: theme.muted, fontWeight: '600', fontSize: 12 },
-  statValue: { color: theme.text, fontSize: 26, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  statValue: { color: theme.text, fontSize: 24, fontWeight: '700', fontVariant: ['tabular-nums'] },
   statHint: { ...typography.caption, color: theme.muted },
   row: {
-    minHeight: 76,
+    minHeight: 68,
     backgroundColor: theme.surface,
     borderWidth: 1,
     borderColor: theme.border,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -250,16 +277,16 @@ export const styles = StyleSheet.create({
   },
   rowTitle: { ...typography.body, color: theme.text, fontWeight: '600' },
   rowSubtitle: { ...typography.small, marginTop: 4, color: theme.muted },
-  rowRight: { ...typography.small, color: theme.brand, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-  badge: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 6 },
+  rowRight: { ...typography.small, color: theme.brand, fontWeight: '600', flexShrink: 1, maxWidth: '40%', textAlign: 'right' },
+  badge: { flexShrink: 1, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 6 },
   badgeText: { fontSize: 12, lineHeight: 18, fontWeight: '600' },
-  sectionTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16 },
+  sectionTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 8 },
   sectionTitleText: { ...typography.h3, color: theme.text, flexShrink: 1 },
   empty: { ...typography.small, color: theme.muted, paddingVertical: 16 },
   emptyState: { padding: 20, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
   notice: { backgroundColor: theme.dangerWeak, borderRadius: 12, padding: 14, gap: 10 },
   noticeText: { color: theme.danger },
-  stateView: { minHeight: 210, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.borderSubtle },
+  stateView: { minHeight: 164, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.borderSubtle },
   stateError: { backgroundColor: theme.dangerWeak, borderColor: theme.border },
   stateIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surfaceMuted },
   stateTitle: { ...typography.h3, color: theme.text, textAlign: 'center' },

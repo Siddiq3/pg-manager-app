@@ -6,7 +6,7 @@ import { Button, Screen, theme, typography, spacing, radius } from '../component
 
 export default function BillingStatusErrorScreen({ navigation }) {
   const { entitlementError, refreshEntitlement, entitlementLoading, logout } = useAuth();
-  return <Screen><View style={s.wrap}>
+  return <Screen scroll><View style={s.wrap}>
     <View style={s.icon}><Ionicons name="cloud-offline-outline" size={28} color={theme.brand}/></View>
     <Text style={s.title}>Could not verify subscription</Text>
     <Text style={s.body}>{entitlementError || 'PG Manager could not verify your subscription with the server. Access stays locked until verification succeeds.'}</Text>

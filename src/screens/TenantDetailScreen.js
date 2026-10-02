@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Screen, SectionTitle, theme } from '../components/ui';
+import { Badge, Button, Field, FormSection, QueryState, Screen, SectionTitle, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -92,15 +92,21 @@ export default function TenantDetailScreen({ navigation, route }) {
           {data.rentAmount ? ` - ${money(data.rentAmount)}/month` : ''}
         </Text>
 
+        <FormSection title="Personal details">
         <Field label="Name" value={String(data.name || '')} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
         <Field label="Mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
+        </FormSection>
+        <FormSection title="Rent & deposit">
         <Field label="Monthly rent" value={String(data.rentAmount ?? '')} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
         <Field label="Deposit amount" value={String(data.depositAmount ?? '')} onChangeText={set('depositAmount')} keyboardType="numeric" />
+        <Button variant={data.depositPaid ? "secondary" : "tertiary"} onPress={()=>set("depositPaid")(!data.depositPaid)}>{data.depositPaid ? "Deposit paid" : "Mark deposit paid"}</Button>
+        <Button variant={data.depositRefunded ? "secondary" : "tertiary"} onPress={()=>set("depositRefunded")(!data.depositRefunded)}>{data.depositRefunded ? "Deposit refunded" : "Mark deposit refunded"}</Button>
+        </FormSection>
+        <FormSection title="Dates & documents" description="Use YYYY-MM-DD for dates.">
         <Field label="ID proof URL" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
         <Field label="Notice given date" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
         <Field label="Expected vacate date" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
-        <Button variant={data.depositPaid ? "secondary" : "tertiary"} onPress={()=>set("depositPaid")(!data.depositPaid)}>{data.depositPaid ? "Deposit paid" : "Mark deposit paid"}</Button>
-        <Button variant={data.depositRefunded ? "secondary" : "tertiary"} onPress={()=>set("depositRefunded")(!data.depositRefunded)}>{data.depositRefunded ? "Deposit refunded" : "Mark deposit refunded"}</Button>
+        </FormSection>
 
         <Button onPress={save} loading={busy === 'save'}>Save changes</Button>
         {data.status !== 'VACATED' && (

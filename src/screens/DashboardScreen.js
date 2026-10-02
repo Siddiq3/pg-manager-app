@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, RefreshControl, Text, View } from 'react-native';
+import { Pressable, RefreshControl, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
+import { Button, Field, FormSection, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -66,40 +66,40 @@ export default function DashboardScreen({ navigation }) {
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...typography.caption, color: theme.muted }}>WELCOME BACK</Text>
-          <Text style={{ ...typography.display, fontSize: 29, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
+          <Text style={{ ...typography.caption, color: theme.muted }}>YOUR PG TODAY</Text>
+          <Text style={{ ...typography.h1, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
           <Text style={{ ...typography.small, color: theme.muted }}>{user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'PG Manager'}</Text>
         </View>
-        <Pressable onPress={() => navigation.navigate('Account')} style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open account" onPress={() => navigation.navigate('Account')} style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="person-outline" size={20} color={theme.textSecondary} />
         </Pressable>
       </View>
 
       <QueryState query={properties}>
         {!propertyId ? (
-          <>
+          <FormSection title="Set up your PG">
             <Text style={{ color: theme.muted }}>Create a property to start tracking occupancy and rent.</Text>
             <Field label="Property name" value={newProperty} onChangeText={setNewProperty} placeholder="Sai Residency PG" autoCapitalize="words" />
             <Button onPress={addProperty} loading={creating}>Create property</Button>
-          </>
+          </FormSection>
         ) : (
-          <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+          <QueryState query={dashboard}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               <Stat label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} />
               <Stat label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
             </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               <Stat label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
               <Stat label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               <Button style={{ flex: 1 }} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
-              <Button style={{ flex: 1 }} variant="ghost" onPress={() => navigation.navigate('Rent', { propertyId })}>Rent</Button>
+              <Button style={{ flex: 1 }} variant="secondary" onPress={() => navigation.navigate('Rent', { propertyId })}>Rent</Button>
             </View>
-            <Button variant="ghost" onPress={() => navigation.navigate('Rooms', { propertyId })}>Rooms and vacancy</Button>
 
-            <SectionTitle>Vacant beds</SectionTitle>
+
+            <SectionTitle action={<Button variant="tertiary" onPress={() => navigation.navigate('Rooms', { propertyId })}>View rooms</Button>}>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
               <Text style={styles.empty}>Every bed is occupied.</Text>
             ) : (
@@ -114,7 +114,7 @@ export default function DashboardScreen({ navigation }) {
               ))
             )}
 
-            <SectionTitle>Rent pending</SectionTitle>
+            <SectionTitle action={<Button variant="tertiary" onPress={() => navigation.navigate('Rent', { propertyId })}>View rent</Button>}>Rent pending</SectionTitle>
             {pending.length === 0 ? (
               <Text style={styles.empty}>All rent collected.</Text>
             ) : (
@@ -128,7 +128,7 @@ export default function DashboardScreen({ navigation }) {
                 />
               ))
             )}
-          </>
+          </QueryState>
         )}
       </QueryState>
 
