@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
+import { Button, Field, FormSection, PageHeader, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../lib/format';
@@ -83,25 +83,32 @@ export default function AddTenantScreen({ navigation, route }) {
 
   return (
     <Screen scroll>
-      <SectionTitle>Tenant details</SectionTitle>
+      <PageHeader title="Add tenant" subtitle="Enter their details and choose a vacant bed." />
+      <FormSection title="Personal details">
       <Field label="Name" value={form.name} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
       <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
+      </FormSection>
+      <FormSection title="Rent & deposit">
       <Field label="Monthly rent" value={form.rentAmount} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
       <Field label="Deposit amount" value={form.depositAmount} onChangeText={set('depositAmount')} keyboardType="numeric" error={errors.depositAmount} />
+      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit marked paid' : 'Mark deposit as paid'}</Button>
+      </FormSection>
+      <FormSection title="Dates & documents" description="Dates use YYYY-MM-DD. Optional details can be added later.">
       <Field label="Joined date" value={form.joinedDate} onChangeText={set('joinedDate')} placeholder="YYYY-MM-DD" error={errors.joinedDate} />
 
       <Field label="ID proof URL (optional)" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" placeholder="https://..." />
       <Field label="Notice given date (optional)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
       <Field label="Expected vacate date (optional)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
-      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit marked paid' : 'Mark deposit as paid'}</Button>
+      </FormSection>
 
-      <SectionTitle>Pick a vacant bed</SectionTitle>
+      <SectionTitle>Choose a vacant bed</SectionTitle>
       <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">
         {(beds.data || []).map((bed) => (
           <Row
             key={bed._id}
             title={`Bed ${bed.bedLabel}`}
             subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
+            selected={selectedBed?._id === bed._id}
             right={selectedBed?._id === bed._id ? 'Selected' : 'Pick'}
             onPress={() => setSelectedBed(bed)}
           />

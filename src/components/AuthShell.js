@@ -1,10 +1,10 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen, theme, typography } from './ui';
 
 export function AuthShell({ eyebrow = 'PG MANAGER', title, subtitle, children, footer }) {
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+    <View style={styles.flex}>
       <Screen scroll>
         <View style={styles.brandRow}>
           <View style={styles.mark}><Text style={styles.markText}>PG</Text></View>
@@ -17,7 +17,7 @@ export function AuthShell({ eyebrow = 'PG MANAGER', title, subtitle, children, f
         <View style={styles.form}>{children}</View>
         {!!footer && <View style={styles.footer}>{footer}</View>}
       </Screen>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -49,9 +49,9 @@ const styles = StyleSheet.create({
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   mark: { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.brand, alignItems: 'center', justifyContent: 'center' },
   markText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: .4 },
-  eyebrow: { ...typography.label, color: theme.brand, letterSpacing: 1.2 },
-  heading: { gap: 8, marginTop: 28, marginBottom: 8 },
-  title: { fontSize: 34, lineHeight: 41, fontWeight: '700', letterSpacing: -1.1, color: theme.text },
+  eyebrow: { ...typography.label, color: theme.brand, letterSpacing: .8 },
+  heading: { gap: 8, marginTop: 20, marginBottom: 8 },
+  title: { fontSize: 30, lineHeight: 38, fontWeight: '700', letterSpacing: -1.1, color: theme.text },
   subtitle: { ...typography.body, color: theme.muted, maxWidth: 520 },
   form: { gap: 16 },
   footer: { alignItems: 'center', marginTop: 8, paddingBottom: 8 },

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Linking, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, QueryState, Row, Screen, Segmented, typography, theme } from '../components/ui';
+import { Button, Card, Field, PageHeader, QueryState, Stat, Row, Screen, Segmented, typography, theme } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
@@ -42,40 +42,45 @@ export default function RentScreen({ navigation, route }) {
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={cycles.isRefetching} onRefresh={cycles.refetch} tintColor={theme.brand} />}>
-      <Text style={{ ...typography.h2, color: theme.text }}>Rent</Text>
+      <PageHeader title="Rent" subtitle="Track dues and record collected payments." />
+      {!cycles.isLoading && !cycles.isError && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        <Stat label="Pending rent" value={money((cycles.data || []).reduce((sum, cycle) => sum + Math.max(0, cycle.amountDue - cycle.amountPaid), 0))} />
+        <Stat label="Collected" value={money((cycles.data || []).reduce((sum, cycle) => sum + cycle.amountPaid, 0))} />
+      </View>}
       <QueryState query={cycles} empty="No rent cycles yet. They start when you add a tenant.">
         {(cycles.data || []).map((cycle) => {
           const phone = phoneOf(cycle);
           return (
-            <View key={cycle._id} style={{ gap: 8 }}>
-              <Row
+            <Card key={cycle._id} style={{ gap: 10 }}>
+              <Row flat
                 title={cycle.tenantId?.name || 'Tenant'}
                 subtitle={`${cycle.month} - ${money(cycle.amountPaid)} of ${money(cycle.amountDue)}`}
                 badge={cycle.status}
                 onPress={() => cycle.tenantId?._id && navigation.navigate('TenantDetail', { tenantId: cycle.tenantId._id })}
               />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button style={{ flex: 1 }} variant="ghost" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                <Button style={{ flex: 1, minWidth: 86 }} variant="ghost" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')}>
                   Call
                 </Button>
                 <Button
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, minWidth: 86 }}
                   variant="ghost"
                   onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')}
                 >
                   WhatsApp
                 </Button>
                 {cycle.status !== 'PAID' && (
-                  <Button style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
-                    Mark paid
+                  <Button style={{ flex: 1, minWidth: 86 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
+                    Record payment
                   </Button>
                 )}
               </View>
-            </View>
+            </Card>
           );
         })}
       </QueryState>
       <Sheet visible={!!payment} onClose={()=>setPayment(null)} title="Record payment">
+        <Text style={{ ...typography.small, color: theme.muted }}>{payment?.tenantId?.name || 'Tenant'} · {payment?.month} · {money((payment?.amountDue || 0) - (payment?.amountPaid || 0))} pending</Text>
         <Field label="Amount" value={paymentForm.amount} onChangeText={v=>setPaymentForm(p=>({...p,amount:v}))} keyboardType="numeric"/>
         <Segmented label="Payment method" value={paymentForm.method} onChange={v=>setPaymentForm(p=>({...p,method:v}))} options={[{label:'UPI',value:'UPI'},{label:'Cash',value:'CASH'},{label:'Bank',value:'BANK_TRANSFER'}]}/>
         <Field label="Note (optional)" value={paymentForm.note} onChangeText={v=>setPaymentForm(p=>({...p,note:v}))} autoCapitalize="sentences"/>

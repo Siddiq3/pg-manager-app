@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Alert, RefreshControl, Text, View } from 'react-native';
+import { RefreshControl, Text, View } from 'react-native';
 import { Sheet } from '../components/Sheet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
+import { Button, Field, PageHeader, QueryState, Row, Screen, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -77,10 +77,10 @@ export default function RoomsScreen({ navigation, route }) {
         />
       }
     >
-      <Text style={{ ...typography.h2, color: theme.text }}>Rooms</Text>
-
-      <SectionTitle action={<Button variant="tertiary" onPress={() => setAdding(true)}>+ Add room</Button>}>{`${(rooms.data || []).length} rooms`}</SectionTitle>
-      <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
+      <PageHeader title="Rooms" subtitle="Manage rooms, beds and vacancy."
+        action={<Button variant="secondary" onPress={() => setAdding(true)}>Add room</Button>} />
+      {rooms.data && beds.data && !rooms.isError && !beds.isError && <Text style={{ ...typography.small, color: theme.muted }}>{rooms.data.length} rooms · {beds.data.filter(b => b.status === 'VACANT').length} vacant beds</Text>}
+      <QueryState query={beds}><QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);
           const occupied = roomBeds.filter((bed) => bed.status === 'OCCUPIED').length;
@@ -95,7 +95,7 @@ export default function RoomsScreen({ navigation, route }) {
             />
           );
         })}
-      </QueryState>
+      </QueryState></QueryState>
 
       {!!(rooms.data || []).length && (
         <View>
