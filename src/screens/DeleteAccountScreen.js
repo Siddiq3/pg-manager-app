@@ -9,11 +9,11 @@ export default function DeleteAccountScreen(){
   const {api,clearSession}=useAuth();
   const [password,setPassword]=useState(''); const [confirmation,setConfirmation]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
   async function deleteUntilComplete(){
-    for(let attempt=0;attempt<100;attempt+=1){
+    for(let attempt=0;attempt<30;attempt+=1){
       const response=await api.delete('/auth/account',{data:{currentPassword:password,confirmation},validateStatus:(status)=>status===200||status===202});
       if(response.status===200&&!response.data?.pending){await clearSession();return;}
       if(response.status!==202) throw new Error(response.data?.message||'Account deletion did not complete.');
-      await wait(150);
+      await wait(Math.min(750 + attempt * 250, 2500));
     }
     throw new Error('Account deletion is still in progress. Please tap Delete again to continue.');
   }
