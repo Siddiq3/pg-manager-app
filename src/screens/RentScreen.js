@@ -54,20 +54,22 @@ export default function RentScreen({ navigation, route }) {
                 badge={cycle.status}
                 onPress={() => cycle.tenantId?._id && navigation.navigate('TenantDetail', { tenantId: cycle.tenantId._id })}
               />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button style={{ flex: 1 }} variant="ghost" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')}>
-                  Call
-                </Button>
-                <Button
-                  style={{ flex: 1 }}
-                  variant="ghost"
-                  onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')}
-                >
-                  WhatsApp
-                </Button>
+              <View style={{ gap: 8 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Button style={{ flex: 1 }} variant="ghost" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')}>
+                    Call
+                  </Button>
+                  <Button
+                    style={{ flex: 1 }}
+                    variant="ghost"
+                    onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')}
+                  >
+                    WhatsApp
+                  </Button>
+                </View>
                 {cycle.status !== 'PAID' && (
-                  <Button style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
-                    Mark paid
+                  <Button loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
+                    Record payment
                   </Button>
                 )}
               </View>
