@@ -19,20 +19,30 @@ export function buildApi({ getAccessToken, setSession, getRefreshToken, clearSes
       else if (!error.response) { error.uiKind = 'network'; error.uiMessage = 'No connection. Check your network and try again.'; }
       else if (error.response.status >= 500) { error.uiKind = 'server'; error.uiMessage = 'The server is having trouble right now. Please try again.'; }
       else if (error.response.status === 429) { error.uiKind = 'rate'; error.uiMessage = 'Too many requests. Wait a moment and try again.'; }
-      if (error.response?.status !== 401 || error.config.__retried) throw error;
+      const config = error.config;
+      const isCredentialRequest = /\/auth\/(login|register|refresh|send-otp|forgot-password|reset-password)(?:[/?]|$)/.test(config?.url || '');
+      if (error.response?.status !== 401 || !config || config.__retried || isCredentialRequest) throw error;
 
       error.config.__retried = true;
+
+      // A late response may belong to the token another request already renewed.
+      const currentToken = getAccessToken();
+      if (currentToken && config.headers?.Authorization !== `Bearer ${currentToken}`) {
+        config.headers.Authorization = `Bearer ${currentToken}`;
+        return api.request(config);
+      }
 
       if (!refreshing) {
         refreshing = (async () => {
           try {
             const refreshToken = await getRefreshToken();
             if (!refreshToken) throw error;
-            const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+            const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken }, { timeout: 20_000 });
+            if (!data?.accessToken || !data?.refreshToken) throw new Error('Unable to renew your session. Please retry.');
             await setSession(data);
             return data;
           } catch (refreshError) {
-            await clearSession();
+            if (refreshError.response?.status === 401) await clearSession();
             throw refreshError;
           } finally {
             refreshing = null;
