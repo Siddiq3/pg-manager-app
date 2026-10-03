@@ -11,17 +11,20 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState('');
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
+  const [restoreError, setRestoreError] = useState('');
+  const restoreInFlight = useRef(null);
   const [activePropertyId, setActivePropertyId] = useState('');
   const [entitlement, setEntitlement] = useState(null);
   const [entitlementState, setEntitlementState] = useState('idle');
   const [entitlementError, setEntitlementError] = useState('');
 
   const setSession = useCallback(async (data) => {
+    // Persist the rotated credential before exposing the authenticated state.
+    if (data.refreshToken) await SecureStore.setItemAsync(REFRESH_KEY, data.refreshToken);
     const nextAccessToken = data.accessToken || '';
     accessTokenRef.current = nextAccessToken;
     setAccessToken(nextAccessToken);
     if (data.user) setUser(data.user);
-    if (data.refreshToken) await SecureStore.setItemAsync(REFRESH_KEY, data.refreshToken);
   }, []);
 
   function updateUser(nextUser) { setUser(nextUser); }
@@ -36,21 +39,30 @@ export function AuthProvider({ children }) {
     await SecureStore.deleteItemAsync(REFRESH_KEY);
   }, []);
 
-  useEffect(() => {
-    (async () => {
+  const restoreSession = useCallback(() => {
+    if (restoreInFlight.current) return restoreInFlight.current;
+    setRestoring(true);
+    setRestoreError('');
+    restoreInFlight.current = (async () => {
       try {
         const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
         if (refreshToken) {
-          const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken }, { timeout: 20_000 });
+          if (!data?.accessToken || !data?.refreshToken) throw new Error('Invalid session response');
           await setSession(data);
         }
-      } catch {
-        await clearSession().catch(() => null);
+      } catch (error) {
+        if (error.response?.status === 401) await clearSession().catch(() => null);
+        else setRestoreError('Unable to restore your session. Check your connection and try again.');
       } finally {
         setRestoring(false);
+        restoreInFlight.current = null;
       }
     })();
+    return restoreInFlight.current;
   }, [clearSession, setSession]);
+
+  useEffect(() => { restoreSession(); }, [restoreSession]);
 
   const api = useMemo(
     () => buildApi({
@@ -102,6 +114,6 @@ export function AuthProvider({ children }) {
     await clearSession();
   }
 
-  return <AuthContext.Provider value={{ accessToken, activePropertyId, setActivePropertyId, api, clearSession, entitlement, entitlementError, entitlementLoading: entitlementState === 'loading', entitlementState, refreshEntitlement, forgotPassword, login, loginWithOtp, logout, register, resetPassword, restoring, sendOtp, user, updateUser }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ accessToken, activePropertyId, setActivePropertyId, api, clearSession, entitlement, entitlementError, entitlementLoading: entitlementState === 'loading', entitlementState, refreshEntitlement, forgotPassword, login, loginWithOtp, logout, register, resetPassword, restoring, restoreError, restoreSession, sendOtp, user, updateUser }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { return useContext(AuthContext); }
