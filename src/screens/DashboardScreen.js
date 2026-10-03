@@ -84,16 +84,16 @@ export default function DashboardScreen({ navigation }) {
           </>
         ) : (
           <>
-            <View style={{ flexDirection: 'row', gap: 8 }}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Stat label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} />
               <Stat label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
             </View>
-            <View style={{ flexDirection: 'row', gap: 8 }}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Stat label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
               <Stat label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 8 }}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button style={{ flex: 1 }} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
               <Button style={{ flex: 1 }} variant="ghost" onPress={() => navigation.navigate('Rent', { propertyId })}>Rent</Button>
             </View>
