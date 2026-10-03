@@ -81,7 +81,7 @@ export default function RoomDetailScreen({ navigation, route }) {
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={room.isRefetching} onRefresh={room.refetch} tintColor={theme.brand} />}>
-      <Text style={{ ...typography.h2, color: theme.text }}>Room {room.data?.roomNumber || ''}</Text>
+      <Text style={{ ...typography.h1, color: theme.text }}>Room {room.data?.roomNumber || ''}</Text>
       {!!room.data && (
         <Text style={{ color: theme.muted }}>
           {[room.data.type, room.data.floor && `Floor ${room.data.floor}`, money(room.data.monthlyRent)].filter(Boolean).join(' · ')}
@@ -112,7 +112,7 @@ export default function RoomDetailScreen({ navigation, route }) {
           ))
         )}
 
-        <View style={{ gap: 10, marginTop: 6 }}>
+        <View style={{ gap: 8, marginTop: 4 }}>
           <Field label="New bed label" value={bedLabel} onChangeText={setBedLabel} placeholder="A" autoCapitalize="characters" />
           <Button onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
             Add bed

@@ -75,11 +75,11 @@ export default function LoginScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  switcher: { flexDirection: 'row', padding: 4, borderRadius: 12, backgroundColor: theme.surfaceMuted },
-  switch: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
+  switcher: { flexDirection: 'row', padding: 3, borderRadius: 10, backgroundColor: theme.surfaceMuted },
+  switch: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   switchActive: { backgroundColor: theme.surface },
   switchText: { ...typography.small, color: theme.muted, fontWeight: '600' },
   switchTextActive: { color: theme.brand },
   forgot: { alignItems: 'flex-end', marginTop: -4 },
-  submit: { minHeight: 54, borderRadius: 14, marginTop: 4 },
+  submit: { minHeight: 48, marginTop: 2 },
 });

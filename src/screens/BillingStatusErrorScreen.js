@@ -15,4 +15,4 @@ export default function BillingStatusErrorScreen({ navigation }) {
     <Button variant="secondary" onPress={logout}>Sign out</Button>
   </View></Screen>;
 }
-const s=StyleSheet.create({wrap:{flex:1,justifyContent:'center',gap:spacing.lg},icon:{width:58,height:58,borderRadius:radius.lg,backgroundColor:theme.brandWeak,alignItems:'center',justifyContent:'center'},title:{...typography.h1,color:theme.text},body:{...typography.body,color:theme.muted}});
+const s=StyleSheet.create({wrap:{flex:1,justifyContent:'center',gap:spacing.md},icon:{width:50,height:50,borderRadius:radius.md,backgroundColor:theme.brandWeak,alignItems:'center',justifyContent:'center'},title:{...typography.h1,color:theme.text},body:{...typography.body,color:theme.muted}});

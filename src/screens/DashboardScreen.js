@@ -76,11 +76,11 @@ export default function DashboardScreen({ navigation }) {
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...typography.caption, color: theme.muted }}>WELCOME BACK</Text>
-          <Text style={{ ...typography.display, fontSize: 29, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
-          <Text style={{ ...typography.small, color: theme.muted }}>{user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'PG Manager'}</Text>
+          <Text style={{ ...typography.caption, color: theme.muted }}>PG overview</Text>
+          <Text style={{ ...typography.h1, fontSize: 25, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
+          <Text style={{ ...typography.small, color: theme.muted }}>{user?.name ? `Hello, ${user.name.split(' ')[0]}` : 'PG Manager'}</Text>
         </View>
-        <Pressable onPress={() => navigation.navigate('Account')} style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable onPress={() => navigation.navigate('Account')} style={{ width: 42, height: 42, borderRadius: 10, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="person-outline" size={20} color={theme.textSecondary} />
         </Pressable>
       </View>
@@ -94,20 +94,20 @@ export default function DashboardScreen({ navigation }) {
           </>
         ) : (
           <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Stat label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} />
               <Stat label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
             </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Stat label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
               <Stat label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button style={{ flex: 1 }} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
               <Button style={{ flex: 1 }} variant="ghost" onPress={() => navigation.navigate('Rent', { propertyId })}>Rent</Button>
             </View>
-            <Button variant="ghost" onPress={() => navigation.navigate('Rooms', { propertyId })}>Rooms and vacancy</Button>
+            <Button variant="secondary" onPress={() => navigation.navigate('Rooms', { propertyId })}>View rooms and vacancy</Button>
 
             <SectionTitle>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (

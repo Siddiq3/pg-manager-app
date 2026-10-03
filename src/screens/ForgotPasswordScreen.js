@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen({ navigation, route }) {
         <OtpInput value={form.otp} onChangeText={set('otp')} />
         <PasswordField label="New password" value={form.newPassword} onChangeText={set('newPassword')} textContentType="newPassword" />
         <PasswordField label="Confirm new password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
-        <Button onPress={reset} loading={busy} style={{ minHeight: 54, borderRadius: 14 }}>Update password</Button>
+        <Button onPress={reset} loading={busy} style={{ minHeight: 48 }}>Update password</Button>
       </>}
     </AuthShell>
   );

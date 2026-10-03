@@ -1,7 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Screen, theme, typography } from '../components/ui';
 import { AuthLink } from '../components/AuthShell';
+
+function Feature({ icon, text }) { return <View style={styles.feature}><Ionicons name={icon} size={18} color={theme.brand}/><Text style={styles.featureText}>{text}</Text></View>; }
 
 export default function WelcomeScreen({ navigation }) {
   return (
@@ -12,16 +15,14 @@ export default function WelcomeScreen({ navigation }) {
           <Text style={styles.brand}>PG MANAGER</Text>
         </View>
         <View style={styles.hero}>
-          <View style={styles.heroCard}>
-            <View style={styles.heroLine} />
-            <View style={styles.heroStats}>
-              <View><Text style={styles.statValue}>24</Text><Text style={styles.statLabel}>Rooms</Text></View>
-              <View><Text style={styles.statValue}>92%</Text><Text style={styles.statLabel}>Occupied</Text></View>
-              <View><Text style={styles.statValue}>₹</Text><Text style={styles.statLabel}>Rent tracking</Text></View>
-            </View>
+          <View style={styles.heroIcon}><Ionicons name="business-outline" size={30} color={theme.brand} /></View>
+          <Text style={styles.title}>Manage your PG{'\n'}without the paperwork.</Text>
+          <Text style={styles.subtitle}>Rooms, tenants, vacancies and rent — all in one simple app.</Text>
+          <View style={styles.featureList}>
+            <Feature icon="bed-outline" text="See room and bed vacancy quickly" />
+            <Feature icon="people-outline" text="Keep tenant details organised" />
+            <Feature icon="wallet-outline" text="Track rent and pending payments" />
           </View>
-          <Text style={styles.title}>Run your PG,{'\n'}from your pocket.</Text>
-          <Text style={styles.subtitle}>Manage rooms, tenants and rent from one simple place.</Text>
         </View>
       </View>
       <View style={styles.actions}>
@@ -33,21 +34,20 @@ export default function WelcomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  top: { flex: 1, gap: 24 },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  mark: { width: 40, height: 40, borderRadius: 13, backgroundColor: theme.brand, alignItems: 'center', justifyContent: 'center' },
+  top: { flex: 1, gap: 18 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 4 },
+  mark: { width: 38, height: 38, borderRadius: 10, backgroundColor: theme.brand, alignItems: 'center', justifyContent: 'center' },
   markText: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  brand: { ...typography.label, color: theme.brand, letterSpacing: 1.2 },
-  hero: { flex: 1, justifyContent: 'center', gap: 14 },
-  heroCard: { backgroundColor: theme.brandWeak, borderRadius: 24, padding: 22, minHeight: 150, justifyContent: 'space-between', borderWidth: 1, borderColor: theme.border },
-  heroLine: { width: 58, height: 8, borderRadius: 8, backgroundColor: theme.brand },
-  heroStats: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  statValue: { ...typography.h2, color: theme.text },
-  statLabel: { ...typography.caption, color: theme.muted, marginTop: 2 },
-  title: { fontSize: 38, lineHeight: 44, fontWeight: '700', letterSpacing: -1.3, color: theme.text },
+  brand: { ...typography.label, color: theme.brand, letterSpacing: .8 },
+  hero: { flex: 1, justifyContent: 'center', gap: 12 },
+  heroIcon: { width: 52, height: 52, borderRadius: 14, backgroundColor: theme.brandWeak, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  featureList: { gap: 10, marginTop: 10 },
+  feature: { minHeight: 42, flexDirection: 'row', alignItems: 'center', gap: 10, borderBottomWidth: 1, borderBottomColor: theme.border, paddingVertical: 8 },
+  featureText: { ...typography.small, color: theme.textSecondary, flex: 1 },
+  title: { fontSize: 34, lineHeight: 40, fontWeight: '700', letterSpacing: -1, color: theme.text },
   subtitle: { ...typography.body, color: theme.muted, maxWidth: 480 },
-  actions: { gap: 18, paddingBottom: 12 },
-  primary: { minHeight: 54, borderRadius: 14 },
+  actions: { gap: 14, paddingBottom: 8 },
+  primary: { minHeight: 48 },
   inline: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
   muted: { ...typography.small, color: theme.muted },
 });

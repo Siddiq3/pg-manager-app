@@ -113,9 +113,11 @@ export default function TenantDetailScreen({ navigation, route }) {
 
         <Field label="Name" value={String(data.name || '')} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
         <Field label="Mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
+        <SectionTitle>Rent & deposit</SectionTitle>
         <Field label="Monthly rent" value={String(data.rentAmount ?? '')} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
         <Field label="Deposit amount" value={String(data.depositAmount ?? '')} onChangeText={set('depositAmount')} keyboardType="numeric" />
         <Field label="ID proof URL" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
+        <SectionTitle>Notice details</SectionTitle>
         <Field label="Notice given date" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
         <Field label="Expected vacate date" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
         <Button variant={data.depositPaid ? "secondary" : "tertiary"} onPress={()=>set("depositPaid")(!data.depositPaid)}>{data.depositPaid ? "Deposit paid" : "Mark deposit paid"}</Button>
