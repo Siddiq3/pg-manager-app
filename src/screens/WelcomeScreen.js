@@ -16,8 +16,7 @@ export default function WelcomeScreen({ navigation }) {
         </View>
         <View style={styles.hero}>
           <View style={styles.heroIcon}><Ionicons name="business-outline" size={30} color={theme.brand} /></View>
-          <Text style={styles.title}>Manage your PG{'
-'}without the paperwork.</Text>
+          <Text style={styles.title}>Manage your PG{'\n'}without the paperwork.</Text>
           <Text style={styles.subtitle}>Rooms, tenants, vacancies and rent — all in one simple app.</Text>
           <View style={styles.featureList}>
             <Feature icon="bed-outline" text="See room and bed vacancy quickly" />
