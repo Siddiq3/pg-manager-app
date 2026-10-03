@@ -23,7 +23,7 @@ export default function RoomDetailScreen({ navigation, route }) {
     queryClient.invalidateQueries({ queryKey: ['room', roomId] });
     queryClient.invalidateQueries({ queryKey: ['beds', propertyId] });
     queryClient.invalidateQueries({ queryKey: ['rooms', propertyId] });
-    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
   };
 
   const addBed = useMutation({

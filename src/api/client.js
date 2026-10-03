@@ -4,6 +4,7 @@ export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000
 
 export function buildApi({ getAccessToken, setSession, getRefreshToken, clearSession }) {
   const api = axios.create({ baseURL: API_URL, timeout: 20_000 });
+  let refreshing = null;
 
   api.interceptors.request.use((config) => {
     const token = getAccessToken();
@@ -19,19 +20,29 @@ export function buildApi({ getAccessToken, setSession, getRefreshToken, clearSes
       else if (error.response.status >= 500) { error.uiKind = 'server'; error.uiMessage = 'The server is having trouble right now. Please try again.'; }
       else if (error.response.status === 429) { error.uiKind = 'rate'; error.uiMessage = 'Too many requests. Wait a moment and try again.'; }
       if (error.response?.status !== 401 || error.config.__retried) throw error;
-      const refreshToken = await getRefreshToken();
-      if (!refreshToken) throw error;
 
-      try {
-        error.config.__retried = true;
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
-        await setSession(data);
-        error.config.headers.Authorization = `Bearer ${data.accessToken}`;
-        return api.request(error.config);
-      } catch (refreshError) {
-        await clearSession();
-        throw refreshError;
+      error.config.__retried = true;
+
+      if (!refreshing) {
+        refreshing = (async () => {
+          try {
+            const refreshToken = await getRefreshToken();
+            if (!refreshToken) throw error;
+            const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+            await setSession(data);
+            return data;
+          } catch (refreshError) {
+            await clearSession();
+            throw refreshError;
+          } finally {
+            refreshing = null;
+          }
+        })();
       }
+
+      const data = await refreshing;
+      error.config.headers.Authorization = `Bearer ${data.accessToken}`;
+      return api.request(error.config);
     }
   );
 

@@ -36,7 +36,7 @@ export default function TenantDetailScreen({ navigation, route }) {
 
     try {
       setBusy('save');
-      await api.patch(`/tenants/${tenantId}`, {
+      const { data: response } = await api.patch(`/tenants/${tenantId}`, {
         name: String(data.name).trim(),
         phone: String(data.phone).trim(),
         rentAmount: Number(data.rentAmount),
@@ -47,9 +47,15 @@ export default function TenantDetailScreen({ navigation, route }) {
         noticeGivenDate: data.noticeGivenDate || undefined,
         expectedVacateDate: data.expectedVacateDate || undefined,
       });
+      const propertyId = tenant.data?.propertyId?._id || tenant.data?.propertyId;
+      queryClient.setQueryData(['tenant', tenantId], (current) => ({
+        ...current,
+        ...response.data,
+        roomId: current?.roomId ?? response.data.roomId,
+        bedId: current?.bedId ?? response.data.bedId,
+      }));
       setEdits({});
-      await queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      if (propertyId) queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
       toast.success('Tenant details updated.');
     } catch (error) {
       toast.error(errorMessage(error));
@@ -68,8 +74,21 @@ export default function TenantDetailScreen({ navigation, route }) {
   async function checkout() {
     try {
       setBusy('checkout');
-      await api.post(`/tenants/${tenantId}/checkout`, { vacatedDate: new Date().toISOString() });
-      queryClient.invalidateQueries();
+      const propertyId = tenant.data?.propertyId?._id || tenant.data?.propertyId;
+      const roomId = tenant.data?.roomId?._id || tenant.data?.roomId;
+      const { data: response } = await api.post(`/tenants/${tenantId}/checkout`, { vacatedDate: new Date().toISOString() });
+      queryClient.setQueryData(['tenant', tenantId], (current) => ({
+        ...current,
+        ...response.data,
+        roomId: current?.roomId ?? response.data.roomId,
+        bedId: current?.bedId ?? response.data.bedId,
+      }));
+      if (propertyId) {
+        queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
+        queryClient.invalidateQueries({ queryKey: ['beds', propertyId] });
+        queryClient.invalidateQueries({ queryKey: ['vacantBeds', propertyId] });
+      }
+      if (roomId) queryClient.invalidateQueries({ queryKey: ['room', roomId] });
       toast.success('Tenant checked out. The bed is vacant now.');
       navigation.goBack();
     } catch (error) {

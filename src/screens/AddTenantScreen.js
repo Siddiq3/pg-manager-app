@@ -72,7 +72,12 @@ export default function AddTenantScreen({ navigation, route }) {
         expectedVacateDate: form.expectedVacateDate ? new Date(form.expectedVacateDate).toISOString() : undefined,
         depositPaid: form.depositPaid,
       });
-      queryClient.invalidateQueries();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] }),
+        queryClient.invalidateQueries({ queryKey: ['beds', propertyId] }),
+        queryClient.invalidateQueries({ queryKey: ['vacantBeds', propertyId] }),
+        queryClient.invalidateQueries({ queryKey: ['rentCycles', propertyId] }),
+      ]);
       navigation.popToTop();
     } catch (error) {
       toast.error(errorMessage(error));
