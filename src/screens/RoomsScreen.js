@@ -77,9 +77,9 @@ export default function RoomsScreen({ navigation, route }) {
         />
       }
     >
-      <Text style={{ ...typography.h2, color: theme.text }}>Rooms</Text>
+      <Text style={{ ...typography.h1, color: theme.text }}>Rooms</Text>
 
-      <SectionTitle action={<Button variant="tertiary" onPress={() => setAdding(true)}>+ Add room</Button>}>{`${(rooms.data || []).length} rooms`}</SectionTitle>
+      <SectionTitle action={<Button variant="tertiary" onPress={() => setAdding(true)}>Add room</Button>}>{`${(rooms.data || []).length} rooms`}</SectionTitle>
       <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);
@@ -90,7 +90,7 @@ export default function RoomsScreen({ navigation, route }) {
               title={`Room ${room.roomNumber}`}
               subtitle={[room.type, money(room.monthlyRent)].filter(Boolean).join(' · ')}
               badge={roomBeds.length ? `${occupied}/${roomBeds.length} filled` : 'No beds'}
-              right="Beds"
+              right="Open"
               onPress={() => navigation.navigate('RoomDetail', { roomId: room._id, propertyId })}
             />
           );
