@@ -90,19 +90,20 @@ export default function AddTenantScreen({ navigation, route }) {
       <Field label="Deposit amount" value={form.depositAmount} onChangeText={set('depositAmount')} keyboardType="numeric" error={errors.depositAmount} />
       <Field label="Joined date" value={form.joinedDate} onChangeText={set('joinedDate')} placeholder="YYYY-MM-DD" error={errors.joinedDate} />
 
+      <SectionTitle>Optional details</SectionTitle>
       <Field label="ID proof URL (optional)" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" placeholder="https://..." />
       <Field label="Notice given date (optional)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
       <Field label="Expected vacate date (optional)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
-      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit marked paid' : 'Mark deposit as paid'}</Button>
+      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit paid' : 'Mark deposit paid'}</Button>
 
-      <SectionTitle>Pick a vacant bed</SectionTitle>
+      <SectionTitle>Select a vacant bed</SectionTitle>
       <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">
         {(beds.data || []).map((bed) => (
           <Row
             key={bed._id}
             title={`Bed ${bed.bedLabel}`}
             subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
-            right={selectedBed?._id === bed._id ? 'Selected' : 'Pick'}
+            right={selectedBed?._id === bed._id ? 'Selected' : 'Select'}
             onPress={() => setSelectedBed(bed)}
           />
         ))}
