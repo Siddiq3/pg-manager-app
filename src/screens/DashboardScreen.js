@@ -39,7 +39,10 @@ export default function DashboardScreen({ navigation }) {
       const { data } = await api.post('/properties', { name });
       setNewProperty('');
       setPropertyId(data.data._id);
-      await properties.refetch();
+      queryClient.setQueryData(['properties'], (current = []) => [
+        data.data,
+        ...current.filter((property) => property._id !== data.data._id),
+      ]);
       toast.success('Property created.');
     } catch (error) {
       toast.error(errorMessage(error));
@@ -59,7 +62,14 @@ export default function DashboardScreen({ navigation }) {
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
-          onRefresh={() => queryClient.invalidateQueries()}
+          onRefresh={() =>
+            Promise.all([
+              queryClient.invalidateQueries({ queryKey: ['properties'] }),
+              propertyId
+                ? queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] })
+                : Promise.resolve(),
+            ])
+          }
           tintColor={theme.brand}
         />
       }
