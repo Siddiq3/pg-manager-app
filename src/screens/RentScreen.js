@@ -22,7 +22,7 @@ export default function RentScreen({ navigation, route }) {
   });
 
   function openPayment(cycle){const outstanding=cycle.amountDue-cycle.amountPaid;setPayment(cycle);setPaymentForm({amount:String(outstanding),method:'UPI',note:''})}
-  async function recordPayment(){const amount=Number(paymentForm.amount);if(!payment||!(amount>0))return;try{setPayingId(payment._id);const {data}=await api.post(`/rent-cycles/${payment._id}/payments`,{amount,method:paymentForm.method,date:new Date().toISOString(),note:paymentForm.note.trim()||undefined});queryClient.setQueryData(['rentCycles',propertyId],(current=[])=>current.map(cycle=>cycle._id===data.data._id?data.data:cycle));queryClient.invalidateQueries({queryKey:['dashboard',propertyId]});setPayment(null);toast.success('Payment recorded.')}catch(error){toast.error(errorMessage(error))}finally{setPayingId('')}}
+  async function recordPayment(){const amount=Number(paymentForm.amount);if(!payment||!(amount>0))return;try{setPayingId(payment._id);const {data}=await api.post(`/rent-cycles/${payment._id}/payments`,{amount,method:paymentForm.method,date:new Date().toISOString(),note:paymentForm.note.trim()||undefined});queryClient.setQueryData(['rentCycles',propertyId],(current=[])=>current.map(cycle=>cycle._id===data.data._id?{...data.data,tenantId:cycle.tenantId,propertyId:cycle.propertyId}:cycle));queryClient.invalidateQueries({queryKey:['dashboard',propertyId]});setPayment(null);toast.success('Payment recorded.')}catch(error){toast.error(errorMessage(error))}finally{setPayingId('')}}
 
   async function open(url, missingMessage) {
     if (!url) {
