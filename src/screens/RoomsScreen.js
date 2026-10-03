@@ -28,10 +28,12 @@ export default function RoomsScreen({ navigation, route }) {
 
   const addRoom = useMutation({
     mutationFn: (body) => api.post('/rooms', body),
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       setForm({ roomNumber: '', type: '', monthlyRent: '' });
-      queryClient.invalidateQueries({ queryKey: ['rooms', propertyId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.setQueryData(['rooms', propertyId], (current = []) => [
+        ...current.filter((room) => room._id !== data.data._id),
+        data.data,
+      ]);
       toast.success('Room added.');
       setAdding(false);
     },
