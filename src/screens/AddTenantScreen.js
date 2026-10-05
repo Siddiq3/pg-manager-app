@@ -77,6 +77,7 @@ export default function AddTenantScreen({ navigation, route }) {
         queryClient.invalidateQueries({ queryKey: ['beds', propertyId] }),
         queryClient.invalidateQueries({ queryKey: ['vacantBeds', propertyId] }),
         queryClient.invalidateQueries({ queryKey: ['rentCycles', propertyId] }),
+        queryClient.invalidateQueries({ queryKey: ['tenants', propertyId] }),
       ]);
       navigation.popToTop();
     } catch (error) {

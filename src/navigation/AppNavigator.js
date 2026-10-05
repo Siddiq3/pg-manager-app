@@ -22,6 +22,7 @@ import RoomsScreen from '../screens/RoomsScreen';
 import SecurityScreen from '../screens/SecurityScreen';
 import SupportScreen from '../screens/SupportScreen';
 import TenantDetailScreen from '../screens/TenantDetailScreen';
+import TenantsScreen from '../screens/TenantsScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import SubscriptionRequiredScreen from '../screens/SubscriptionRequiredScreen';
 import DeleteAccountScreen from '../screens/DeleteAccountScreen';
@@ -32,10 +33,11 @@ const Stack=createNativeStackNavigator(); const Tab=createBottomTabNavigator();
 
 function MainTabs(){
  const insets=useSafeAreaInsets();
- const common=({route})=>({headerShown:false,tabBarActiveTintColor:theme.brand,tabBarInactiveTintColor:theme.muted,tabBarStyle:{height:60+insets.bottom,paddingTop:6,paddingBottom:Math.max(insets.bottom,4),borderTopColor:theme.border,backgroundColor:theme.surface},tabBarLabelStyle:{...typography.caption,fontFamily:fonts.semibold,fontSize:11,marginBottom:5},tabBarIcon:({color,size,focused})=>{const icons={Home:'home',RoomsTab:'bed',RentTab:'wallet',Account:'person-circle'};const base=icons[route.name];return <Ionicons name={focused?base:`${base}-outline`} size={size} color={color}/>;}});
- return <Tab.Navigator screenOptions={common}><Tab.Screen name="Home" component={DashboardScreen}/><Tab.Screen name="RoomsTab" component={RoomsHub} options={{title:'Rooms'}}/><Tab.Screen name="RentTab" component={RentHub} options={{title:'Rent'}}/><Tab.Screen name="Account" component={AccountScreen}/></Tab.Navigator>;
+ const common=({route})=>({headerShown:false,tabBarActiveTintColor:theme.brand,tabBarInactiveTintColor:theme.muted,tabBarStyle:{height:60+insets.bottom,paddingTop:6,paddingBottom:Math.max(insets.bottom,4),borderTopColor:theme.border,backgroundColor:theme.surface},tabBarLabelStyle:{...typography.caption,fontFamily:fonts.semibold,fontSize:11,marginBottom:5},tabBarIcon:({color,size,focused})=>{const icons={Home:'home',RoomsTab:'bed',TenantsTab:'people',RentTab:'wallet',Account:'person-circle'};const base=icons[route.name];return <Ionicons name={focused?base:`${base}-outline`} size={size} color={color}/>;}});
+ return <Tab.Navigator screenOptions={common}><Tab.Screen name="Home" component={DashboardScreen}/><Tab.Screen name="RoomsTab" component={RoomsHub} options={{title:'Rooms'}}/><Tab.Screen name="TenantsTab" component={TenantsHub} options={{title:'Tenants'}}/><Tab.Screen name="RentTab" component={RentHub} options={{title:'Rent'}}/><Tab.Screen name="Account" component={AccountScreen}/></Tab.Navigator>;
 }
 function RoomsHub(props){const {activePropertyId}=useAuth();return activePropertyId?<RoomsScreen {...props} route={{...props.route,params:{propertyId:activePropertyId}}}/>:<NoProperty icon="bed-outline" title="Rooms & vacancy" navigation={props.navigation}/>}
+function TenantsHub(props){const {activePropertyId}=useAuth();return activePropertyId?<TenantsScreen {...props} route={{...props.route,params:{propertyId:activePropertyId}}}/>:<NoProperty icon="people-outline" title="Tenants" navigation={props.navigation}/>}
 function RentHub(props){const {activePropertyId}=useAuth();return activePropertyId?<RentScreen {...props} route={{...props.route,params:{propertyId:activePropertyId}}}/>:<NoProperty icon="wallet-outline" title="Rent" navigation={props.navigation}/>}
 function NoProperty({icon,title,navigation}){return <View style={{flex:1,justifyContent:'center',padding:16,backgroundColor:theme.bg}}><StateView icon={icon} title={title} message="Create or select a property from Home first." actionLabel="Go to Home" onAction={()=>navigation.navigate('Home')}/></View>}
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Field, PageHeader, QueryState, Row, Screen, SectionTitle, styles, typography, theme } from '../components/ui';
+import { Button, Card, Field, Notice, PageHeader, QueryState, Row, Screen, SectionTitle, styles, typography, theme } from '../components/ui';
+import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -13,6 +14,8 @@ export default function RoomDetailScreen({ navigation, route }) {
   const { roomId, propertyId } = route.params;
   const [bedLabel, setBedLabel] = useState('');
   const [roomEdits, setRoomEdits] = useState({});
+  const [editingBed, setEditingBed] = useState(null);
+  const [newLabel, setNewLabel] = useState('');
 
   const room = useQuery({
     queryKey: ['room', roomId],
@@ -24,6 +27,8 @@ export default function RoomDetailScreen({ navigation, route }) {
     queryClient.invalidateQueries({ queryKey: ['beds', propertyId] });
     queryClient.invalidateQueries({ queryKey: ['rooms', propertyId] });
     queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['vacantBeds', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['tenants', propertyId] });
   };
 
   const addBed = useMutation({
@@ -37,7 +42,13 @@ export default function RoomDetailScreen({ navigation, route }) {
 
   const updateRoom = useMutation({ mutationFn: (body) => api.patch(`/rooms/${roomId}`, body), onSuccess: () => { setRoomEdits({}); refreshAll(); toast.success('Room updated.'); }, onError: (error) => toast.error(errorMessage(error)) });
 
-  const updateBed = useMutation({ mutationFn: ({id,body}) => api.patch(`/beds/${id}`, body), onSuccess: refreshAll, onError: (error) => toast.error(errorMessage(error)) });
+  const updateBed = useMutation({
+    mutationFn: ({ id, body }) => api.patch(`/beds/${id}`, body),
+    onSuccess: () => { refreshAll(); setEditingBed(null); toast.success('Bed renamed.'); },
+    onError: (error) => toast.error(errorMessage(error)),
+  });
+
+  const openBed = (bed) => { setEditingBed(bed); setNewLabel(bed.bedLabel); };
 
   const removeBed = useMutation({
     mutationFn: (bedId) => api.delete(`/beds/${bedId}`),
@@ -98,9 +109,8 @@ export default function RoomDetailScreen({ navigation, route }) {
               icon="bed-outline"
               title={`Bed ${bed.bedLabel}`}
               badge={bed.status}
-              right={bed.status === 'VACANT' ? 'Delete' : undefined}
-              chevron={false}
-              onPress={() => confirmRemoveBed(bed)}
+              right="Edit"
+              onPress={() => openBed(bed)}
             />
           ))
         )}
@@ -124,6 +134,21 @@ export default function RoomDetailScreen({ navigation, route }) {
           Delete room
         </Button>
       </QueryState>
+      <Sheet visible={!!editingBed} onClose={() => setEditingBed(null)} title={editingBed ? `Bed ${editingBed.bedLabel}` : 'Bed'}>
+        <Field label="Bed label" value={newLabel} onChangeText={setNewLabel} autoCapitalize="characters" placeholder="A" />
+        <Button
+          onPress={() => updateBed.mutate({ id: editingBed._id, body: { bedLabel: newLabel.trim() } })}
+          loading={updateBed.isPending}
+          disabled={!newLabel.trim() || newLabel.trim() === editingBed?.bedLabel}
+        >
+          Rename bed
+        </Button>
+        {editingBed?.status === 'OCCUPIED' ? (
+          <Notice tone="muted" icon="information-circle-outline" message="Someone is staying in this bed. Check them out or move them before deleting it." />
+        ) : (
+          <Button variant="danger" onPress={() => { const bed = editingBed; setEditingBed(null); confirmRemoveBed(bed); }}>Delete bed</Button>
+        )}
+      </Sheet>
     </Screen>
   );
 }

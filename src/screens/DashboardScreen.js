@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
+import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money, monthLabel } from '../lib/format';
 
@@ -15,14 +16,17 @@ export default function DashboardScreen({ navigation }) {
   const setPropertyId = setActivePropertyId;
   const [newProperty, setNewProperty] = useState('');
   const [creating, setCreating] = useState(false);
+  const [switching, setSwitching] = useState(false);
 
   const properties = useQuery({
     queryKey: ['properties'],
     queryFn: async () => (await api.get('/properties')).data.data,
   });
 
+  // Keep the selection valid: a saved property can be deleted, or a co-owner can lose access.
   useEffect(() => {
-    if (!propertyId && properties.data?.[0]?._id) setPropertyId(properties.data[0]._id);
+    if (!properties.data) return;
+    if (!properties.data.some((property) => property._id === propertyId)) setPropertyId(properties.data[0]?._id || '');
   }, [properties.data, propertyId]);
 
   const dashboard = useQuery({
@@ -38,6 +42,7 @@ export default function DashboardScreen({ navigation }) {
       setCreating(true);
       const { data } = await api.post('/properties', { name });
       setNewProperty('');
+      setSwitching(false);
       setPropertyId(data.data._id);
       queryClient.setQueryData(['properties'], (current = []) => [
         data.data,
@@ -78,6 +83,8 @@ export default function DashboardScreen({ navigation }) {
       <PageHeader
         eyebrow={user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'Welcome back'}
         title={dashboard.data?.property?.name || 'Your PG'}
+        onTitlePress={propertyId ? () => setSwitching(true) : undefined}
+        titleHint="Switch property or add another"
         right={(
           <Press onPress={() => navigation.navigate('Account')} accessibilityLabel="Account" style={ds.avatar}>
             <Text style={ds.avatarText}>{(user?.name || 'P').slice(0, 1).toUpperCase()}</Text>
@@ -157,6 +164,22 @@ export default function DashboardScreen({ navigation }) {
           </>
         )}
       </QueryState>
+      <Sheet visible={switching} onClose={() => setSwitching(false)} title="Your properties">
+        {(properties.data || []).map((property) => (
+          <Row
+            key={property._id}
+            icon="business-outline"
+            title={property.name}
+            subtitle={[property.ownerId === user?.id ? 'Owner' : 'Co-owner', property.city].filter(Boolean).join(' · ')}
+            right={property._id === propertyId ? 'Current' : undefined}
+            chevron={false}
+            onPress={() => { setPropertyId(property._id); setSwitching(false); }}
+          />
+        ))}
+        <SectionTitle>Add another property</SectionTitle>
+        <Field label="Property name" value={newProperty} onChangeText={setNewProperty} placeholder="Sai Residency PG 2" autoCapitalize="words" />
+        <Button onPress={addProperty} loading={creating} disabled={!newProperty.trim()}>Add property</Button>
+      </Sheet>
     </Screen>
   );
 }

@@ -15,12 +15,18 @@ export { Press, FadeIn, useReducedMotion };
 export const Eyebrow = ({ children, style }) => <Text style={[styles.eyebrow, style]}>{children}</Text>;
 
 /** The top of every screen: optional kicker, a confident title, one line of context. */
-export function PageHeader({ eyebrow, title, subtitle, right }) {
+export function PageHeader({ eyebrow, title, subtitle, right, onTitlePress, titleHint }) {
+  const titleText = <Text style={[styles.pageTitle, onTitlePress && { flexShrink: 1 }]} numberOfLines={2}>{title}</Text>;
   return (
     <FadeIn style={styles.pageHeader}>
       <View style={{ flex: 1, minWidth: 0 }}>
         {!!eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-        <Text style={styles.pageTitle} numberOfLines={2}>{title}</Text>
+        {onTitlePress ? (
+          <Press onPress={onTitlePress} scaleTo={0.98} accessibilityRole="button" accessibilityHint={titleHint} style={styles.pageTitleRow}>
+            {titleText}
+            <View style={styles.pageTitleChevron}><Ionicons name="chevron-down" size={16} color={theme.primaryText} /></View>
+          </Press>
+        ) : titleText}
         {!!subtitle && <Text style={styles.pageSubtitle}>{subtitle}</Text>}
       </View>
       {right}
@@ -148,7 +154,7 @@ export function Pill({ children, tone = 'muted' }) {
   return <View style={[styles.pill, { backgroundColor: p.bg }]}><Text style={[styles.pillText, { color: p.fg }]} numberOfLines={1}>{children}</Text></View>;
 }
 
-const BADGE_TONES = { PAID: 'ok', ACTIVE: 'ok', VACANT: 'ok', PARTIAL: 'warn', PENDING: 'warn', OVERDUE: 'danger', VACATED: 'muted', OCCUPIED: 'info', AVAILABLE: 'ok', INACTIVE: 'muted', COMPLETED: 'ok', CANCELLED: 'muted', OWNER: 'accent' };
+const BADGE_TONES = { PAID: 'ok', ACTIVE: 'ok', VACANT: 'ok', PARTIAL: 'warn', PENDING: 'warn', ON_NOTICE: 'warn', OVERDUE: 'danger', VACATED: 'muted', OCCUPIED: 'info', AVAILABLE: 'ok', INACTIVE: 'muted', COMPLETED: 'ok', CANCELLED: 'muted', OWNER: 'accent' };
 
 /** API statuses arrive as SHOUTING_CASE; show them as sentence case. */
 const statusLabel = (s) => (/^[A-Z_]+$/.test(s) ? s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, ' ') : s);
@@ -250,6 +256,8 @@ export const styles = StyleSheet.create({
   eyebrow: { ...typography.overline, color: theme.primaryText, marginBottom: spacing.sm },
   pageHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xs },
   pageTitle: { ...typography.h1, color: theme.text },
+  pageTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, alignSelf: 'flex-start' },
+  pageTitleChevron: { width: 26, height: 26, borderRadius: 13, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
   pageSubtitle: { ...typography.body, color: theme.textSecondary, marginTop: spacing.xs },
 
   segmented: { flexDirection: 'row', padding: 4, gap: 4, backgroundColor: theme.surfaceMuted, borderRadius: radius.sm + 2 },

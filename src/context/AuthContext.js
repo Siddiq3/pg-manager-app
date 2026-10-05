@@ -1,9 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL, buildApi } from '../api/client';
 
 const REFRESH_KEY = 'pg_manager_refresh_token';
+// The property the owner last worked on, so the app reopens where they left it.
+const PROPERTY_KEY = 'pg_manager_active_property';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -11,7 +14,11 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState('');
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
-  const [activePropertyId, setActivePropertyId] = useState('');
+  const [activePropertyId, setActivePropertyIdState] = useState('');
+  const setActivePropertyId = useCallback((id) => {
+    setActivePropertyIdState(id || '');
+    (id ? AsyncStorage.setItem(PROPERTY_KEY, id) : AsyncStorage.removeItem(PROPERTY_KEY)).catch(() => null);
+  }, []);
   const [entitlement, setEntitlement] = useState(null);
   const [entitlementState, setEntitlementState] = useState('idle');
   const [entitlementError, setEntitlementError] = useState('');
@@ -33,12 +40,15 @@ export function AuthProvider({ children }) {
     setEntitlement(null);
     setEntitlementState('idle');
     setEntitlementError('');
+    setActivePropertyId('');
     await SecureStore.deleteItemAsync(REFRESH_KEY);
-  }, []);
+  }, [setActivePropertyId]);
 
   useEffect(() => {
     (async () => {
       try {
+        const savedProperty = await AsyncStorage.getItem(PROPERTY_KEY).catch(() => null);
+        if (savedProperty) setActivePropertyIdState(savedProperty);
         const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
         if (refreshToken) {
           const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
