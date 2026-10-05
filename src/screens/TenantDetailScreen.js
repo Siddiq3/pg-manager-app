@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, PageHeader, QueryState, Screen, SectionTitle, Toggle } from '../components/ui';
+import { Badge, Button, Card, Divider, Field, PageHeader, QueryState, Row, Screen, SectionTitle, StateView, Toggle, fonts, theme, typography } from '../components/ui';
+import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { errorMessage, money } from '../lib/format';
+import { errorMessage, money, monthLabel } from '../lib/format';
+
+const METHOD = { UPI: 'UPI', CASH: 'Cash', BANK_TRANSFER: 'Bank transfer' };
+const idOf = (value) => value?._id || value;
 
 export default function TenantDetailScreen({ navigation, route }) {
   const toast = useToast();
@@ -15,10 +19,73 @@ export default function TenantDetailScreen({ navigation, route }) {
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState('');
 
+  const [moving, setMoving] = useState(false);
+
   const tenant = useQuery({
     queryKey: ['tenant', tenantId],
     queryFn: async () => (await api.get(`/tenants/${tenantId}`)).data.data,
   });
+  const propertyId = idOf(tenant.data?.propertyId);
+
+  // Every month's rent for this tenant, newest first, with each payment's method and note.
+  const history = useQuery({
+    queryKey: ['tenantCycles', tenantId],
+    queryFn: async () => (await api.get('/rent-cycles', { params: { tenantId } })).data.data,
+  });
+
+  const vacantBeds = useQuery({
+    queryKey: ['vacantBeds', propertyId],
+    enabled: moving && !!propertyId,
+    queryFn: async () => (await api.get('/beds', { params: { propertyId, status: 'VACANT' } })).data.data,
+  });
+
+  /** After a move, checkout or delete, every list that shows beds or tenants is stale. */
+  function refreshProperty() {
+    for (const key of ['dashboard', 'beds', 'vacantBeds', 'rooms', 'tenants', 'rentCycles']) {
+      queryClient.invalidateQueries({ queryKey: [key, propertyId] });
+    }
+    queryClient.invalidateQueries({ queryKey: ['room'] });
+  }
+
+  async function moveTo(bed) {
+    try {
+      setBusy('move');
+      await api.patch(`/tenants/${tenantId}`, { roomId: idOf(bed.roomId), bedId: bed._id });
+      setMoving(false);
+      await queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      refreshProperty();
+      toast.success(`Moved to Room ${bed.roomId?.roomNumber || ''}, bed ${bed.bedLabel}.`);
+    } catch (error) {
+      toast.error(errorMessage(error));
+    } finally {
+      setBusy('');
+    }
+  }
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete tenant record?',
+      `${data.name || 'This tenant'} and all of their rent history will be deleted for good. To keep their history, check them out instead.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: remove },
+      ],
+    );
+  }
+
+  async function remove() {
+    try {
+      setBusy('delete');
+      await api.delete(`/tenants/${tenantId}`);
+      refreshProperty();
+      queryClient.removeQueries({ queryKey: ['tenant', tenantId] });
+      toast.success('Tenant record deleted.');
+      navigation.goBack();
+    } catch (error) {
+      toast.error(errorMessage(error));
+      setBusy('');
+    }
+  }
 
   const data = { ...(tenant.data || {}), ...edits };
   const set = (field) => (value) => {
@@ -47,7 +114,6 @@ export default function TenantDetailScreen({ navigation, route }) {
         noticeGivenDate: data.noticeGivenDate || undefined,
         expectedVacateDate: data.expectedVacateDate || undefined,
       });
-      const propertyId = tenant.data?.propertyId?._id || tenant.data?.propertyId;
       queryClient.setQueryData(['tenant', tenantId], (current) => ({
         ...current,
         ...response.data,
@@ -55,7 +121,10 @@ export default function TenantDetailScreen({ navigation, route }) {
         bedId: current?.bedId ?? response.data.bedId,
       }));
       setEdits({});
-      if (propertyId) queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
+      if (propertyId) {
+        queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
+        queryClient.invalidateQueries({ queryKey: ['tenants', propertyId] });
+      }
       toast.success('Tenant details updated.');
     } catch (error) {
       toast.error(errorMessage(error));
@@ -74,7 +143,6 @@ export default function TenantDetailScreen({ navigation, route }) {
   async function checkout() {
     try {
       setBusy('checkout');
-      const propertyId = tenant.data?.propertyId?._id || tenant.data?.propertyId;
       const roomId = tenant.data?.roomId?._id || tenant.data?.roomId;
       const { data: response } = await api.post(`/tenants/${tenantId}/checkout`, { vacatedDate: new Date().toISOString() });
       queryClient.setQueryData(['tenant', tenantId], (current) => ({
@@ -87,6 +155,7 @@ export default function TenantDetailScreen({ navigation, route }) {
         queryClient.invalidateQueries({ queryKey: ['dashboard', propertyId] });
         queryClient.invalidateQueries({ queryKey: ['beds', propertyId] });
         queryClient.invalidateQueries({ queryKey: ['vacantBeds', propertyId] });
+        queryClient.invalidateQueries({ queryKey: ['tenants', propertyId] });
       }
       if (roomId) queryClient.invalidateQueries({ queryKey: ['room', roomId] });
       toast.success('Tenant checked out. The bed is vacant now.');
@@ -123,11 +192,63 @@ export default function TenantDetailScreen({ navigation, route }) {
 
         <Button size="lg" onPress={save} loading={busy === 'save'}>Save changes</Button>
         {data.status !== 'VACATED' && (
+          <Button variant="secondary" onPress={() => setMoving(true)}>Move to another bed</Button>
+        )}
+
+        <SectionTitle>Rent history</SectionTitle>
+        <QueryState query={history} empty="No rent recorded yet.">
+          {[...(history.data || [])].sort((a, b) => b.month.localeCompare(a.month)).map((cycle) => (
+            <Card key={cycle._id} style={st.cycle}>
+              <View style={st.cycleHead}>
+                <Text style={st.cycleMonth}>{monthLabel(cycle.month)}</Text>
+                <Badge>{cycle.status}</Badge>
+              </View>
+              <Text style={st.cycleAmount}>{money(cycle.amountPaid)} <Text style={st.cycleOf}>of {money(cycle.amountDue)}</Text></Text>
+              {(cycle.payments || []).map((p) => (
+                <View key={p._id}>
+                  <Divider style={{ marginVertical: 8 }} />
+                  <View style={st.payment}>
+                    <Text style={st.paymentWhat}>{money(p.amount)} · {METHOD[p.method] || p.method}</Text>
+                    <Text style={st.paymentDate}>{new Date(p.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</Text>
+                  </View>
+                  {!!p.note && <Text style={st.paymentNote}>{p.note}</Text>}
+                </View>
+              ))}
+            </Card>
+          ))}
+        </QueryState>
+
+        <SectionTitle>Danger zone</SectionTitle>
+        {data.status !== 'VACATED' && (
           <Button variant="danger" onPress={confirmCheckout} loading={busy === 'checkout'}>
             Check out tenant
           </Button>
         )}
+        <Button variant="tertiary" onPress={confirmDelete} loading={busy === 'delete'}>Delete tenant record</Button>
       </QueryState>
+
+      <Sheet visible={moving} onClose={() => setMoving(false)} title="Move to another bed">
+        <QueryState query={vacantBeds}>
+          {(vacantBeds.data || []).length === 0 ? (
+            <StateView icon="bed-outline" title="No vacant beds" message="Add a bed to a room, or check someone out first." />
+          ) : (vacantBeds.data || []).map((bed) => (
+            <Row key={bed._id} icon="bed-outline" title={`Room ${bed.roomId?.roomNumber || '-'}, bed ${bed.bedLabel}`} right="Move here" chevron={false}
+              onPress={() => busy !== 'move' && moveTo(bed)} />
+          ))}
+        </QueryState>
+      </Sheet>
     </Screen>
   );
 }
+
+const st = StyleSheet.create({
+  cycle: { gap: 4 },
+  cycleHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cycleMonth: { ...typography.bodyStrong, color: theme.text },
+  cycleAmount: { fontFamily: fonts.display, fontSize: 20, color: theme.text, fontVariant: ['tabular-nums'] },
+  cycleOf: { ...typography.small, color: theme.textMuted },
+  payment: { flexDirection: 'row', justifyContent: 'space-between' },
+  paymentWhat: { ...typography.small, fontFamily: fonts.semibold, color: theme.text },
+  paymentDate: { ...typography.small, color: theme.textMuted },
+  paymentNote: { ...typography.caption, color: theme.textMuted, marginTop: 2 },
+});
