@@ -1,6 +1,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
-import { FadeIn, Notice, Press, Screen, fonts, theme, typography } from './ui';
+import { FadeIn, Notice, Screen, fonts, theme, typography } from './ui';
 
 /** The PG Manager wordmark: an orange tile and the name, as StoreKit's Logo. */
 export function BrandMark({ size = 30 }) {
@@ -31,7 +31,9 @@ export function AuthShell({ title, subtitle, children, footer }) {
 }
 
 export function AuthLink({ children, onPress }) {
-  return <Press accessibilityRole="button" onPress={onPress} hitSlop={10} scaleTo={1}><Text style={styles.link}>{children}</Text></Press>;
+  // A Text, not a pressable View: it sits inside sentences ("New here? Create an account")
+  // and a View there renders off the text baseline.
+  return <Text accessibilityRole="link" onPress={onPress} suppressHighlighting style={styles.link}>{children}</Text>;
 }
 
 export function AuthNotice({ message, tone = 'error' }) {

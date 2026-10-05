@@ -22,7 +22,7 @@ export function ToastProvider({ children }) {
     error: (m) => show(m, 'error'),
     info: (m) => show(m, 'info'),
   }), [show]);
-  return <ToastContext.Provider value={value}>{children}{toast ? <Toast {...toast} onClose={() => setToast(null)} /> : null}</ToastContext.Provider>;
+  return <ToastContext.Provider value={value}>{children}{toast ? <Toast key={toast.key} message={toast.message} tone={toast.tone} onClose={() => setToast(null)} /> : null}</ToastContext.Provider>;
 }
 
 export const useToast = () => useContext(ToastContext) || noop;

@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { errorMessage, money } from '../lib/format';
+import { errorMessage, money, monthLabel } from '../lib/format';
 
 export default function DashboardScreen({ navigation }) {
   const toast = useToast();
@@ -107,6 +107,16 @@ export default function DashboardScreen({ navigation }) {
               <Stat icon="wallet-outline" label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
+            {!occupancy.totalBeds && (
+              <Card style={{ gap: 12 }}>
+                <View style={{ gap: 4 }}>
+                  <Text style={{ ...typography.h3, color: theme.text }}>Add your rooms and beds</Text>
+                  <Text style={{ ...typography.body, color: theme.textMuted }}>Tenants are added to a bed, so set up your rooms first.</Text>
+                </View>
+                <Button onPress={() => navigation.navigate('Rooms', { propertyId })}>Set up rooms</Button>
+              </Card>
+            )}
+
             <View style={ds.grid}>
               <QuickAction icon="person-add-outline" label="Add tenant" primary onPress={() => navigation.navigate('AddTenant', { propertyId })} />
               <QuickAction icon="wallet-outline" label="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />
@@ -115,7 +125,7 @@ export default function DashboardScreen({ navigation }) {
 
             <SectionTitle>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
-              <Text style={styles.empty}>Every bed is occupied.</Text>
+              <Text style={styles.empty}>{occupancy.totalBeds ? 'Every bed is occupied.' : 'No beds added yet.'}</Text>
             ) : (
               (dashboard.data?.vacantBeds || []).slice(0, 5).map((bed) => (
                 <Row
@@ -138,7 +148,7 @@ export default function DashboardScreen({ navigation }) {
                   key={cycle._id}
                   icon="person-outline"
                   title={cycle.tenantId?.name || 'Tenant'}
-                  subtitle={`${cycle.month} · ${money(cycle.amountDue - cycle.amountPaid)} pending`}
+                  subtitle={`${monthLabel(cycle.month)} · ${money(cycle.amountDue - cycle.amountPaid)} pending`}
                   badge={cycle.status}
                   onPress={() => navigation.navigate('Rent', { propertyId })}
                 />

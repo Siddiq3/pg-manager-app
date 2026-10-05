@@ -32,6 +32,5 @@ const s = StyleSheet.create({
   filled: { backgroundColor: theme.primarySubtle },
   active: { borderColor: theme.primary },
   digit: { fontFamily: fonts.display, fontSize: 27, letterSpacing: -0.5, color: theme.text },
-  // Covers the boxes so a tap anywhere focuses it, but draws nothing.
-  hidden: { ...StyleSheet.absoluteFillObject, opacity: 0.011, color: 'transparent' },
+  hidden: { position: 'absolute', width: 1, height: 1, opacity: 0 },
 });

@@ -99,6 +99,7 @@ export default function AddTenantScreen({ navigation, route }) {
             title={`Bed ${bed.bedLabel}`}
             subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
             right={selectedBed?._id === bed._id ? 'Selected' : 'Pick'}
+            chevron={false}
             onPress={() => setSelectedBed(bed)}
           />
         ))}
