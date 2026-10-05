@@ -99,6 +99,7 @@ export default function RoomDetailScreen({ navigation, route }) {
               title={`Bed ${bed.bedLabel}`}
               badge={bed.status}
               right={bed.status === 'VACANT' ? 'Delete' : undefined}
+              chevron={false}
               onPress={() => confirmRemoveBed(bed)}
             />
           ))

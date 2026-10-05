@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { errorMessage, money } from '../lib/format';
+import { errorMessage, money, monthLabel } from '../lib/format';
 
 export default function RentScreen({ navigation, route }) {
   const toast = useToast();
@@ -64,7 +64,7 @@ export default function RentScreen({ navigation, route }) {
                 <View style={rs.avatar}><Text style={rs.avatarText}>{(cycle.tenantId?.name || 'T').slice(0, 1).toUpperCase()}</Text></View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={rs.name} numberOfLines={1}>{cycle.tenantId?.name || 'Tenant'}</Text>
-                  <Text style={rs.meta}>{cycle.month}</Text>
+                  <Text style={rs.meta}>{monthLabel(cycle.month)}</Text>
                 </View>
                 <Badge>{cycle.status}</Badge>
               </Press>
