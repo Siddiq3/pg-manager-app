@@ -79,9 +79,9 @@ export function AuthProvider({ children }) {
   async function forgotPassword({ email }) { const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { email }); return data; }
   async function resetPassword({ email, otp, newPassword, confirmPassword }) { const { data } = await axios.post(`${API_URL}/auth/reset-password`, { email, otp, newPassword, confirmPassword }); return data; }
 
-  async function refreshEntitlement() {
+  async function refreshEntitlement({ background = false } = {}) {
     if (!accessTokenRef.current) return null;
-    setEntitlementState('loading');
+    if (!background) setEntitlementState('loading');
     setEntitlementError('');
     try {
       const { data } = await api.get('/billing/status');

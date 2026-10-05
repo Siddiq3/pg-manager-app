@@ -7,6 +7,7 @@ import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money, monthLabel } from '../lib/format';
+import { assertSubscriptionAddition } from '../lib/subscriptionPlans';
 
 export default function DashboardScreen({ navigation }) {
   const toast = useToast();
@@ -40,6 +41,7 @@ export default function DashboardScreen({ navigation }) {
     if (!name || creating) return;
     try {
       setCreating(true);
+      await assertSubscriptionAddition({ api, userId: user?.id, resource: 'properties' });
       const { data } = await api.post('/properties', { name });
       setNewProperty('');
       setSwitching(false);

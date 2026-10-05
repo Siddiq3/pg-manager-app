@@ -6,10 +6,11 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
+import { assertSubscriptionAddition } from '../lib/subscriptionPlans';
 
 export default function RoomDetailScreen({ navigation, route }) {
   const toast = useToast();
-  const { api } = useAuth();
+  const { api, user } = useAuth();
   const queryClient = useQueryClient();
   const { roomId, propertyId } = route.params;
   const [bedLabel, setBedLabel] = useState('');
@@ -32,7 +33,10 @@ export default function RoomDetailScreen({ navigation, route }) {
   };
 
   const addBed = useMutation({
-    mutationFn: (label) => api.post('/beds', { roomId, bedLabel: label }),
+    mutationFn: async (label) => {
+      await assertSubscriptionAddition({ api, userId: user?.id, resource: 'beds', propertyId });
+      return api.post('/beds', { roomId, bedLabel: label });
+    },
     onSuccess: () => {
       setBedLabel('');
       refreshAll();

@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
 import { Button, Field, PasswordField, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { TRIAL_DAYS } from '../lib/subscriptionPlans';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -24,7 +25,7 @@ export default function RegisterScreen({ navigation }) {
   }
 
   return (
-    <AuthShell title="Create your account" subtitle="Set up your owner account. You can add and manage PG details after signing in."
+    <AuthShell title="Create your account" subtitle={`Start your ${TRIAL_DAYS}-day free trial. Set up your owner account to manage your PG.`}
       footer={<Text style={{ ...typography.small, color: theme.muted }}>Already registered? <AuthLink onPress={() => navigation.navigate('Login')}>Sign in</AuthLink></Text>}>
       <AuthNotice message={error} />
       <Field label="Owner name" value={form.name} onChangeText={set('name')} autoCapitalize="words" textContentType="name" />

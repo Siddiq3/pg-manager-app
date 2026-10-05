@@ -5,12 +5,13 @@ import { Button, Card, Field, Notice, PageHeader, PasswordField, QueryState, Row
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { errorMessage } from '../lib/format';
+import { assertSubscriptionAddition, PLAN_LIMIT_NOTE, subscriptionPlan } from '../lib/subscriptionPlans';
 
 const emptyCoOwner = { name: '', email: '', phone: '', password: '' };
 
 export default function PropertySettingsScreen({ route }) {
   const { propertyId } = route.params;
-  const { api, user } = useAuth();
+  const { api, user, entitlement } = useAuth();
   const toast = useToast();
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: '', address: '', city: '' });
@@ -21,6 +22,8 @@ export default function PropertySettingsScreen({ route }) {
   const members = useQuery({ queryKey: ['property-members', propertyId], queryFn: async () => (await api.get(`/properties/${propertyId}/members`)).data.data });
   const property = (properties.data || []).find((p) => p._id === propertyId);
   const isOwner = property?.ownerId === user?.id;
+  const plan = entitlement?.status === 'ACTIVE' ? subscriptionPlan(entitlement.plan) : null;
+  const noCoOwners = plan?.coOwners === 0;
 
   useEffect(() => {
     if (property) setForm({ name: property.name || '', address: property.address || '', city: property.city || '' });
@@ -37,8 +40,10 @@ export default function PropertySettingsScreen({ route }) {
   }
 
   async function addCoOwner() {
+    if (busy) return;
     try {
       setBusy('co-owner');
+      await assertSubscriptionAddition({ api, userId: user?.id, resource: 'coOwners', propertyId, email: coOwner.email });
       const { data } = await api.post(`/properties/${propertyId}/co-owners`, {
         name: coOwner.name.trim(), email: coOwner.email.trim(), phone: coOwner.phone.trim(), password: coOwner.password,
       });
@@ -75,12 +80,15 @@ export default function PropertySettingsScreen({ route }) {
       {isOwner && (
         <Card style={s.card}>
           <Text style={s.cardTitle}>Add a co-owner</Text>
+          <Notice tone="muted" message={PLAN_LIMIT_NOTE} />
+          {noCoOwners ? <Notice tone="muted" message="Starter does not include co-owners. Pro includes up to 2 and Growth includes up to 4 additional co-owners across your subscription." /> : <>
           <Text style={s.cardBody}>Create a sign-in for a partner or manager. Share the email and password with them; they can change the password later from Password & devices.</Text>
           <Field label="Their name" value={coOwner.name} onChangeText={setField('name')} autoCapitalize="words" placeholder="Asha Rao" />
           <Field label="Their email" value={coOwner.email} onChangeText={setField('email')} keyboardType="email-address" placeholder="name@example.com" />
           <Field label="Their mobile number" value={coOwner.phone} onChangeText={setField('phone')} keyboardType="phone-pad" placeholder="9876543210" />
           <PasswordField label="Password for them" value={coOwner.password} onChangeText={setField('password')} hint="8+ characters with uppercase, lowercase, number and symbol." />
           <Button onPress={addCoOwner} loading={busy === 'co-owner'} disabled={!canAdd}>Add co-owner</Button>
+          </>}
         </Card>
       )}
     </Screen>
