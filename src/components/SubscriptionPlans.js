@@ -1,17 +1,18 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { Card, Notice, Pill, SectionTitle, theme, typography } from './ui';
-import { INCLUDED_FEATURES, PLAN_LIMIT_NOTE, SUBSCRIPTION_PLANS, TRIAL_DAYS, subscriptionPlan } from '../lib/subscriptionPlans';
+import { INCLUDED_FEATURES, PLAN_LIMIT_NOTE, SUBSCRIPTION_PLANS, TRIAL_DAYS, currentPlan } from '../lib/subscriptionPlans';
 
 export default function SubscriptionPlans({ entitlement }) {
-  const current = entitlement?.status === 'ACTIVE' ? subscriptionPlan(entitlement.plan) : null;
+  const current = currentPlan(entitlement);
+  const onTrial = entitlement?.status === 'TRIAL';
   return <>
     <SectionTitle>Subscription plans</SectionTitle>
-    <Text style={s.body}>{TRIAL_DAYS}-day free trial for new accounts.</Text>
+    <Text style={s.body}>New accounts get a {TRIAL_DAYS}-day free trial with Starter limits: 1 property, 150 beds and no co-owners. Pro or Growth add more.</Text>
     {entitlement?.status === 'CO_OWNER' && <Notice tone="muted" message="Your access is provided by the primary owner's subscription." />}
     {SUBSCRIPTION_PLANS.map((plan) => <Card key={plan.id} style={s.card}>
       <Text style={s.name}>{plan.name}</Text>
-      {current?.id === plan.id && <Pill tone="ok">Current plan</Pill>}
+      {current?.id === plan.id && <Pill tone="ok">{onTrial ? 'Your free trial' : 'Current plan'}</Pill>}
       <Text style={s.price}>₹{plan.monthlyPrice}/month</Text>
       <Text style={s.body}>{plan.properties === 1 ? '1 property' : `Up to ${plan.properties} properties`} · {plan.beds.toLocaleString('en-IN')} total beds</Text>
       <Text style={s.body}>{plan.coOwners === 0 ? 'No co-owners' : `Up to ${plan.coOwners} co-owners`} · {plan.support} support</Text>
