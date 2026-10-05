@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, RefreshControl, Text, View } from 'react-native';
+import { RefreshControl, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
+import { Button, Field, PageHeader, QueryState, Row, Screen, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -77,9 +78,12 @@ export default function RoomsScreen({ navigation, route }) {
         />
       }
     >
-      <Text style={{ ...typography.h2, color: theme.text }}>Rooms</Text>
-
-      <SectionTitle action={<Button variant="tertiary" onPress={() => setAdding(true)}>+ Add room</Button>}>{`${(rooms.data || []).length} rooms`}</SectionTitle>
+      <PageHeader
+        eyebrow="Rooms & vacancy"
+        title="Rooms"
+        subtitle={rooms.data ? `${rooms.data.length} room${rooms.data.length === 1 ? '' : 's'} · ${(beds.data || []).length} beds` : undefined}
+        right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => setAdding(true)}>Add</Button>}
+      />
       <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);
@@ -87,10 +91,10 @@ export default function RoomsScreen({ navigation, route }) {
           return (
             <Row
               key={room._id}
+              icon="bed-outline"
               title={`Room ${room.roomNumber}`}
               subtitle={[room.type, money(room.monthlyRent)].filter(Boolean).join(' · ')}
               badge={roomBeds.length ? `${occupied}/${roomBeds.length} filled` : 'No beds'}
-              right="Beds"
               onPress={() => navigation.navigate('RoomDetail', { roomId: room._id, propertyId })}
             />
           );
@@ -98,9 +102,7 @@ export default function RoomsScreen({ navigation, route }) {
       </QueryState>
 
       {!!(rooms.data || []).length && (
-        <View>
-          <Text style={{ color: theme.muted, fontSize: 12 }}>Open a room to add or remove its beds.</Text>
-        </View>
+        <Text style={{ ...typography.caption, color: theme.textMuted, textAlign: 'center' }}>Open a room to add or remove its beds.</Text>
       )}
       <Sheet visible={adding} onClose={() => setAdding(false)} title="Add a room">
         <Field label="Room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />

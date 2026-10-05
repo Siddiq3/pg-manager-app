@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, Text } from 'react-native';
+import { Alert } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, QueryState, Row, Screen, SectionTitle, theme } from '../components/ui';
+import { Button, Field, Notice, PageHeader, QueryState, Row, Screen, SectionTitle, Toggle } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../lib/format';
@@ -83,6 +83,22 @@ export default function AddTenantScreen({ navigation, route }) {
 
   return (
     <Screen scroll>
+      <PageHeader eyebrow="New tenant" title="Add a tenant" subtitle="Pick a vacant bed, then fill in their details." />
+
+      <SectionTitle>Pick a vacant bed</SectionTitle>
+      <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">
+        {(beds.data || []).map((bed) => (
+          <Row
+            key={bed._id}
+            icon={selectedBed?._id === bed._id ? 'checkmark-circle' : 'bed-outline'}
+            title={`Bed ${bed.bedLabel}`}
+            subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
+            right={selectedBed?._id === bed._id ? 'Selected' : 'Pick'}
+            onPress={() => setSelectedBed(bed)}
+          />
+        ))}
+      </QueryState>
+
       <SectionTitle>Tenant details</SectionTitle>
       <Field label="Name" value={form.name} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
       <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
@@ -93,23 +109,10 @@ export default function AddTenantScreen({ navigation, route }) {
       <Field label="ID proof URL (optional)" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" placeholder="https://..." />
       <Field label="Notice given date (optional)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
       <Field label="Expected vacate date (optional)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
-      <Button variant={form.depositPaid ? 'secondary' : 'tertiary'} onPress={()=>setForm(p=>({...p,depositPaid:!p.depositPaid}))}>{form.depositPaid ? 'Deposit marked paid' : 'Mark deposit as paid'}</Button>
+      <Toggle label="Deposit paid" hint="Turn on if the tenant has paid the deposit." value={form.depositPaid} onChange={(v) => setForm((p) => ({ ...p, depositPaid: v }))} />
 
-      <SectionTitle>Pick a vacant bed</SectionTitle>
-      <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">
-        {(beds.data || []).map((bed) => (
-          <Row
-            key={bed._id}
-            title={`Bed ${bed.bedLabel}`}
-            subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
-            right={selectedBed?._id === bed._id ? 'Selected' : 'Pick'}
-            onPress={() => setSelectedBed(bed)}
-          />
-        ))}
-      </QueryState>
-
-      {!selectedBed && <Text style={{ color: theme.muted }}>Select a bed to continue.</Text>}
-      <Button onPress={submit} loading={saving} disabled={!selectedBed}>Add tenant</Button>
+      {!selectedBed && <Notice tone="muted" icon="information-circle-outline" message="Select a bed above to continue." />}
+      <Button size="lg" onPress={submit} loading={saving} disabled={!selectedBed}>Add tenant</Button>
     </Screen>
   );
 }

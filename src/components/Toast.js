@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, typography } from './ui';
+import { Ionicons } from '@expo/vector-icons';
+import { fonts, shadow, theme, typography } from './tokens';
 
 const ToastContext = createContext(null);
 const noop = { show: () => {}, success: () => {}, error: () => {}, info: () => {} };
@@ -34,7 +35,7 @@ function Toast({ message, tone, onClose }) {
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { top: insets.top + 8 }]}>
       <Pressable accessibilityRole="alert" onPress={onClose} style={[styles.toast, { backgroundColor: palette[0] }]}>
-        <View style={[styles.dot, { backgroundColor: palette[1] }]} />
+        <Ionicons name={tone === 'success' ? 'checkmark-circle' : tone === 'error' ? 'alert-circle' : 'information-circle'} size={20} color={palette[1]} />
         <Text style={[styles.text, { color: palette[1] }]} numberOfLines={3}>{message}</Text>
       </Pressable>
     </View>
@@ -43,7 +44,6 @@ function Toast({ message, tone, onClose }) {
 
 const styles = StyleSheet.create({
   wrap: { position: 'absolute', left: 16, right: 16, zIndex: 9999 },
-  toast: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: theme.border },
-  dot: { width: 9, height: 9, borderRadius: 99 },
-  text: { ...typography.small, fontWeight: '600', flex: 1 },
+  toast: { minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 18, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, ...shadow.lift },
+  text: { ...typography.small, fontFamily: fonts.semibold, flex: 1 },
 });

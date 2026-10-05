@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, Text } from 'react-native';
+import { Alert } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Screen, SectionTitle, theme } from '../components/ui';
+import { Badge, Button, Field, PageHeader, QueryState, Screen, SectionTitle, Toggle } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -82,15 +82,14 @@ export default function TenantDetailScreen({ navigation, route }) {
   return (
     <Screen scroll>
       <QueryState query={tenant}>
-        <SectionTitle action={data.status ? <Badge>{data.status}</Badge> : null}>
-          {data.name || 'Tenant'}
-        </SectionTitle>
-        <Text style={{ color: theme.muted }}>
-          {[data.roomId?.roomNumber && `Room ${data.roomId.roomNumber}`, data.bedId?.bedLabel && `Bed ${data.bedId.bedLabel}`]
-            .filter(Boolean)
-            .join(' - ')}
-          {data.rentAmount ? ` - ${money(data.rentAmount)}/month` : ''}
-        </Text>
+        <PageHeader
+          eyebrow={[data.roomId?.roomNumber && `Room ${data.roomId.roomNumber}`, data.bedId?.bedLabel && `Bed ${data.bedId.bedLabel}`].filter(Boolean).join(' · ') || 'Tenant'}
+          title={data.name || 'Tenant'}
+          subtitle={data.rentAmount ? `${money(data.rentAmount)} / month` : undefined}
+          right={data.status ? <Badge>{data.status}</Badge> : null}
+        />
+
+        <SectionTitle>Details</SectionTitle>
 
         <Field label="Name" value={String(data.name || '')} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
         <Field label="Mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
@@ -99,10 +98,11 @@ export default function TenantDetailScreen({ navigation, route }) {
         <Field label="ID proof URL" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
         <Field label="Notice given date" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
         <Field label="Expected vacate date" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
-        <Button variant={data.depositPaid ? "secondary" : "tertiary"} onPress={()=>set("depositPaid")(!data.depositPaid)}>{data.depositPaid ? "Deposit paid" : "Mark deposit paid"}</Button>
-        <Button variant={data.depositRefunded ? "secondary" : "tertiary"} onPress={()=>set("depositRefunded")(!data.depositRefunded)}>{data.depositRefunded ? "Deposit refunded" : "Mark deposit refunded"}</Button>
+        <SectionTitle>Deposit</SectionTitle>
+        <Toggle label="Deposit paid" value={!!data.depositPaid} onChange={set('depositPaid')} />
+        <Toggle label="Deposit refunded" value={!!data.depositRefunded} onChange={set('depositRefunded')} />
 
-        <Button onPress={save} loading={busy === 'save'}>Save changes</Button>
+        <Button size="lg" onPress={save} loading={busy === 'save'}>Save changes</Button>
         {data.status !== 'VACATED' && (
           <Button variant="danger" onPress={confirmCheckout} loading={busy === 'checkout'}>
             Check out tenant

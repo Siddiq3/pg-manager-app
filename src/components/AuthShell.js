@@ -1,20 +1,29 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Screen, theme, typography } from './ui';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { FadeIn, Notice, Press, Screen, fonts, theme, typography } from './ui';
 
-export function AuthShell({ eyebrow = 'PG MANAGER', title, subtitle, children, footer }) {
+/** The PG Manager wordmark: an orange tile and the name, as StoreKit's Logo. */
+export function BrandMark({ size = 30 }) {
+  return (
+    <View style={styles.brandRow}>
+      <View style={[styles.mark, { width: size + 8, height: size + 8, borderRadius: (size + 8) / 3.2 }]}><Text style={styles.markText}>PG</Text></View>
+      <Text style={styles.wordmark}>PG Manager</Text>
+    </View>
+  );
+}
+
+export function AuthShell({ title, subtitle, children, footer }) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <Screen scroll>
-        <View style={styles.brandRow}>
-          <View style={styles.mark}><Text style={styles.markText}>PG</Text></View>
-          <Text style={styles.eyebrow}>{eyebrow}</Text>
-        </View>
-        <View style={styles.heading}>
-          <Text style={styles.title}>{title}</Text>
-          {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-        </View>
-        <View style={styles.form}>{children}</View>
+        <FadeIn>
+          <BrandMark />
+          <View style={styles.heading}>
+            <Text style={styles.title}>{title}</Text>
+            {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          </View>
+        </FadeIn>
+        <FadeIn delay={120} style={styles.form}>{children}</FadeIn>
         {!!footer && <View style={styles.footer}>{footer}</View>}
       </Screen>
     </KeyboardAvoidingView>
@@ -22,16 +31,11 @@ export function AuthShell({ eyebrow = 'PG MANAGER', title, subtitle, children, f
 }
 
 export function AuthLink({ children, onPress }) {
-  return <Pressable accessibilityRole="button" onPress={onPress} hitSlop={8}><Text style={styles.link}>{children}</Text></Pressable>;
+  return <Press accessibilityRole="button" onPress={onPress} hitSlop={10} scaleTo={1}><Text style={styles.link}>{children}</Text></Press>;
 }
 
 export function AuthNotice({ message, tone = 'error' }) {
-  if (!message) return null;
-  return (
-    <View style={[styles.notice, tone === 'success' && styles.successNotice]}>
-      <Text style={[styles.noticeText, tone === 'success' && styles.successText]}>{message}</Text>
-    </View>
-  );
+  return <Notice message={message} tone={tone === 'success' ? 'ok' : 'danger'} icon={tone === 'success' ? 'checkmark-circle' : 'alert-circle'} />;
 }
 
 export function getAuthError(error, fallback = 'Something went wrong. Please try again.') {
@@ -47,17 +51,13 @@ export function getAuthError(error, fallback = 'Something went wrong. Please try
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: theme.bg },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  mark: { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.brand, alignItems: 'center', justifyContent: 'center' },
-  markText: { color: '#fff', fontSize: 13, fontWeight: '800', letterSpacing: .4 },
-  eyebrow: { ...typography.label, color: theme.brand, letterSpacing: 1.2 },
-  heading: { gap: 8, marginTop: 28, marginBottom: 8 },
-  title: { fontSize: 34, lineHeight: 41, fontWeight: '700', letterSpacing: -1.1, color: theme.text },
-  subtitle: { ...typography.body, color: theme.muted, maxWidth: 520 },
-  form: { gap: 16 },
-  footer: { alignItems: 'center', marginTop: 8, paddingBottom: 8 },
-  link: { ...typography.small, color: theme.brand, fontWeight: '700' },
-  notice: { backgroundColor: theme.dangerWeak, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#f1cccc' },
-  noticeText: { ...typography.small, color: theme.danger },
-  successNotice: { backgroundColor: theme.okWeak, borderColor: '#cfe5d7' },
-  successText: { color: theme.ok },
+  mark: { backgroundColor: theme.brand, alignItems: 'center', justifyContent: 'center' },
+  markText: { color: '#fff', fontFamily: fonts.display, fontSize: 15, letterSpacing: 0.2 },
+  wordmark: { fontFamily: fonts.display, fontSize: 21, letterSpacing: -0.5, color: theme.text },
+  heading: { gap: 8, marginTop: 32, marginBottom: 8 },
+  title: { ...typography.display, color: theme.text },
+  subtitle: { ...typography.body, color: theme.textSecondary, maxWidth: 520 },
+  form: { gap: 18 },
+  footer: { alignItems: 'center', marginTop: 4, paddingBottom: 8 },
+  link: { ...typography.small, fontFamily: fonts.semibold, color: theme.primaryText },
 });

@@ -11,6 +11,8 @@
     "verify:android-release": "cd android && ./gradlew :app:bundleRelease"
   },
   "dependencies": {
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
+    "@expo-google-fonts/urbanist": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
@@ -35,7 +37,9 @@
     "@babel/core": "^7.24.7",
     "babel-preset-expo": "~57.0.0"
   },
-  "overrides": { "uuid": "^11.1.1" },
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "expo": {
     "doctor": {
       "appConfigFieldsNotSyncedCheck": {

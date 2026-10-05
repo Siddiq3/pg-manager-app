@@ -16,7 +16,7 @@ export function Skeleton({ width = '100%', height = 12, radius = 8, style }) {
 }
 
 export function SkeletonRow() {
-  return <View style={styles.row}><Skeleton width={48} height={48} radius={14} /><View style={styles.body}><Skeleton width="58%" /><Skeleton width="36%" height={10} /></View></View>;
+  return <View style={styles.row}><Skeleton width={42} height={42} radius={21} /><View style={styles.body}><Skeleton width="58%" /><Skeleton width="36%" height={10} /></View></View>;
 }
 
 export function SkeletonScreen({ rows = 4 }) {
@@ -25,6 +25,6 @@ export function SkeletonScreen({ rows = 4 }) {
 
 const styles = StyleSheet.create({
   screen: { gap: 12, paddingVertical: 4 },
-  row: { minHeight: 76, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle },
+  row: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.borderSubtle },
   body: { flex: 1, gap: 10 },
 });

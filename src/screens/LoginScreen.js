@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
-import { Button, Field, PasswordField, theme, typography } from '../components/ui';
+import { Button, Field, PasswordField, Segmented, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { OtpInput } from '../components/OtpInput';
 
@@ -52,34 +52,24 @@ export default function LoginScreen({ navigation, route }) {
     <AuthShell title="Welcome back" subtitle="Sign in to manage your PG, rooms, tenants and rent."
       footer={<Text style={{ ...typography.small, color: theme.muted }}>New to PG Manager? <AuthLink onPress={() => navigation.navigate('Register')}>Create an account</AuthLink></Text>}>
       {route.params?.reset && <AuthNotice tone="success" message="Password updated. Sign in with your new password." />}
-      <View style={styles.switcher}>
-        {['password', 'otp'].map((value) => (
-          <Pressable key={value} onPress={() => { setMethod(value); setError(''); }} style={[styles.switch, method === value && styles.switchActive]}>
-            <Text style={[styles.switchText, method === value && styles.switchTextActive]}>{value === 'password' ? 'Password' : 'Email OTP'}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <Segmented label="Sign-in method" value={method} onChange={(value) => { setMethod(value); setError(''); }}
+        options={[{ label: 'Password', value: 'password' }, { label: 'Email code', value: 'otp' }]} />
       <AuthNotice message={error} />
       {method === 'password' ? <>
-        <Field label="Email or mobile number" value={form.identifier} onChangeText={set('identifier')} textContentType="username" autoComplete="username" />
-        <PasswordField label="Password" value={form.password} onChangeText={set('password')} textContentType="password" autoComplete="password" />
+        <Field label="Email or mobile number" placeholder="Enter your email or mobile number" keyboardType="email-address" autoCorrect={false} value={form.identifier} onChangeText={set('identifier')} textContentType="username" autoComplete="username" />
+        <PasswordField label="Password" placeholder="Enter your password" value={form.password} onChangeText={set('password')} textContentType="password" autoComplete="password" />
         <View style={styles.forgot}><AuthLink onPress={() => navigation.navigate('ForgotPassword', { email: form.identifier.includes('@') ? form.identifier : '' })}>Forgot password?</AuthLink></View>
       </> : <>
         <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
         <Button variant="secondary" onPress={requestCode} loading={busy && !cooldown} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : 'Send sign-in code'}</Button>
         <OtpInput value={form.otp} onChangeText={set('otp')} />
       </>}
-      <Button onPress={submit} loading={busy} style={styles.submit}>Sign in</Button>
+      <Button size="lg" onPress={submit} loading={busy} style={styles.submit}>Sign in</Button>
     </AuthShell>
   );
 }
 
 const styles = StyleSheet.create({
-  switcher: { flexDirection: 'row', padding: 4, borderRadius: 12, backgroundColor: theme.surfaceMuted },
-  switch: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
-  switchActive: { backgroundColor: theme.surface },
-  switchText: { ...typography.small, color: theme.muted, fontWeight: '600' },
-  switchTextActive: { color: theme.brand },
-  forgot: { alignItems: 'flex-end', marginTop: -4 },
-  submit: { minHeight: 54, borderRadius: 14, marginTop: 4 },
+  forgot: { alignItems: 'flex-end', marginTop: -6 },
+  submit: { marginTop: 4 },
 });

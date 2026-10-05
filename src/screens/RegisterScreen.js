@@ -3,7 +3,6 @@ import { Text } from 'react-native';
 import { AuthLink, AuthNotice, AuthShell, getAuthError } from '../components/AuthShell';
 import { Button, Field, PasswordField, theme, typography } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import { OtpInput } from '../components/OtpInput';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -34,7 +33,7 @@ export default function RegisterScreen({ navigation }) {
       <PasswordField label="Password" value={form.password} onChangeText={set('password')} textContentType="newPassword" />
       <PasswordField label="Confirm password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
       <Text style={{ ...typography.caption, color: theme.muted }}>Use 8+ characters with uppercase, lowercase, number and symbol.</Text>
-      <Button onPress={submit} loading={busy} style={{ minHeight: 54, borderRadius: 14 }}>Create account</Button>
+      <Button size="lg" onPress={submit} loading={busy}>Create account</Button>
     </AuthShell>
   );
 }

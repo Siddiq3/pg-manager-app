@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, RefreshControl, Text, View } from 'react-native';
+import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, QueryState, Row, Screen, SectionTitle, Stat, styles, typography, theme } from '../components/ui';
+import { Button, Card, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -61,43 +61,47 @@ export default function DashboardScreen({ navigation }) {
           refreshing={refreshing}
           onRefresh={() => queryClient.invalidateQueries()}
           tintColor={theme.brand}
+          colors={[theme.brand]}
         />
       }
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ ...typography.caption, color: theme.muted }}>WELCOME BACK</Text>
-          <Text style={{ ...typography.display, fontSize: 29, color: theme.text }} numberOfLines={1}>{dashboard.data?.property?.name || 'Your PG'}</Text>
-          <Text style={{ ...typography.small, color: theme.muted }}>{user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'PG Manager'}</Text>
-        </View>
-        <Pressable onPress={() => navigation.navigate('Account')} style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="person-outline" size={20} color={theme.textSecondary} />
-        </Pressable>
-      </View>
+      <PageHeader
+        eyebrow={user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'Welcome back'}
+        title={dashboard.data?.property?.name || 'Your PG'}
+        right={(
+          <Press onPress={() => navigation.navigate('Account')} accessibilityLabel="Account" style={ds.avatar}>
+            <Text style={ds.avatarText}>{(user?.name || 'P').slice(0, 1).toUpperCase()}</Text>
+          </Press>
+        )}
+      />
 
       <QueryState query={properties}>
         {!propertyId ? (
-          <>
-            <Text style={{ color: theme.muted }}>Create a property to start tracking occupancy and rent.</Text>
+          <Card style={{ gap: 16 }}>
+            <View style={ds.setupIcon}><Ionicons name="business-outline" size={26} color={theme.primary} /></View>
+            <View style={{ gap: 4 }}>
+              <Text style={{ ...typography.h3, color: theme.text }}>Add your first property</Text>
+              <Text style={{ ...typography.body, color: theme.textMuted }}>Create a property to start tracking occupancy and rent.</Text>
+            </View>
             <Field label="Property name" value={newProperty} onChangeText={setNewProperty} placeholder="Sai Residency PG" autoCapitalize="words" />
             <Button onPress={addProperty} loading={creating}>Create property</Button>
-          </>
+          </Card>
         ) : (
           <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Stat label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} />
-              <Stat label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
+            <View style={ds.grid}>
+              <Stat icon="bed-outline" label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} tone="info" />
+              <Stat icon="sparkles-outline" label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
             </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Stat label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
-              <Stat label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
+            <View style={ds.grid}>
+              <Stat icon="exit-outline" label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
+              <Stat icon="wallet-outline" label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Button style={{ flex: 1 }} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
-              <Button style={{ flex: 1 }} variant="ghost" onPress={() => navigation.navigate('Rent', { propertyId })}>Rent</Button>
+            <View style={ds.grid}>
+              <QuickAction icon="person-add-outline" label="Add tenant" primary onPress={() => navigation.navigate('AddTenant', { propertyId })} />
+              <QuickAction icon="wallet-outline" label="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />
+              <QuickAction icon="bed-outline" label="Rooms" onPress={() => navigation.navigate('Rooms', { propertyId })} />
             </View>
-            <Button variant="ghost" onPress={() => navigation.navigate('Rooms', { propertyId })}>Rooms and vacancy</Button>
 
             <SectionTitle>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
@@ -106,9 +110,10 @@ export default function DashboardScreen({ navigation }) {
               (dashboard.data?.vacantBeds || []).slice(0, 5).map((bed) => (
                 <Row
                   key={bed._id}
+                  icon="bed-outline"
                   title={`Bed ${bed.bedLabel}`}
                   subtitle={`Room ${bed.roomId?.roomNumber || '-'}`}
-                  right="Open"
+                  badge="VACANT"
                   onPress={() => navigation.navigate('Rooms', { propertyId })}
                 />
               ))
@@ -121,8 +126,9 @@ export default function DashboardScreen({ navigation }) {
               pending.slice(0, 5).map((cycle) => (
                 <Row
                   key={cycle._id}
+                  icon="person-outline"
                   title={cycle.tenantId?.name || 'Tenant'}
-                  subtitle={`${cycle.month} - ${money(cycle.amountDue - cycle.amountPaid)} pending`}
+                  subtitle={`${cycle.month} · ${money(cycle.amountDue - cycle.amountPaid)} pending`}
                   badge={cycle.status}
                   onPress={() => navigation.navigate('Rent', { propertyId })}
                 />
@@ -131,8 +137,29 @@ export default function DashboardScreen({ navigation }) {
           </>
         )}
       </QueryState>
-
-      
     </Screen>
   );
 }
+
+function QuickAction({ icon, label, onPress, primary }) {
+  return (
+    <Press onPress={onPress} haptics={primary ? 'press' : 'tap'} accessibilityRole="button" accessibilityLabel={label} style={[ds.action, primary && ds.actionPrimary]}>
+      <View style={[ds.actionIcon, primary && ds.actionIconPrimary]}>
+        <Ionicons name={icon} size={20} color={primary ? '#fff' : theme.primary} />
+      </View>
+      <Text style={[ds.actionLabel, primary && { color: '#fff' }]} numberOfLines={1}>{label}</Text>
+    </Press>
+  );
+}
+
+const ds = StyleSheet.create({
+  grid: { flexDirection: 'row', gap: 12 },
+  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontFamily: fonts.display, fontSize: 19, color: theme.primaryText },
+  setupIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  action: { flex: 1, minHeight: 92, borderRadius: radius.lg, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, padding: 14, justifyContent: 'space-between', ...shadow.subtle },
+  actionPrimary: { backgroundColor: theme.primary, borderColor: theme.primary },
+  actionIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  actionIconPrimary: { backgroundColor: 'rgba(255,255,255,0.2)' },
+  actionLabel: { ...typography.label, color: theme.text, marginTop: 10 },
+});

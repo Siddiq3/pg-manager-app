@@ -1,146 +1,192 @@
-import React, { useEffect, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SkeletonScreen } from './Skeleton';
 import { Ionicons } from '@expo/vector-icons';
+import { SkeletonScreen } from './Skeleton';
+import { FadeIn, Press, useReducedMotion } from './motion';
+import { fonts, radius, shadow, spacing, theme, tones, typography } from './tokens';
 
-export { colors, theme, typography, spacing, radius, motion } from './tokens';
-import { theme, typography, spacing, radius } from './tokens';
+export { colors, fonts, theme, tones, typography, spacing, radius, motion, shadow } from './tokens';
+export { Press, FadeIn, useReducedMotion };
 
-/** Respect the OS setting before enabling navigation motion. */
-export function useReducedMotion() {
-  const [reduced, setReduced] = useState(true);
-  useEffect(() => {
-    let active = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((value) => { if (active) setReduced(value); }).catch(() => {});
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
-    return () => { active = false; subscription.remove(); };
-  }, []);
-  return reduced;
+/* ───────────── Type ───────────── */
+
+/** An all-caps kicker above a title. */
+export const Eyebrow = ({ children, style }) => <Text style={[styles.eyebrow, style]}>{children}</Text>;
+
+/** The top of every screen: optional kicker, a confident title, one line of context. */
+export function PageHeader({ eyebrow, title, subtitle, right }) {
+  return (
+    <FadeIn style={styles.pageHeader}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        {!!eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+        <Text style={styles.pageTitle} numberOfLines={2}>{title}</Text>
+        {!!subtitle && <Text style={styles.pageSubtitle}>{subtitle}</Text>}
+      </View>
+      {right}
+    </FadeIn>
+  );
 }
 
-/** Compact selection controls share the web app's quiet segmented treatment. */
+/* ───────────── Selection ───────────── */
+
 export function Segmented({ options, value, onChange, label }) {
   return (
     <View accessibilityLabel={label} style={styles.segmented}>
-      {options.map((option) => (
-        <Pressable key={option.value} accessibilityRole="tab" accessibilityState={{ selected: value === option.value }}
-          onPress={() => onChange(option.value)}
-          style={({ pressed }) => [styles.segment, value === option.value && styles.segmentSelected, pressed && styles.pressed]}>
-          <Text style={[styles.segmentText, value === option.value && { color: theme.primary }]}>{option.label}</Text>
-        </Pressable>
-      ))}
+      {options.map((option) => {
+        const selected = value === option.value;
+        return (
+          <Press key={option.value} haptics="select" scaleTo={1} accessibilityRole="tab" accessibilityState={{ selected }}
+            onPress={() => onChange(option.value)} style={[styles.segment, selected && styles.segmentSelected]}>
+            <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{option.label}</Text>
+          </Press>
+        );
+      })}
     </View>
   );
 }
+
+/* ───────────── Layout ───────────── */
 
 /** Screen chrome: safe-area insets (notch/home bar) plus the standard padding. */
 export function Screen({ children, scroll = false, refreshControl }) {
   if (!scroll) return <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>{children}</SafeAreaView>;
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.screenPlain}>
-      <ScrollView contentContainerStyle={styles.scrollBody} refreshControl={refreshControl} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollBody} refreshControl={refreshControl} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-export function Button({ children, onPress, variant = 'primary', disabled = false, loading = false, style, icon }) {
+export function Card({ children, style, padded = true }) { return <View style={[styles.card, padded && styles.cardPadded, style]}>{children}</View>; }
+export function Divider({ style }) { return <View style={[styles.divider, style]} />; }
+
+/* ───────────── Buttons ───────────── */
+
+const BUTTON_TONES = {
+  primary: { bg: theme.primary, fg: '#ffffff' },
+  secondary: { bg: theme.surface, fg: theme.textPrimary, border: true },
+  ghost: { bg: theme.primarySubtle, fg: theme.primaryText },
+  tertiary: { bg: 'transparent', fg: theme.primaryText },
+  danger: { bg: theme.errorSubtle, fg: theme.error },
+};
+
+export function Button({ children, onPress, variant = 'primary', size = 'md', disabled = false, loading = false, style, icon }) {
+  const tone = BUTTON_TONES[variant] || BUTTON_TONES.primary;
   const blocked = disabled || loading;
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: loading }}
-      onPress={blocked ? undefined : onPress}
-      style={({ pressed }) => [
-        styles.button,
-        variant === 'ghost' && styles.ghostButton,
-        variant === 'secondary' && styles.secondaryButton,
-        variant === 'tertiary' && styles.tertiaryButton,
-        variant === 'danger' && styles.dangerButton,
-        pressed && !blocked && styles.pressed,
-        pressed && !blocked && variant === 'primary' && { backgroundColor: theme.primaryPressed },
-        blocked && styles.disabledButton,
-        style,
-      ]}
+      onPress={onPress}
+      disabled={blocked}
+      haptics={variant === 'primary' ? 'press' : 'tap'}
+      style={[styles.button, size === 'lg' && styles.buttonLg, size === 'sm' && styles.buttonSm, { backgroundColor: tone.bg }, tone.border && styles.buttonBordered, style]}
     >
-      {loading && <ActivityIndicator size="small" color={blocked ? theme.textDisabled : variant === 'primary' ? '#fff' : theme.brand} />}
-      {!loading && icon}
-      <Text style={[styles.buttonText, variant !== 'primary' && styles.ghostText, variant === 'secondary' && { color: theme.textSecondary }, variant === 'danger' && styles.dangerText, blocked && { color: theme.textDisabled }]}>
+      {loading ? <ActivityIndicator size="small" color={tone.fg} /> : icon}
+      <Text style={[styles.buttonText, size === 'sm' && styles.buttonTextSm, { color: tone.fg }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
         {children}
       </Text>
-    </Pressable>
+    </Press>
   );
 }
+
+/* ───────────── Inputs ───────────── */
 
 export function Field({ label, value, onChangeText, keyboardType, secureTextEntry, placeholder, error, hint, right, autoCapitalize = 'none', ...rest }) {
   const [focused, setFocused] = useState(false);
   const { onFocus, onBlur, style: inputStyle, ...inputProps } = rest;
-  return <View style={styles.field}>
-    {!!label && <Text style={styles.label}>{label}</Text>}
-    <View style={[styles.inputBox, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError]}>
-      <TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} secureTextEntry={secureTextEntry} placeholder={placeholder || label} placeholderTextColor={theme.textDisabled} accessibilityLabel={label}
-        onFocus={e=>{setFocused(true);onFocus?.(e)}} onBlur={e=>{setFocused(false);onBlur?.(e)}} style={[styles.input,inputStyle]} autoCapitalize={autoCapitalize} {...inputProps}/>
-      {right}
+  return (
+    <View style={styles.field}>
+      {!!label && <Text style={styles.label}>{label}</Text>}
+      <View style={[styles.inputBox, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError]}>
+        <TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} secureTextEntry={secureTextEntry} placeholder={placeholder || label}
+          placeholderTextColor={theme.textDisabled} accessibilityLabel={label} autoCapitalize={autoCapitalize}
+          onFocus={(e) => { setFocused(true); onFocus?.(e); }} onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+          style={[styles.input, inputProps.multiline && styles.inputMultiline, inputStyle]} {...inputProps} />
+        {right}
+      </View>
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
+      {!error && !!hint && <Text style={styles.hintText}>{hint}</Text>}
     </View>
-    {!!error && <Text style={styles.errorText}>{error}</Text>}
-    {!error && !!hint && <Text style={styles.hintText}>{hint}</Text>}
-  </View>;
+  );
 }
 
 export function PasswordField(props) {
-  const [visible,setVisible]=useState(false);
-  return <Field {...props} secureTextEntry={!visible} autoCapitalize="none" autoCorrect={false} right={<Pressable accessibilityRole="button" accessibilityLabel={visible?'Hide password':'Show password'} onPress={()=>setVisible(v=>!v)} style={styles.fieldAction}><Ionicons name={visible?'eye-off-outline':'eye-outline'} size={20} color={theme.muted}/></Pressable>}/>;
+  const [visible, setVisible] = useState(false);
+  return (
+    <Field {...props} secureTextEntry={!visible} autoCapitalize="none" autoCorrect={false}
+      right={(
+        <Press haptics={null} scaleTo={1} accessibilityRole="button" accessibilityLabel={visible ? 'Hide password' : 'Show password'} onPress={() => setVisible((v) => !v)} style={styles.fieldAction}>
+          <Ionicons name={visible ? 'eye-off-outline' : 'eye-outline'} size={20} color={theme.textMuted} />
+        </Press>
+      )} />
+  );
 }
 
-export function Card({children,style,padded=true}) { return <View style={[styles.card,padded&&styles.cardPadded,style]}>{children}</View>; }
-export function Divider({style}) { return <View style={[styles.divider,style]}/>; }
-export function Pill({children,tone='muted'}) { const p={ok:[theme.okWeak,theme.ok],warn:[theme.warnWeak,theme.warn],danger:[theme.dangerWeak,theme.danger],muted:[theme.surfaceMuted,theme.muted]}[tone]||[theme.surfaceMuted,theme.muted]; return <View style={[styles.pill,{backgroundColor:p[0]}]}><Text style={[styles.pillText,{color:p[1]}]}>{children}</Text></View>; }
-
-export function Stat({ label, value, hint, tone = 'default' }) {
+/** A labelled on/off row, used for yes/no facts like "deposit paid". */
+export function Toggle({ label, hint, value, onChange }) {
   return (
-    <View style={[styles.stat, tone !== 'default' && { borderTopColor: theme[tone], borderTopWidth: 2 }]}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
+    <Press haptics="select" scaleTo={1} onPress={() => onChange(!value)} accessibilityRole="switch" accessibilityState={{ checked: !!value }} accessibilityLabel={label} style={styles.toggleRow}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.toggleLabel}>{label}</Text>
+        {!!hint && <Text style={styles.hintText}>{hint}</Text>}
+      </View>
+      <View style={[styles.toggleTrack, value && styles.toggleTrackOn]}>
+        <View style={[styles.toggleThumb, value && styles.toggleThumbOn]} />
+      </View>
+    </Press>
+  );
+}
+
+/* ───────────── Status ───────────── */
+
+export function Pill({ children, tone = 'muted' }) {
+  const p = tones[tone] || tones.muted;
+  return <View style={[styles.pill, { backgroundColor: p.bg }]}><Text style={[styles.pillText, { color: p.fg }]} numberOfLines={1}>{children}</Text></View>;
+}
+
+const BADGE_TONES = { PAID: 'ok', ACTIVE: 'ok', VACANT: 'ok', PARTIAL: 'warn', PENDING: 'warn', OVERDUE: 'danger', VACATED: 'muted', OCCUPIED: 'info', AVAILABLE: 'ok', INACTIVE: 'muted', COMPLETED: 'ok', CANCELLED: 'muted', OWNER: 'accent' };
+
+/** API statuses arrive as SHOUTING_CASE; show them as sentence case. */
+const statusLabel = (s) => (/^[A-Z_]+$/.test(s) ? s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, ' ') : s);
+
+export function Badge({ children }) {
+  return <Pill tone={BADGE_TONES[children] || 'muted'}>{statusLabel(String(children))}</Pill>;
+}
+
+export function Stat({ label, value, hint, tone = 'default', icon }) {
+  const accent = tone === 'default' ? theme.textDisabled : theme[tone];
+  return (
+    <View style={styles.stat}>
+      <View style={styles.statHead}>
+        {icon ? <Ionicons name={icon} size={15} color={accent} /> : <View style={[styles.statDot, { backgroundColor: accent }]} />}
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
+      <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{value}</Text>
       {!!hint && <Text style={styles.statHint}>{hint}</Text>}
     </View>
   );
 }
 
-const BADGE_TONES = { PAID: 'ok', ACTIVE: 'ok', VACANT: 'ok', PARTIAL: 'warn', PENDING: 'warn', OVERDUE: 'danger', VACATED: 'muted', OCCUPIED: 'info', AVAILABLE: 'ok', INACTIVE: 'muted', COMPLETED: 'ok', CANCELLED: 'muted' };
-
-export function Badge({ children }) {
-  const tone = BADGE_TONES[children] || 'muted';
-  const colors = {
-    ok: [theme.okWeak, theme.ok],
-    warn: [theme.warnWeak, theme.warn],
-    danger: [theme.dangerWeak, theme.danger],
-    muted: [theme.surfaceMuted, theme.muted],
-    info: [theme.infoSubtle, theme.info],
-  }[tone];
-  return (
-    <View style={[styles.badge, { backgroundColor: colors[0] }]}>
-      <Text style={[styles.badgeText, { color: colors[1] }]}>{children}</Text>
-    </View>
-  );
-}
-
-export function Row({ title, subtitle, right, badge, onPress }) {
-  return (
-    <Pressable
-      accessibilityRole={onPress ? 'button' : undefined}
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && onPress && styles.pressed]}
-    >
+/** A list item card. `icon` renders in a tinted medallion; a pressable row gets a chevron. */
+export function Row({ title, subtitle, right, badge, onPress, icon }) {
+  const body = (
+    <>
+      {!!icon && <View style={styles.rowIcon}><Ionicons name={icon} size={19} color={theme.primary} /></View>}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={styles.rowTitle}>{title}</Text>
-        {!!subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+        <Text style={styles.rowTitle} numberOfLines={1}>{title}</Text>
+        {!!subtitle && <Text style={styles.rowSubtitle} numberOfLines={2}>{subtitle}</Text>}
       </View>
       {badge ? <Badge>{badge}</Badge> : null}
       {!!right && <Text style={styles.rowRight}>{right}</Text>}
-    </Pressable>
+      {!!onPress && <Ionicons name="chevron-forward" size={17} color={theme.textDisabled} />}
+    </>
   );
+  if (!onPress) return <View style={styles.row}>{body}</View>;
+  return <Press accessibilityRole="button" onPress={onPress} scaleTo={0.985} style={styles.row}>{body}</Press>;
 }
 
 export function SectionTitle({ children, action }) {
@@ -151,6 +197,20 @@ export function SectionTitle({ children, action }) {
     </View>
   );
 }
+
+/** Inline message above a form's action. */
+export function Notice({ message, tone = 'danger', icon }) {
+  if (!message) return null;
+  const p = { danger: tones.danger, warn: tones.warn, ok: tones.ok, info: tones.info, muted: { bg: theme.surfaceMuted, fg: theme.textSecondary }, accent: tones.accent }[tone] || tones.danger;
+  return (
+    <View style={[styles.notice, { backgroundColor: p.bg }]} accessibilityLiveRegion="polite">
+      {!!icon && <Ionicons name={icon} size={18} color={p.fg} />}
+      <Text style={[styles.noticeText, { color: p.fg }]}>{message}</Text>
+    </View>
+  );
+}
+
+/* ───────────── States ───────────── */
 
 /** Consistent loading / offline / timeout / server / empty states for every query. */
 export function QueryState({ query, empty, children }) {
@@ -163,105 +223,100 @@ export function QueryState({ query, empty, children }) {
       : kind === 'rate' ? 'Please wait a moment'
       : 'Couldn’t load this';
     const message = query.error?.uiMessage || query.error?.response?.data?.message || 'Something went wrong while loading this screen.';
-    return <StateView title={title} message={message} actionLabel="Try again" onAction={() => query.refetch()} tone="error" />;
+    return <StateView title={title} message={message} actionLabel="Try again" onAction={() => query.refetch()} tone="error" icon={kind === 'network' ? 'cloud-offline-outline' : 'alert-circle-outline'} />;
   }
   if (empty && !(query.data || []).length) return <StateView title="Nothing here yet" message={empty} />;
   return children;
 }
 
-export function StateView({ title, message, actionLabel, onAction, tone = 'neutral' }) {
+/** An empty or error state that explains itself, with its icon in a tinted medallion. */
+export function StateView({ title, message, actionLabel, onAction, tone = 'neutral', icon }) {
   const error = tone === 'error';
   return (
-    <View style={[styles.stateView, error && styles.stateError]}>
-      <View style={[styles.stateIcon, error && { backgroundColor: theme.dangerWeak }]}><Text style={{ fontSize: 20 }}>{error ? '!' : '·'}</Text></View>
+    <FadeIn style={styles.stateView}>
+      <View style={[styles.stateIcon, error && { backgroundColor: theme.errorSubtle }]}>
+        <Ionicons name={icon || (error ? 'alert-circle-outline' : 'file-tray-outline')} size={28} color={error ? theme.error : theme.primary} />
+      </View>
       <Text style={styles.stateTitle}>{title}</Text>
       {!!message && <Text style={styles.stateMessage}>{message}</Text>}
-      {!!actionLabel && <Button variant={error ? 'ghost' : 'secondary'} onPress={onAction}>{actionLabel}</Button>}
-    </View>
+      {!!actionLabel && <Button variant="secondary" onPress={onAction} style={{ alignSelf: 'stretch', marginTop: spacing.sm }}>{actionLabel}</Button>}
+    </FadeIn>
   );
 }
 
+/* ───────────── Styles ───────────── */
+
 export const styles = StyleSheet.create({
-  segmented: { flexDirection: 'row', padding: 4, gap: 4, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
-  segment: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: 7 },
-  segmentSelected: { backgroundColor: theme.surface },
-  segmentText: { ...typography.small, color: theme.textSecondary, fontWeight: '600' },
-  screen: { flex: 1, backgroundColor: theme.bg, padding: 20, gap: 16 },
+  eyebrow: { ...typography.overline, color: theme.primaryText, marginBottom: spacing.sm },
+  pageHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xs },
+  pageTitle: { ...typography.h1, color: theme.text },
+  pageSubtitle: { ...typography.body, color: theme.textSecondary, marginTop: spacing.xs },
+
+  segmented: { flexDirection: 'row', padding: 4, gap: 4, backgroundColor: theme.surfaceMuted, borderRadius: radius.sm + 2 },
+  segment: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: radius.sm - 1 },
+  segmentSelected: { backgroundColor: theme.surface, ...shadow.subtle },
+  segmentText: { ...typography.label, color: theme.textMuted },
+  segmentTextSelected: { color: theme.primaryText },
+
+  screen: { flex: 1, backgroundColor: theme.bg, padding: spacing.lg, gap: spacing.lg },
   screenPlain: { flex: 1, backgroundColor: theme.bg },
-  scrollBody: { padding: 20, gap: 16, paddingBottom: 40 },
-  button: {
-    minHeight: 48,
-    flexDirection: 'row',
-    gap: 8,
-    borderRadius: radius.md,
-    backgroundColor: theme.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  ghostButton: { backgroundColor: theme.brandWeak },
-  secondaryButton: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderStrong },
-  tertiaryButton: { backgroundColor: 'transparent' },
-  dangerButton: { backgroundColor: theme.dangerWeak },
-  pressed: { opacity: 0.8 },
-  disabledButton: { backgroundColor: theme.surfaceMuted, borderColor: theme.borderSubtle },
-  buttonText: { ...typography.small, color: '#fff', fontWeight: '600', textAlign: 'center' },
-  ghostText: { color: theme.brand },
-  dangerText: { color: theme.danger },
-  field: { gap: 6 },
-  label: { ...typography.label, color: theme.textSecondary },
-  inputBox: { minHeight: 50, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: theme.borderStrong, borderRadius: radius.sm, backgroundColor: theme.surface },
-  input: { flex: 1, minHeight: 48, paddingHorizontal: 14, color: theme.text, fontSize: 16, paddingVertical: 12 },
-  fieldAction: { width: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  inputFocused: { borderColor: theme.primary, backgroundColor: theme.primarySubtle },
-  inputDisabled: { backgroundColor: theme.surfaceMuted, color: theme.textDisabled },
-  inputError: { borderColor: theme.danger },
-  errorText: { color: theme.danger, fontSize: 12 },
-  hintText: { ...typography.caption, color: theme.muted },
-  card: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: radius.lg },
+  scrollBody: { padding: spacing.lg, paddingTop: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
+
+  card: { backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, ...shadow.card },
   cardPadded: { padding: spacing.lg },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
-  pill: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill },
-  pillText: { ...typography.caption, fontWeight: '600' },
-  stat: {
-    flex: 1,
-    minHeight: 108,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.surface,
-    padding: 16,
-    gap: 6,
-    justifyContent: 'center',
-  },
-  statLabel: { color: theme.muted, fontWeight: '600', fontSize: 12 },
-  statValue: { color: theme.text, fontSize: 26, fontWeight: '600', fontVariant: ['tabular-nums'] },
-  statHint: { ...typography.caption, color: theme.muted },
-  row: {
-    minHeight: 76,
-    backgroundColor: theme.surface,
-    borderWidth: 1,
-    borderColor: theme.border,
-    borderRadius: 12,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  rowTitle: { ...typography.body, color: theme.text, fontWeight: '600' },
-  rowSubtitle: { ...typography.small, marginTop: 4, color: theme.muted },
-  rowRight: { ...typography.small, color: theme.brand, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-  badge: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 6 },
-  badgeText: { fontSize: 12, lineHeight: 18, fontWeight: '600' },
-  sectionTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16 },
+
+  button: { minHeight: 52, flexDirection: 'row', gap: spacing.sm, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl, overflow: 'hidden' },
+  buttonLg: { minHeight: 58 },
+  buttonSm: { minHeight: 40, paddingHorizontal: spacing.lg, borderRadius: radius.sm },
+  buttonBordered: { borderWidth: 1.5, borderColor: theme.border },
+  buttonText: { fontFamily: fonts.bold, fontSize: 16, letterSpacing: -0.2, flexShrink: 1 },
+  buttonTextSm: { fontSize: 14.5 },
+
+  field: { gap: 10 },
+  label: { ...typography.label, color: theme.textSecondary },
+  inputBox: { minHeight: 58, flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: theme.border, borderRadius: radius.md, backgroundColor: theme.surface, paddingHorizontal: spacing.lg + 2, gap: spacing.sm },
+  input: { flex: 1, fontFamily: fonts.medium, fontSize: 16.5, lineHeight: 22, color: theme.text, paddingVertical: spacing.md },
+  inputMultiline: { minHeight: 96, textAlignVertical: 'top' },
+  fieldAction: { width: 40, minHeight: 44, alignItems: 'center', justifyContent: 'center', marginRight: -spacing.sm },
+  inputFocused: { borderColor: theme.primary, backgroundColor: theme.primarySubtle },
+  inputDisabled: { backgroundColor: theme.surfaceMuted },
+  inputError: { borderColor: theme.error, backgroundColor: theme.errorSubtle },
+  errorText: { ...typography.caption, color: theme.error, marginLeft: 2 },
+  hintText: { ...typography.caption, color: theme.textMuted, marginLeft: 2 },
+
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, minHeight: 56, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, ...shadow.subtle },
+  toggleLabel: { ...typography.bodyStrong, color: theme.text },
+  toggleTrack: { width: 48, height: 28, borderRadius: radius.pill, padding: 3, backgroundColor: theme.border, justifyContent: 'center' },
+  toggleTrackOn: { backgroundColor: theme.primary },
+  toggleThumb: { width: 22, height: 22, borderRadius: radius.pill, backgroundColor: theme.surface, ...shadow.card },
+  toggleThumbOn: { transform: [{ translateX: 20 }] },
+
+  pill: { alignSelf: 'flex-start', paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.pill, flexShrink: 0 },
+  pillText: { ...typography.caption, fontFamily: fonts.semibold },
+
+  stat: { flex: 1, minHeight: 112, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, backgroundColor: theme.surface, padding: spacing.lg, gap: 6, justifyContent: 'center', ...shadow.card },
+  statHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statDot: { width: 7, height: 7, borderRadius: 4 },
+  statLabel: { ...typography.label, color: theme.textMuted },
+  statValue: { ...typography.figure, color: theme.text },
+  statHint: { ...typography.caption, color: theme.textMuted },
+
+  row: { minHeight: 72, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, borderRadius: radius.lg, paddingVertical: 14, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, ...shadow.subtle },
+  rowIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  rowTitle: { ...typography.bodyStrong, color: theme.text },
+  rowSubtitle: { ...typography.small, marginTop: 2, color: theme.textMuted },
+  rowRight: { ...typography.label, color: theme.primaryText, flexShrink: 1, textAlign: 'right' },
+
+  sectionTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.md },
   sectionTitleText: { ...typography.h3, color: theme.text, flexShrink: 1 },
-  empty: { ...typography.small, color: theme.muted, paddingVertical: 16 },
-  emptyState: { padding: 20, backgroundColor: theme.surfaceMuted, borderRadius: 10 },
-  notice: { backgroundColor: theme.dangerWeak, borderRadius: 12, padding: 14, gap: 10 },
-  noticeText: { color: theme.danger },
-  stateView: { minHeight: 210, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: theme.borderSubtle },
-  stateError: { backgroundColor: theme.dangerWeak, borderColor: theme.border },
-  stateIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surfaceMuted },
+  empty: { ...typography.small, color: theme.textMuted, paddingVertical: spacing.md, textAlign: 'center' },
+
+  notice: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderRadius: radius.md, padding: spacing.md + 2 },
+  noticeText: { ...typography.small, flex: 1 },
+
+  stateView: { minHeight: 240, alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.xl, backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, ...shadow.subtle },
+  stateIcon: { width: 68, height: 68, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.primarySubtle, marginBottom: spacing.sm },
   stateTitle: { ...typography.h3, color: theme.text, textAlign: 'center' },
-  stateMessage: { ...typography.small, color: theme.muted, textAlign: 'center', maxWidth: 320 },
+  stateMessage: { ...typography.body, color: theme.textMuted, textAlign: 'center', maxWidth: 300 },
 });

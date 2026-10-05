@@ -3,6 +3,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+import { Urbanist_600SemiBold, Urbanist_700Bold } from '@expo-google-fonts/urbanist';
+import { PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/components/ui';
@@ -25,16 +29,25 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  // Gate the first render on fonts so nothing paints in a fallback face and then reflows.
+  // A font error still renders (in system fonts) rather than leaving a blank screen.
+  const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
+    Urbanist_600SemiBold, Urbanist_700Bold,
+    PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold,
+  });
+  if (!fontsLoaded && !fontError) return null;
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>
           <ToastProvider>
             <AuthProvider>
-          <NavigationContainer theme={navigationTheme}>
-            <StatusBar style="dark" />
-            <AppNavigator />
-          </NavigationContainer>
+              <NavigationContainer theme={navigationTheme}>
+                <StatusBar style="dark" />
+                <AppNavigator />
+              </NavigationContainer>
             </AuthProvider>
           </ToastProvider>
         </ErrorBoundary>

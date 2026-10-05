@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, RefreshControl, Text, View } from 'react-native';
+import { Alert, RefreshControl, Text } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, QueryState, Row, Screen, SectionTitle, typography, theme } from '../components/ui';
+import { Button, Card, Field, PageHeader, QueryState, Row, Screen, SectionTitle, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -81,46 +81,47 @@ export default function RoomDetailScreen({ navigation, route }) {
 
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={room.isRefetching} onRefresh={room.refetch} tintColor={theme.brand} />}>
-      <Text style={{ ...typography.h2, color: theme.text }}>Room {room.data?.roomNumber || ''}</Text>
-      {!!room.data && (
-        <Text style={{ color: theme.muted }}>
-          {[room.data.type, room.data.floor && `Floor ${room.data.floor}`, money(room.data.monthlyRent)].filter(Boolean).join(' · ')}
-          {beds.length ? ` · ${occupied}/${beds.length} filled` : ''}
-        </Text>
-      )}
+      <PageHeader
+        eyebrow={beds.length ? `${occupied}/${beds.length} beds filled` : 'Room'}
+        title={`Room ${room.data?.roomNumber || ''}`}
+        subtitle={room.data ? [room.data.type, room.data.floor && `Floor ${room.data.floor}`, money(room.data.monthlyRent)].filter(Boolean).join(' · ') : undefined}
+      />
 
       <QueryState query={room}>
+        <SectionTitle>Beds</SectionTitle>
+        {beds.length === 0 ? (
+          <Text style={styles.empty}>No beds yet. Add the first one below.</Text>
+        ) : (
+          beds.map((bed) => (
+            <Row
+              key={bed._id}
+              icon="bed-outline"
+              title={`Bed ${bed.bedLabel}`}
+              badge={bed.status}
+              right={bed.status === 'VACANT' ? 'Delete' : undefined}
+              onPress={() => confirmRemoveBed(bed)}
+            />
+          ))
+        )}
+        <Card style={{ gap: 12 }}>
+          <Field label="New bed label" value={bedLabel} onChangeText={setBedLabel} placeholder="A" autoCapitalize="characters" />
+          <Button variant="ghost" onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
+            Add bed
+          </Button>
+        </Card>
+
         <SectionTitle>Room details</SectionTitle>
         <Field label="Room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
         <Field label="Floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
         <Field label="Type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
         <Field label="Monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
         <Field label="Notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
-        <Button variant="secondary" disabled={!Object.keys(roomEdits).length} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
-        <SectionTitle>Beds</SectionTitle>
-        {beds.length === 0 ? (
-          <Text style={{ color: theme.muted }}>No beds yet. Add the first one below.</Text>
-        ) : (
-          beds.map((bed) => (
-            <Row
-              key={bed._id}
-              title={`Bed ${bed.bedLabel}`}
-              badge={bed.status}
-              right={bed.status === 'VACANT' ? 'Delete' : 'Occupied'}
-              onPress={() => confirmRemoveBed(bed)}
-            />
-          ))
-        )}
+        <Button disabled={!Object.keys(roomEdits).length} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
 
-        <View style={{ gap: 10, marginTop: 6 }}>
-          <Field label="New bed label" value={bedLabel} onChangeText={setBedLabel} placeholder="A" autoCapitalize="characters" />
-          <Button onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
-            Add bed
-          </Button>
-          <Button variant="danger" onPress={confirmDeleteRoom} loading={deleteRoom.isPending}>
-            Delete room
-          </Button>
-        </View>
+        <SectionTitle>Danger zone</SectionTitle>
+        <Button variant="danger" onPress={confirmDeleteRoom} loading={deleteRoom.isPending}>
+          Delete room
+        </Button>
       </QueryState>
     </Screen>
   );
