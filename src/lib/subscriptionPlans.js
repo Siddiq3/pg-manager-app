@@ -9,7 +9,7 @@ export const SUBSCRIPTION_PLANS = Object.freeze([
   Object.freeze({ id: 'GROWTH', name: 'Growth', monthlyPrice: 999, properties: 10, beds: 1000, coOwners: 4, support: 'Priority' }),
 ]);
 
-export const INCLUDED_FEATURES = 'All plans include room, bed and tenant management, occupancy, rent tracking, payment and deposit records, plus web and Android access.';
+export const INCLUDED_FEATURES = 'All plans include room, bed and tenant management, occupancy, rent tracking, and payment and deposit records.';
 export const PLAN_LIMIT_NOTE = 'Property, bed and co-owner limits apply across your subscription. Co-owners are additional to the primary owner.';
 
 export function subscriptionPlan(value) {
