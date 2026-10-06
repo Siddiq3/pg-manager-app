@@ -32,7 +32,7 @@ export default function TenantsScreen({ navigation, route }) {
         right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add</Button>}
       />
       <Segmented label="Tenant status" value={status} onChange={setStatus} options={[{ label: 'Staying now', value: 'ACTIVE' }, { label: 'Moved out', value: 'VACATED' }]} />
-      {all.length > 5 && <Field label="Search" value={search} onChangeText={setSearch} placeholder="Name or mobile number" />}
+      {all.length > 5 && <Field label="Search" placeholder="Search by name or mobile number" value={search} onChangeText={setSearch} />}
       <QueryState query={tenants}>
         {shown.length === 0 ? (
           <StateView

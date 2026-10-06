@@ -48,12 +48,12 @@ export default function ForgotPasswordScreen({ navigation, route }) {
       footer={<Text style={{ ...typography.small, color: theme.muted }}><AuthLink onPress={() => navigation.navigate('Login')}>Back to sign in</AuthLink></Text>}>
       <AuthNotice message={error} />
       <AuthNotice message={message} tone="success" />
-      <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
+      <Field label="Email" placeholder="Enter your email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
       <Button variant="secondary" onPress={sendCode} loading={busy && !sent} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : sent ? 'Resend code' : 'Send reset code'}</Button>
       {sent && <>
         <OtpInput value={form.otp} onChangeText={set('otp')} />
-        <PasswordField label="New password" value={form.newPassword} onChangeText={set('newPassword')} textContentType="newPassword" />
-        <PasswordField label="Confirm new password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
+        <PasswordField label="New password" placeholder="Enter a new password" value={form.newPassword} onChangeText={set('newPassword')} textContentType="newPassword" />
+        <PasswordField label="Confirm new password" placeholder="Re-enter your new password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
         <Button size="lg" onPress={reset} loading={busy}>Update password</Button>
       </>}
     </AuthShell>

@@ -107,9 +107,9 @@ export default function RoomsScreen({ navigation, route }) {
         <Text style={{ ...typography.caption, color: theme.textMuted, textAlign: 'center' }}>Open a room to add or remove its beds.</Text>
       )}
       <Sheet visible={adding} onClose={() => setAdding(false)} title="Add a room">
-        <Field label="Room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
-        <Field label="Type (optional)" value={form.type} onChangeText={set('type')} placeholder="Double sharing" autoCapitalize="sentences" />
-        <Field label="Monthly rent (optional)" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
+        <Field label="Room number" placeholder="Enter room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
+        <Field label="Type (optional)" placeholder="Enter room type" value={form.type} onChangeText={set('type')} autoCapitalize="sentences" />
+        <Field label="Monthly rent (optional)" placeholder="Enter monthly rent" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
         <Button onPress={submit} loading={addRoom.isPending}>Add room</Button>
       </Sheet>
     </Screen>

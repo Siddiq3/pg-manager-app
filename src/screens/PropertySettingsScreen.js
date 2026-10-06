@@ -63,9 +63,9 @@ export default function PropertySettingsScreen({ route }) {
       <PageHeader title="Property settings" subtitle={isOwner ? "Your property's details and who can manage it." : 'You are a co-owner of this property.'} />
       <QueryState query={properties}>
         <SectionTitle>Details</SectionTitle>
-        <Field label="Property name" value={form.name} onChangeText={(v) => setForm((p) => ({ ...p, name: v }))} autoCapitalize="words" editable={isOwner} />
-        <Field label="Address" value={form.address} onChangeText={(v) => setForm((p) => ({ ...p, address: v }))} autoCapitalize="words" editable={isOwner} />
-        <Field label="City" value={form.city} onChangeText={(v) => setForm((p) => ({ ...p, city: v }))} autoCapitalize="words" editable={isOwner} />
+        <Field label="Property name" placeholder="Enter property name" value={form.name} onChangeText={(v) => setForm((p) => ({ ...p, name: v }))} autoCapitalize="words" editable={isOwner} />
+        <Field label="Address" placeholder="Enter address" value={form.address} onChangeText={(v) => setForm((p) => ({ ...p, address: v }))} autoCapitalize="words" editable={isOwner} />
+        <Field label="City" placeholder="Enter city" value={form.city} onChangeText={(v) => setForm((p) => ({ ...p, city: v }))} autoCapitalize="words" editable={isOwner} />
         {isOwner ? <Button onPress={save} loading={busy === 'save'}>Save property</Button> : <Notice tone="muted" icon="information-circle-outline" message="Only the owner can change these details or add co-owners." />}
       </QueryState>
 
@@ -83,10 +83,10 @@ export default function PropertySettingsScreen({ route }) {
           <Notice tone="muted" message={PLAN_LIMIT_NOTE} />
           {noCoOwners ? <Notice tone="muted" message={onTrial ? 'The free trial has Starter limits, which do not include co-owners. Pro includes up to 2 and Growth up to 4.' : 'Starter does not include co-owners. Pro includes up to 2 and Growth includes up to 4 additional co-owners across your subscription.'} /> : <>
           <Text style={s.cardBody}>Create a sign-in for a partner or manager. Share the email and password with them; they can change the password later from Password & devices.</Text>
-          <Field label="Their name" value={coOwner.name} onChangeText={setField('name')} autoCapitalize="words" placeholder="Asha Rao" />
-          <Field label="Their email" value={coOwner.email} onChangeText={setField('email')} keyboardType="email-address" placeholder="name@example.com" />
-          <Field label="Their mobile number" value={coOwner.phone} onChangeText={setField('phone')} keyboardType="phone-pad" placeholder="9876543210" />
-          <PasswordField label="Password for them" value={coOwner.password} onChangeText={setField('password')} hint="8+ characters with uppercase, lowercase, number and symbol." />
+          <Field label="Their name" placeholder="Enter co-owner's name" value={coOwner.name} onChangeText={setField('name')} autoCapitalize="words" />
+          <Field label="Their email" placeholder="Enter co-owner's email" value={coOwner.email} onChangeText={setField('email')} keyboardType="email-address" />
+          <Field label="Their mobile number" placeholder="Enter co-owner's mobile number" value={coOwner.phone} onChangeText={setField('phone')} keyboardType="phone-pad" />
+          <PasswordField label="Password for them" placeholder="Create a password for them" value={coOwner.password} onChangeText={setField('password')} hint="8+ characters with uppercase, lowercase, number and symbol." />
           <Button onPress={addCoOwner} loading={busy === 'co-owner'} disabled={!canAdd}>Add co-owner</Button>
           </>}
         </Card>

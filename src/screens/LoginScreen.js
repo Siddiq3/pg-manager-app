@@ -60,7 +60,7 @@ export default function LoginScreen({ navigation, route }) {
         <PasswordField label="Password" placeholder="Enter your password" value={form.password} onChangeText={set('password')} textContentType="password" autoComplete="password" />
         <View style={styles.forgot}><AuthLink onPress={() => navigation.navigate('ForgotPassword', { email: form.identifier.includes('@') ? form.identifier : '' })}>Forgot password?</AuthLink></View>
       </> : <>
-        <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
+        <Field label="Email" placeholder="Enter your email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
         <Button variant="secondary" onPress={requestCode} loading={busy && !cooldown} disabled={cooldown > 0}>{cooldown ? `Resend in ${cooldown}s` : 'Send sign-in code'}</Button>
         <OtpInput value={form.otp} onChangeText={set('otp')} />
       </>}

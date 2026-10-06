@@ -100,7 +100,7 @@ export default function DashboardScreen({ navigation }) {
               <Text style={{ ...typography.h3, color: theme.text }}>Add your first property</Text>
               <Text style={{ ...typography.body, color: theme.textMuted }}>Create a property to start tracking occupancy and rent.</Text>
             </View>
-            <Field label="Property name" value={newProperty} onChangeText={setNewProperty} placeholder="Sai Residency PG" autoCapitalize="words" />
+            <Field label="Property name" placeholder="Enter property name" value={newProperty} onChangeText={setNewProperty} autoCapitalize="words" />
             <Button onPress={addProperty} loading={creating}>Create property</Button>
           </Card>
         ) : (
@@ -177,7 +177,7 @@ export default function DashboardScreen({ navigation }) {
           />
         ))}
         <SectionTitle>Add another property</SectionTitle>
-        <Field label="Property name" value={newProperty} onChangeText={setNewProperty} placeholder="Sai Residency PG 2" autoCapitalize="words" />
+        <Field label="Property name" placeholder="Enter property name" value={newProperty} onChangeText={setNewProperty} autoCapitalize="words" />
         <Button onPress={addProperty} loading={creating} disabled={!newProperty.trim()}>Add property</Button>
       </Sheet>
     </Screen>
