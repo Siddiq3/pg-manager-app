@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 
 /**
- * Design tokens, ported from the StoreKit merchant app: warm neutrals, one confident purple
- * accent, soft corners, Urbanist for display over Plus Jakarta Sans for everything else.
+ * Design tokens: cool neutral surfaces, a restrained violet accent and deep ink heroes.
+ * Urbanist provides display type over Plus Jakarta Sans for everything else.
  *
  * Weights are separate font families, not `fontWeight`: Android does not synthesise weights
  * for custom fonts, so asking for 600 on a 400-only family silently renders 400.
@@ -18,11 +18,11 @@ export const fonts = {
 };
 
 export const colors = {
-  primary: '#9d00ff', primaryPressed: '#7e00cc', primarySubtle: '#faf0ff', primaryTint: '#efd9ff', primaryText: '#7e00cc',
-  secondary: '#45454f', background: '#f4f4f6', surface: '#ffffff',
-  surfaceElevated: '#ffffff', surfaceMuted: '#eeeef1',
-  textPrimary: '#101014', textSecondary: '#45454f', textMuted: '#5b5b66', textDisabled: '#8a8a95',
-  border: '#e6e6ea', borderSubtle: '#eeeef1', borderStrong: '#d3d3d9',
+  primary: '#7054DE', primaryPressed: '#563AB9', primarySubtle: '#F2EEFF', primaryTint: '#E4DCFC', primaryText: '#563AB9',
+  secondary: '#495368', background: '#F6F7FB', surface: '#ffffff',
+  surfaceElevated: '#ffffff', surfaceMuted: '#EDF0F6', ink: '#202640', inkMuted: '#BAC1D8',
+  textPrimary: '#202640', textSecondary: '#495368', textMuted: '#626D82', textDisabled: '#8790A2',
+  border: '#E3E7F0', borderSubtle: '#EDF0F6', borderStrong: '#CDD4E2',
   success: '#15803d', successSubtle: '#f0fdf4', warning: '#b45309', warningSubtle: '#fffbeb',
   error: '#be123c', errorSubtle: '#fef2f2', info: '#1d4ed8', infoSubtle: '#eff6ff',
 };
@@ -41,7 +41,7 @@ export const tones = {
   danger: { bg: '#fef2f2', fg: '#be123c' },
   info: { bg: '#eff6ff', fg: '#1d4ed8' },
   muted: { bg: '#f8fafc', fg: '#475569' },
-  accent: { bg: '#efd9ff', fg: '#7e00cc' },
+  accent: { bg: '#E4DCFC', fg: '#563AB9' },
 };
 
 export const typography = {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { RefreshControl, Text } from 'react-native';
+import { RefreshControl, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, PageHeader, QueryState, Row, Screen, typography, theme } from '../components/ui';
+import { Button, Field, PageHeader, QueryState, Row, Screen, Stat, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -86,6 +86,10 @@ export default function RoomsScreen({ navigation, route }) {
         subtitle={rooms.data ? `${rooms.data.length} room${rooms.data.length === 1 ? '' : 's'} · ${(beds.data || []).length} beds` : undefined}
         right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => setAdding(true)}>Add</Button>}
       />
+      {rooms.isSuccess && beds.isSuccess && <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Stat icon="business-outline" label="Rooms" value={rooms.data.length} hint="In this property" />
+        <Stat icon="bed-outline" label="Available beds" value={beds.data.filter((bed) => bed.status === 'VACANT').length} hint="Ready for a tenant" tone="ok" />
+      </View>}
       <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);

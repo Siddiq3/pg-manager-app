@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { SkeletonScreen } from './Skeleton';
 import { FadeIn, Press, useReducedMotion } from './motion';
@@ -55,11 +55,16 @@ export function Segmented({ options, value, onChange, label }) {
 /* ───────────── Layout ───────────── */
 
 /** Screen chrome: safe-area insets (notch/home bar) plus the standard padding. */
-export function Screen({ children, scroll = false, refreshControl }) {
-  if (!scroll) return <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>{children}</SafeAreaView>;
+export function Screen({ children, scroll = false, refreshControl, contentStyle, edges = ['top', 'left', 'right'] }) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  // Keep phone layouts full width, and give tablets a comfortable reading measure.
+  const layout = { width: '100%', maxWidth: 960, alignSelf: 'center', paddingHorizontal: width < 360 ? 16 : width >= 768 ? 32 : 20 };
+  const bottom = { paddingBottom: Math.max(insets.bottom, spacing.xl) };
+  if (!scroll) return <SafeAreaView edges={edges} style={styles.screenPlain}><View style={[styles.screen, layout, bottom, contentStyle]}>{children}</View></SafeAreaView>;
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.screenPlain}>
-      <ScrollView contentContainerStyle={styles.scrollBody} refreshControl={refreshControl} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+    <SafeAreaView edges={edges} style={styles.screenPlain}>
+      <ScrollView contentContainerStyle={[styles.scrollBody, layout, bottom, contentStyle]} refreshControl={refreshControl} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -164,11 +169,11 @@ export function Badge({ children }) {
 }
 
 export function Stat({ label, value, hint, tone = 'default', icon }) {
-  const accent = tone === 'default' ? theme.textDisabled : theme[tone];
+  const accent = tone === 'default' ? theme.primary : theme[tone] || tones[tone]?.fg || theme.primary;
   return (
     <View style={styles.stat}>
       <View style={styles.statHead}>
-        {icon ? <Ionicons name={icon} size={15} color={accent} /> : <View style={[styles.statDot, { backgroundColor: accent }]} />}
+        {icon ? <View style={[styles.statIcon, { backgroundColor: (tones[tone]?.bg || theme.primarySubtle) }]}><Ionicons name={icon} size={17} color={accent} /></View> : <View style={[styles.statDot, { backgroundColor: accent }]} />}
         <Text style={styles.statLabel}>{label}</Text>
       </View>
       <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{value}</Text>
@@ -183,7 +188,7 @@ export function Row({ title, subtitle, right, badge, onPress, icon, chevron = tr
     <>
       {!!icon && <View style={styles.rowIcon}><Ionicons name={icon} size={19} color={theme.primary} /></View>}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={styles.rowTitle} numberOfLines={1}>{title}</Text>
+        <Text style={styles.rowTitle} numberOfLines={2}>{title}</Text>
         {!!subtitle && <Text style={styles.rowSubtitle} numberOfLines={2}>{subtitle}</Text>}
       </View>
       {badge ? <Badge>{badge}</Badge> : null}
@@ -254,8 +259,8 @@ export function StateView({ title, message, actionLabel, onAction, tone = 'neutr
 
 export const styles = StyleSheet.create({
   eyebrow: { ...typography.overline, color: theme.primaryText, marginBottom: spacing.sm },
-  pageHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xs },
-  pageTitle: { ...typography.h1, color: theme.text },
+  pageHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm, paddingTop: spacing.sm },
+  pageTitle: { ...typography.display, color: theme.text },
   pageTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, alignSelf: 'flex-start' },
   pageTitleChevron: { width: 26, height: 26, borderRadius: 13, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
   pageSubtitle: { ...typography.body, color: theme.textSecondary, marginTop: spacing.xs },
@@ -268,14 +273,14 @@ export const styles = StyleSheet.create({
 
   screen: { flex: 1, backgroundColor: theme.bg, padding: spacing.lg, gap: spacing.lg },
   screenPlain: { flex: 1, backgroundColor: theme.bg },
-  scrollBody: { padding: spacing.lg, paddingTop: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
+  scrollBody: { flexGrow: 1, padding: spacing.lg, paddingTop: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
 
   card: { backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, ...shadow.card },
-  cardPadded: { padding: spacing.lg },
+  cardPadded: { padding: 20 },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
 
-  button: { minHeight: 52, flexDirection: 'row', gap: spacing.sm, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl, overflow: 'hidden' },
-  buttonLg: { minHeight: 58 },
+  button: { minHeight: 54, flexDirection: 'row', gap: spacing.sm, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl, overflow: 'hidden' },
+  buttonLg: { minHeight: 60 },
   buttonSm: { minHeight: 40, paddingHorizontal: spacing.lg, borderRadius: radius.sm },
   buttonBordered: { borderWidth: 1.5, borderColor: theme.border },
   buttonText: { fontFamily: fonts.bold, fontSize: 16, letterSpacing: -0.2, flexShrink: 1 },
@@ -303,14 +308,15 @@ export const styles = StyleSheet.create({
   pill: { alignSelf: 'flex-start', paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.pill, flexShrink: 0 },
   pillText: { ...typography.caption, fontFamily: fonts.semibold },
 
-  stat: { flex: 1, minHeight: 112, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, backgroundColor: theme.surface, padding: spacing.lg, gap: 6, justifyContent: 'center', ...shadow.card },
-  statHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  stat: { flex: 1, minHeight: 132, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, backgroundColor: theme.surface, padding: spacing.lg, gap: 6, justifyContent: 'center', ...shadow.card },
+  statHead: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   statDot: { width: 7, height: 7, borderRadius: 4 },
   statLabel: { ...typography.label, color: theme.textMuted },
   statValue: { ...typography.figure, color: theme.text },
   statHint: { ...typography.caption, color: theme.textMuted },
 
-  row: { minHeight: 72, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, borderRadius: radius.lg, paddingVertical: 14, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, ...shadow.subtle },
+  row: { minHeight: 82, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, borderRadius: radius.lg, paddingVertical: 14, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, ...shadow.subtle },
   rowIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { ...typography.bodyStrong, color: theme.text },
   rowSubtitle: { ...typography.small, marginTop: 2, color: theme.textMuted },

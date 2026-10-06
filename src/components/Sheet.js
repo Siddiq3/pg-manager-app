@@ -3,7 +3,7 @@ import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { theme, radius, shadow, spacing, typography } from './tokens';
-import { Press } from './motion';
+import { Press, useReducedMotion } from './motion';
 
 /** Android keyboard height, so the sheet can sit above it (iOS uses KeyboardAvoidingView). */
 function useKeyboardHeight() {
@@ -23,11 +23,12 @@ function useKeyboardHeight() {
  */
 export function Sheet({ visible, onClose, title, children }) {
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
   const { width, height } = useWindowDimensions();
   const keyboard = useKeyboardHeight();
   const maxHeight = Math.min(height * 0.86, height - keyboard - insets.top - spacing.lg);
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
+    <Modal visible={visible} transparent animationType={reduced ? 'none' : 'slide'} onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView style={[s.root, { width, height: height - keyboard }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Pressable style={s.backdrop} onPress={onClose} accessibilityLabel="Close" />
         <View style={[s.sheet, { maxHeight, paddingBottom: keyboard ? spacing.md : Math.max(insets.bottom, spacing.lg) }]}>
@@ -46,10 +47,10 @@ export function Sheet({ visible, onClose, title, children }) {
 const s = StyleSheet.create({
   root: { justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(16,16,20,.38)' },
-  sheet: { backgroundColor: theme.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, ...shadow.sheet },
+  sheet: { width: '100%', maxWidth: 720, alignSelf: 'center', backgroundColor: theme.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, ...shadow.sheet },
   handle: { alignSelf: 'center', width: 38, height: 5, borderRadius: 3, backgroundColor: theme.borderStrong, marginTop: 10 },
   head: { minHeight: 56, flexDirection: 'row', alignItems: 'center', paddingLeft: spacing.xl, paddingRight: spacing.md },
   title: { ...typography.h2, color: theme.text, flex: 1 },
-  close: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
+  close: { width: 44, height: 44, borderRadius: 20, backgroundColor: theme.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
   body: { paddingHorizontal: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.lg, gap: spacing.lg },
 });

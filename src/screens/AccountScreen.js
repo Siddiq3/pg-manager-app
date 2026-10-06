@@ -3,7 +3,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import SubscriptionPlans from '../components/SubscriptionPlans';
-import { Button, Card, Divider, Notice, Pill, Press, Screen, fonts, theme, typography, radius, spacing } from '../components/ui';
+import { Button, Card, Divider, Notice, Pill, Press, PageHeader, Screen, fonts, theme, typography, radius, spacing } from '../components/ui';
 
 export default function AccountScreen({ navigation }) {
   const { user, logout, activePropertyId, entitlement, refreshEntitlement } = useAuth();
@@ -20,7 +20,7 @@ export default function AccountScreen({ navigation }) {
   ]);
   return (
     <Screen scroll>
-      <Text style={styles.title}>Account</Text>
+      <PageHeader eyebrow="Your workspace" title="Account" subtitle="Your profile, property and preferences." />
 
       <Card style={styles.profile}>
         <View style={styles.avatar}><Text style={styles.avatarText}>{(user?.name || 'P').slice(0, 1).toUpperCase()}</Text></View>

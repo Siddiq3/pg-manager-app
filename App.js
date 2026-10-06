@@ -12,6 +12,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/components/ui';
 import { ToastProvider } from './src/components/Toast';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import StartupScreen from './src/components/StartupScreen';
 
 const navigationTheme = {
   ...DefaultTheme,
@@ -30,13 +31,13 @@ const queryClient = new QueryClient({
 
 export default function App() {
   // Gate the first render on fonts so nothing paints in a fallback face and then reflows.
-  // A font error still renders (in system fonts) rather than leaving a blank screen.
+  // A branded loading screen fills the font-loading interval. Font errors still allow rendering.
   const [fontsLoaded, fontError] = useFonts({
     ...Ionicons.font,
     Urbanist_600SemiBold, Urbanist_700Bold,
     PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold,
   });
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError) return <StartupScreen />;
 
   return (
     <SafeAreaProvider>

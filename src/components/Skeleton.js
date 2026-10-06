@@ -1,17 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { theme } from './tokens';
+import { useReducedMotion } from './motion';
 
 export function Skeleton({ width = '100%', height = 12, radius = 8, style }) {
+  const reduced = useReducedMotion();
   const opacity = useRef(new Animated.Value(1)).current;
   useEffect(() => {
+    if (reduced) { opacity.setValue(1); return undefined; }
     const animation = Animated.loop(Animated.sequence([
       Animated.timing(opacity, { toValue: 0.42, duration: 700, useNativeDriver: true }),
       Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
     ]));
     animation.start();
     return () => animation.stop();
-  }, [opacity]);
+  }, [opacity, reduced]);
   return <Animated.View style={[{ width, height, borderRadius: radius, backgroundColor: theme.border, opacity }, style]} />;
 }
 

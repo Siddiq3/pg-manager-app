@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Field, PageHeader, Press, QueryState, Screen, Segmented, fonts, radius, shadow, typography, theme } from '../components/ui';
+import { Badge, Button, Field, PageHeader, Press, QueryState, Screen, Segmented, Stat, fonts, radius, shadow, typography, theme } from '../components/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
@@ -49,6 +49,10 @@ export default function RentScreen({ navigation, route }) {
         title="Rent"
         subtitle={cycles.data ? `${money(outstanding)} outstanding · ${cycles.data.filter((c) => c.status !== 'PAID').length} open` : undefined}
       />
+      {cycles.isSuccess && <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Stat icon="wallet-outline" label="Outstanding" value={money(outstanding)} hint="Across rent cycles" tone={outstanding ? 'danger' : 'ok'} />
+        <Stat icon="checkmark-circle-outline" label="Paid cycles" value={cycles.data.filter((cycle) => cycle.status === 'PAID').length} hint={`Of ${cycles.data.length} total cycles`} tone="ok" />
+      </View>}
       <QueryState query={cycles} empty="No rent cycles yet. They start when you add a tenant.">
         {(cycles.data || []).map((cycle) => {
           const phone = phoneOf(cycle);
@@ -119,5 +123,5 @@ const rs = StyleSheet.create({
   bar: { height: 6, borderRadius: 3, backgroundColor: theme.surfaceMuted, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3, backgroundColor: theme.primary },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  iconAction: { width: 44, height: 40, borderRadius: radius.sm, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  iconAction: { width: 44, height: 44, borderRadius: radius.sm, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
 });

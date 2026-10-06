@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
+import { Button, Card, FadeIn, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
@@ -104,7 +104,13 @@ export default function DashboardScreen({ navigation }) {
             <Button onPress={addProperty} loading={creating}>Create property</Button>
           </Card>
         ) : (
-          <>
+          <QueryState query={dashboard}>
+            <FadeIn style={ds.overview}>
+              <View style={ds.overviewHead}><Text style={ds.overviewLabel}>PROPERTY AT A GLANCE</Text><Ionicons name="business-outline" size={22} color="#C7B8FF" /></View>
+              <View style={ds.overviewFigures}><Text style={ds.overviewValue}>{occupancy.occupancyRate || 0}<Text style={ds.overviewPercent}>%</Text></Text><View style={{ flex: 1 }}><Text style={ds.overviewTitle}>Occupancy</Text><Text style={ds.overviewMeta}>{occupancy.occupiedBeds || 0} of {occupancy.totalBeds || 0} beds occupied</Text></View></View>
+              <View style={ds.overviewTrack}><View style={[ds.overviewFill, { width: `${Math.max(0, Math.min(100, Number(occupancy.occupancyRate) || 0))}%` }]} /></View>
+              <Text style={ds.overviewMeta}>{occupancy.totalBeds ? `${occupancy.vacantBeds || 0} vacant beds available for your next tenant` : 'Add rooms and beds to bring your property to life'}</Text>
+            </FadeIn>
             <View style={ds.grid}>
               <Stat icon="bed-outline" label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} tone="info" />
               <Stat icon="sparkles-outline" label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
@@ -124,13 +130,14 @@ export default function DashboardScreen({ navigation }) {
               </Card>
             )}
 
+            <SectionTitle>Quick actions</SectionTitle>
             <View style={ds.grid}>
               <QuickAction icon="person-add-outline" label="Add tenant" primary onPress={() => navigation.navigate('AddTenant', { propertyId })} />
               <QuickAction icon="wallet-outline" label="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />
               <QuickAction icon="bed-outline" label="Rooms" onPress={() => navigation.navigate('Rooms', { propertyId })} />
             </View>
 
-            <SectionTitle>Vacant beds</SectionTitle>
+            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('Rooms', { propertyId })}>View all</Button>}>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
               <Text style={styles.empty}>{occupancy.totalBeds ? 'Every bed is occupied.' : 'No beds added yet.'}</Text>
             ) : (
@@ -146,7 +153,7 @@ export default function DashboardScreen({ navigation }) {
               ))
             )}
 
-            <SectionTitle>Rent pending</SectionTitle>
+            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('Rent', { propertyId })}>View all</Button>}>Rent pending</SectionTitle>
             {pending.length === 0 ? (
               <Text style={styles.empty}>All rent collected.</Text>
             ) : (
@@ -161,7 +168,7 @@ export default function DashboardScreen({ navigation }) {
                 />
               ))
             )}
-          </>
+          </QueryState>
         )}
       </QueryState>
       <Sheet visible={switching} onClose={() => setSwitching(false)} title="Your properties">
@@ -196,6 +203,16 @@ function QuickAction({ icon, label, onPress, primary }) {
 }
 
 const ds = StyleSheet.create({
+  overview: { backgroundColor: theme.ink, borderRadius: radius.xl, padding: 24, gap: 14, ...shadow.card },
+  overviewHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  overviewLabel: { ...typography.overline, fontSize: 10, color: theme.inkMuted },
+  overviewFigures: { flexDirection: 'row', gap: 20, alignItems: 'center' },
+  overviewValue: { ...typography.display, fontSize: 48, lineHeight: 56, color: '#fff' },
+  overviewPercent: { fontSize: 24, color: '#C7B8FF' },
+  overviewTitle: { ...typography.bodyStrong, color: '#fff' },
+  overviewMeta: { ...typography.caption, color: theme.inkMuted },
+  overviewTrack: { height: 7, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 4, overflow: 'hidden' },
+  overviewFill: { height: '100%', backgroundColor: '#B7A5FF', borderRadius: 4 },
   grid: { flexDirection: 'row', gap: 12 },
   avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: fonts.display, fontSize: 19, color: theme.primaryText },
