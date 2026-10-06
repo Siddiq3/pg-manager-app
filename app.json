@@ -14,6 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#9d00ff"
       },
       "package": "com.siddiqkolimi.pgmanagerapp"
@@ -22,6 +23,7 @@
       "expo-secure-store",
       "expo-status-bar",
       "expo-font"
-    ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }
