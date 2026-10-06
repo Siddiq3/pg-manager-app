@@ -73,7 +73,7 @@ export default function PropertySettingsScreen({ route }) {
       <QueryState query={members}>
         {(members.data || []).map((m) => (
           <Row key={m._id} icon="person-outline" title={m.name || m.email || 'Member'}
-            subtitle={m.status === 'PENDING' ? 'Invite pending: they join when they sign in with this email' : (m.name ? m.email : undefined)} badge={m.role} />
+            subtitle={m.status === 'PENDING' ? 'Invite pending: they join when they sign in with this email' : (m.name ? m.email : undefined)} badge={m.role === 'CO_OWNER' ? 'Co-owner' : m.role} />
         ))}
       </QueryState>
 
