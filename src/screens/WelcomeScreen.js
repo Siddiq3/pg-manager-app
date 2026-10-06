@@ -71,7 +71,6 @@ export default function WelcomeScreen({ navigation }) {
   }, [reduced, focused, drift, occupancy, receipt]);
 
   const cardMotion = useAnimatedStyle(() => ({ transform: [{ translateY: -drift.value * 6 }, { rotate: `${-0.6 + drift.value * 0.6}deg` }] }));
-  const fill = useAnimatedStyle(() => ({ width: `${occupancy.value * 100}%` }));
   const receiptMotion = useAnimatedStyle(() => ({ opacity: receipt.value, transform: [{ translateY: (1 - receipt.value) * 14 + drift.value * 3 }, { scale: 0.92 + receipt.value * 0.08 }] }));
 
   return (
@@ -111,7 +110,6 @@ export default function WelcomeScreen({ navigation }) {
                 <Text style={styles.cardLabel}>Occupancy</Text>
               </View>
               <View style={styles.occupancyDetail}>
-                <View style={styles.track}><Animated.View style={[styles.fill, fill]}><View style={styles.fillHighlight} /></Animated.View></View>
                 <Text style={styles.bedCaption}>{Math.round(DEMO.occupied * count)} of 62 beds filled</Text>
               </View>
             </View>
@@ -178,9 +176,6 @@ const styles = StyleSheet.create({
   cardLabel: { ...typography.caption, color: '#FFFFFF' },
   occupancyValue: { ...typography.display, fontSize: 36, lineHeight: 40, color: '#fff', fontVariant: ['tabular-nums'] },
   percent: { fontSize: 19, color: '#FFFFFF' },
-  track: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 4, backgroundColor: '#A9DFC9', overflow: 'hidden' },
-  fillHighlight: { position: 'absolute', right: 0, width: 20, height: '100%', borderRadius: 4, backgroundColor: '#D5F4E6' },
   collectionRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   collection: { flex: 1, minWidth: 0, gap: 8 },
   chart: { height: 60, flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
