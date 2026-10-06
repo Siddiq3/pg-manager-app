@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 /**
- * Design tokens, ported from the StoreKit merchant app: warm neutrals, one confident orange
+ * Design tokens, ported from the StoreKit merchant app: warm neutrals, one confident purple
  * accent, soft corners, Urbanist for display over Plus Jakarta Sans for everything else.
  *
  * Weights are separate font families, not `fontWeight`: Android does not synthesise weights
@@ -18,7 +18,7 @@ export const fonts = {
 };
 
 export const colors = {
-  primary: '#e2511e', primaryPressed: '#b83e15', primarySubtle: '#fef1ea', primaryTint: '#fde3d3', primaryText: '#b83e15',
+  primary: '#9d00ff', primaryPressed: '#7e00cc', primarySubtle: '#faf0ff', primaryTint: '#efd9ff', primaryText: '#7e00cc',
   secondary: '#45454f', background: '#f4f4f6', surface: '#ffffff',
   surfaceElevated: '#ffffff', surfaceMuted: '#eeeef1',
   textPrimary: '#101014', textSecondary: '#45454f', textMuted: '#5b5b66', textDisabled: '#8a8a95',
@@ -41,7 +41,7 @@ export const tones = {
   danger: { bg: '#fef2f2', fg: '#be123c' },
   info: { bg: '#eff6ff', fg: '#1d4ed8' },
   muted: { bg: '#f8fafc', fg: '#475569' },
-  accent: { bg: '#fde3d3', fg: '#b83e15' },
+  accent: { bg: '#efd9ff', fg: '#7e00cc' },
 };
 
 export const typography = {

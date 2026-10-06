@@ -2,7 +2,7 @@ import React from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { FadeIn, Notice, Screen, fonts, theme, typography } from './ui';
 
-/** The PG Manager wordmark: an orange tile and the name, as StoreKit's Logo. */
+/** The PG Manager wordmark: a purple tile and the name, as StoreKit's Logo. */
 export function BrandMark({ size = 30 }) {
   return (
     <View style={styles.brandRow}>
