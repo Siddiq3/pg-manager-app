@@ -3,6 +3,13 @@ node_modules
 .expo-shared/
 dist
 web-build
+artifacts/
+*.apk
+*.aab
+
+# EAS/local signing credentials and generated signing integration
+credentials.json
+android/app/eas-build.gradle
 
 # Local env files: Expo loads .env.local / .env.<mode>, keep the template only
 .env

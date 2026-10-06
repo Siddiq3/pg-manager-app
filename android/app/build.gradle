@@ -80,10 +80,12 @@ def hasReleaseSigning = releaseSigningValues.every { it }
 if (hasAnyReleaseSigningValue && !hasReleaseSigning) {
     throw new GradleException('Incomplete PG Manager release signing environment. Set all PG_UPLOAD_* signing variables or none.')
 }
-if (hasReleaseSigning) {
+// EAS supplies signing through its generated Gradle integration, rather than
+// PG_UPLOAD_* variables. Require the API URL for both signing workflows.
+if (hasReleaseSigning || System.getenv('EAS_BUILD') == 'true') {
     def releaseApiUrl = System.getenv('EXPO_PUBLIC_API_URL')
     if (!releaseApiUrl || !releaseApiUrl.startsWith('https://')) {
-        throw new GradleException('Signed release builds require EXPO_PUBLIC_API_URL to be an explicit HTTPS production API URL.')
+        throw new GradleException('Signed release and EAS builds require EXPO_PUBLIC_API_URL to be an explicit HTTPS API URL. Set it in the matching EAS preview/production environment.')
     }
 }
 
