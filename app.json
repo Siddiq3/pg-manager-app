@@ -14,7 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#e2511e"
+        "backgroundColor": "#9d00ff"
       },
       "package": "com.siddiqkolimi.pgmanagerapp"
     },

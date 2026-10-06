@@ -1,12 +1,12 @@
 # PG Manager app — visual system
 
-The app shares its design language with the StoreKit merchant app (`ecommnerce/mobile`): warm neutrals, one confident orange accent, soft corners, and Urbanist display type over Plus Jakarta Sans. Light theme only.
+The app shares its design language with the StoreKit merchant app (`ecommnerce/mobile`): warm neutrals, one confident purple accent, soft corners, and Urbanist display type over Plus Jakarta Sans. Light theme only.
 
 ## Tokens (`src/components/tokens.js`)
 
 | Role | Value |
 | --- | --- |
-| Primary / pressed / subtle / tint | `#e2511e` / `#b83e15` / `#fef1ea` / `#fde3d3` |
+| Primary / pressed / subtle / tint | `#9d00ff` / `#7e00cc` / `#faf0ff` / `#efd9ff` |
 | Canvas / surface / muted surface | `#f4f4f6` / `#ffffff` / `#eeeef1` |
 | Text primary / secondary / muted / disabled | `#101014` / `#45454f` / `#5b5b66` / `#8a8a95` |
 | Border / strong | `#e6e6ea` / `#d3d3d9` |
