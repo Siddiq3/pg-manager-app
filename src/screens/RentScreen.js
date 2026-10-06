@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { errorMessage, money, monthLabel } from '../lib/format';
+import { billLabel, errorMessage, money } from '../lib/format';
 
 export default function RentScreen({ navigation, route }) {
   const toast = useToast();
@@ -64,7 +64,7 @@ export default function RentScreen({ navigation, route }) {
                 <View style={rs.avatar}><Text style={rs.avatarText}>{(cycle.tenantId?.name || 'T').slice(0, 1).toUpperCase()}</Text></View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={rs.name} numberOfLines={1}>{cycle.tenantId?.name || 'Tenant'}</Text>
-                  <Text style={rs.meta}>{monthLabel(cycle.month)}</Text>
+                  <Text style={rs.meta}>{billLabel(cycle)}</Text>
                 </View>
                 <Badge>{cycle.status}</Badge>
               </Press>
@@ -72,6 +72,7 @@ export default function RentScreen({ navigation, route }) {
                 <Text style={rs.paid}>{money(cycle.amountPaid)}</Text>
                 <Text style={rs.due}> of {money(cycle.amountDue)}</Text>
               </View>
+              {cycle.amountPaid > cycle.amountDue && <Text style={rs.refund}>{money(cycle.amountPaid - cycle.amountDue)} to refund: they left before the paid-up date.</Text>}
               <View style={rs.bar}><View style={[rs.barFill, { width: `${progress * 100}%` }, cycle.status === 'PAID' && { backgroundColor: theme.success }]} /></View>
               <View style={rs.actions}>
                 <IconAction icon="call-outline" label="Call" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')} />
@@ -114,6 +115,7 @@ const rs = StyleSheet.create({
   amounts: { flexDirection: 'row', alignItems: 'baseline' },
   paid: { ...typography.h2, fontSize: 22, color: theme.text, fontVariant: ['tabular-nums'] },
   due: { ...typography.small, color: theme.textMuted },
+  refund: { ...typography.small, color: theme.warning },
   bar: { height: 6, borderRadius: 3, backgroundColor: theme.surfaceMuted, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3, backgroundColor: theme.primary },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },

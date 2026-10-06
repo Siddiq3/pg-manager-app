@@ -9,6 +9,12 @@ export function monthLabel(month) {
   return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
 }
 
+/** 'Oct 2026' for a monthly bill; 'Stay · 4 days × ₹500' for a daily guest's bill. */
+export function billLabel(cycle) {
+  if (cycle?.stayType !== 'DAILY') return monthLabel(cycle?.month);
+  return `Stay · ${cycle.nights} ${cycle.nights === 1 ? 'day' : 'days'} × ${money(cycle.dailyRate)}`;
+}
+
 /** Field-level API messages first: they say exactly which input is wrong. */
 export function errorMessage(error, fallback = 'Please try again.') {
   if (error?.code === 'ERR_NETWORK') return 'Cannot reach the server. Check your connection.';

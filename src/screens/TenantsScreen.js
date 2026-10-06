@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button, Field, PageHeader, QueryState, Row, Screen, Segmented, StateView, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { money } from '../lib/format';
+import { isDaily } from '../lib/stay';
 
 /** Everyone who has stayed at the property: current tenants, and those who moved out. */
 export default function TenantsScreen({ navigation, route }) {
@@ -45,8 +46,8 @@ export default function TenantsScreen({ navigation, route }) {
             key={t._id}
             icon="person-outline"
             title={t.name}
-            subtitle={[t.roomId?.roomNumber && `Room ${t.roomId.roomNumber}`, t.bedId?.bedLabel && `Bed ${t.bedId.bedLabel}`, money(t.rentAmount)].filter(Boolean).join(' · ')}
-            badge={t.status === 'ACTIVE' && t.expectedVacateDate ? 'ON_NOTICE' : undefined}
+            subtitle={[t.roomId?.roomNumber && `Room ${t.roomId.roomNumber}`, t.bedId?.bedLabel && `Bed ${t.bedId.bedLabel}`, isDaily(t) ? `${money(t.dailyRate)}/day` : money(t.rentAmount)].filter(Boolean).join(' · ')}
+            badge={isDaily(t) ? 'Daily' : t.status === 'ACTIVE' && t.expectedVacateDate ? 'ON_NOTICE' : undefined}
             onPress={() => navigation.navigate('TenantDetail', { tenantId: t._id })}
           />
         ))}

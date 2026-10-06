@@ -6,7 +6,7 @@ import { Button, Card, Field, PageHeader, Press, QueryState, Row, Screen, Sectio
 import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
-import { errorMessage, money, monthLabel } from '../lib/format';
+import { billLabel, errorMessage, money } from '../lib/format';
 
 export default function DashboardScreen({ navigation }) {
   const toast = useToast();
@@ -155,7 +155,7 @@ export default function DashboardScreen({ navigation }) {
                   key={cycle._id}
                   icon="person-outline"
                   title={cycle.tenantId?.name || 'Tenant'}
-                  subtitle={`${monthLabel(cycle.month)} · ${money(cycle.amountDue - cycle.amountPaid)} pending`}
+                  subtitle={`${billLabel(cycle)} · ${money(cycle.amountDue - cycle.amountPaid)} pending`}
                   badge={cycle.status}
                   onPress={() => navigation.navigate('Rent', { propertyId })}
                 />
