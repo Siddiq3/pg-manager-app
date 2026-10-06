@@ -115,18 +115,18 @@ export default function RoomDetailScreen({ navigation, route }) {
           ))
         )}
         <Card style={{ gap: 12 }}>
-          <Field label="New bed label" value={bedLabel} onChangeText={setBedLabel} placeholder="A" autoCapitalize="characters" />
+          <Field label="New bed label" placeholder="Enter bed label" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" />
           <Button variant="ghost" onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
             Add bed
           </Button>
         </Card>
 
         <SectionTitle>Room details</SectionTitle>
-        <Field label="Room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
-        <Field label="Floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
-        <Field label="Type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
-        <Field label="Monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
-        <Field label="Notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
+        <Field label="Room number" placeholder="Enter room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
+        <Field label="Floor" placeholder="Enter floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
+        <Field label="Type" placeholder="Enter room type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
+        <Field label="Monthly rent" placeholder="Enter monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
+        <Field label="Notes" placeholder="Add notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
         <Button disabled={!Object.keys(roomEdits).length} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
 
         <SectionTitle>Danger zone</SectionTitle>
@@ -135,7 +135,7 @@ export default function RoomDetailScreen({ navigation, route }) {
         </Button>
       </QueryState>
       <Sheet visible={!!editingBed} onClose={() => setEditingBed(null)} title={editingBed ? `Bed ${editingBed.bedLabel}` : 'Bed'}>
-        <Field label="Bed label" value={newLabel} onChangeText={setNewLabel} autoCapitalize="characters" placeholder="A" />
+        <Field label="Bed label" placeholder="Enter bed label" value={newLabel} onChangeText={setNewLabel} autoCapitalize="characters" />
         <Button
           onPress={() => updateBed.mutate({ id: editingBed._id, body: { bedLabel: newLabel.trim() } })}
           loading={updateBed.isPending}

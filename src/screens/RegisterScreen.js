@@ -28,11 +28,11 @@ export default function RegisterScreen({ navigation }) {
     <AuthShell title="Create your account" subtitle={`Start your ${TRIAL_DAYS}-day free trial. Set up your owner account to manage your PG.`}
       footer={<Text style={{ ...typography.small, color: theme.muted }}>Already registered? <AuthLink onPress={() => navigation.navigate('Login')}>Sign in</AuthLink></Text>}>
       <AuthNotice message={error} />
-      <Field label="Owner name" value={form.name} onChangeText={set('name')} autoCapitalize="words" textContentType="name" />
-      <Field label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
-      <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" textContentType="telephoneNumber" />
-      <PasswordField label="Password" value={form.password} onChangeText={set('password')} textContentType="newPassword" />
-      <PasswordField label="Confirm password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
+      <Field label="Owner name" placeholder="Enter your full name" value={form.name} onChangeText={set('name')} autoCapitalize="words" textContentType="name" />
+      <Field label="Email" placeholder="Enter your email" value={form.email} onChangeText={set('email')} keyboardType="email-address" textContentType="emailAddress" />
+      <Field label="Mobile number" placeholder="Enter your mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" textContentType="telephoneNumber" />
+      <PasswordField label="Password" placeholder="Create a password" value={form.password} onChangeText={set('password')} textContentType="newPassword" />
+      <PasswordField label="Confirm password" placeholder="Re-enter your password" value={form.confirmPassword} onChangeText={set('confirmPassword')} textContentType="newPassword" />
       <Text style={{ ...typography.caption, color: theme.muted }}>Use 8+ characters with uppercase, lowercase, number and symbol.</Text>
       <Button size="lg" onPress={submit} loading={busy}>Create account</Button>
     </AuthShell>

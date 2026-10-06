@@ -107,15 +107,15 @@ export default function AddTenantScreen({ navigation, route }) {
       </QueryState>
 
       <SectionTitle>Tenant details</SectionTitle>
-      <Field label="Name" value={form.name} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
-      <Field label="Mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
-      <Field label="Monthly rent" value={form.rentAmount} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
-      <Field label="Deposit amount" value={form.depositAmount} onChangeText={set('depositAmount')} keyboardType="numeric" error={errors.depositAmount} />
-      <Field label="Joined date" value={form.joinedDate} onChangeText={set('joinedDate')} placeholder="YYYY-MM-DD" error={errors.joinedDate} />
+      <Field label="Name" placeholder="Enter tenant's name" value={form.name} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
+      <Field label="Mobile number" placeholder="Enter tenant's mobile number" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
+      <Field label="Monthly rent" placeholder="Enter monthly rent" value={form.rentAmount} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
+      <Field label="Deposit amount" placeholder="Enter deposit amount" value={form.depositAmount} onChangeText={set('depositAmount')} keyboardType="numeric" error={errors.depositAmount} />
+      <Field label="Joined date" placeholder="Enter date (YYYY-MM-DD)" value={form.joinedDate} onChangeText={set('joinedDate')} error={errors.joinedDate} />
 
-      <Field label="ID proof URL (optional)" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" placeholder="https://..." />
-      <Field label="Notice given date (optional)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} placeholder="YYYY-MM-DD" />
-      <Field label="Expected vacate date (optional)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} placeholder="YYYY-MM-DD" />
+      <Field label="ID proof URL (optional)" placeholder="Enter ID proof link" value={form.idProofUrl} onChangeText={set('idProofUrl')} keyboardType="url" />
+      <Field label="Notice given date (optional)" placeholder="Enter date (YYYY-MM-DD)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} />
+      <Field label="Expected vacate date (optional)" placeholder="Enter date (YYYY-MM-DD)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} />
       <Toggle label="Deposit paid" hint="Turn on if the tenant has paid the deposit." value={form.depositPaid} onChange={(v) => setForm((p) => ({ ...p, depositPaid: v }))} />
 
       {!selectedBed && <Notice tone="muted" icon="information-circle-outline" message="Select a bed above to continue." />}

@@ -87,9 +87,9 @@ export default function RentScreen({ navigation, route }) {
         })}
       </QueryState>
       <Sheet visible={!!payment} onClose={()=>setPayment(null)} title="Record payment">
-        <Field label="Amount" value={paymentForm.amount} onChangeText={v=>setPaymentForm(p=>({...p,amount:v}))} keyboardType="numeric"/>
+        <Field label="Amount" placeholder="Enter amount received" value={paymentForm.amount} onChangeText={v=>setPaymentForm(p=>({...p,amount:v}))} keyboardType="numeric"/>
         <Segmented label="Payment method" value={paymentForm.method} onChange={v=>setPaymentForm(p=>({...p,method:v}))} options={[{label:'UPI',value:'UPI'},{label:'Cash',value:'CASH'},{label:'Bank',value:'BANK_TRANSFER'}]}/>
-        <Field label="Note (optional)" value={paymentForm.note} onChangeText={v=>setPaymentForm(p=>({...p,note:v}))} autoCapitalize="sentences"/>
+        <Field label="Note (optional)" placeholder="Add a note" value={paymentForm.note} onChangeText={v=>setPaymentForm(p=>({...p,note:v}))} autoCapitalize="sentences"/>
         <Button onPress={recordPayment} loading={!!payingId}>Record payment</Button>
       </Sheet>
     </Screen>
