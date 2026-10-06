@@ -5,6 +5,11 @@ import { Button, Field, PasswordField, Segmented, theme, typography } from '../c
 import { useAuth } from '../context/AuthContext';
 import { OtpInput } from '../components/OtpInput';
 
+// Sign-in with an email code is off for now; the code stays for later. Set to true to
+// show the Password / Email code switch again. Password reset and email verification
+// still use codes and are not affected.
+const OTP_LOGIN_ENABLED = false;
+
 export default function LoginScreen({ navigation, route }) {
   const { login, loginWithOtp, sendOtp } = useAuth();
   const [method, setMethod] = useState('password');
@@ -52,8 +57,8 @@ export default function LoginScreen({ navigation, route }) {
     <AuthShell title="Welcome back" subtitle="Sign in to manage your PG, rooms, tenants and rent."
       footer={<Text style={{ ...typography.small, color: theme.muted }}>New to PG Manager? <AuthLink onPress={() => navigation.navigate('Register')}>Create an account</AuthLink></Text>}>
       {route.params?.reset && <AuthNotice tone="success" message="Password updated. Sign in with your new password." />}
-      <Segmented label="Sign-in method" value={method} onChange={(value) => { setMethod(value); setError(''); }}
-        options={[{ label: 'Password', value: 'password' }, { label: 'Email code', value: 'otp' }]} />
+      {OTP_LOGIN_ENABLED && <Segmented label="Sign-in method" value={method} onChange={(value) => { setMethod(value); setError(''); }}
+        options={[{ label: 'Password', value: 'password' }, { label: 'Email code', value: 'otp' }]} />}
       <AuthNotice message={error} />
       {method === 'password' ? <>
         <Field label="Email or mobile number" placeholder="Enter your email or mobile number" keyboardType="email-address" autoCorrect={false} value={form.identifier} onChangeText={set('identifier')} textContentType="username" autoComplete="username" />
