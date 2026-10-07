@@ -43,6 +43,12 @@ export function AuthNotice({ message, tone = 'error' }) {
 
 export function getAuthError(error, fallback = 'Something went wrong. Please try again.') {
   const data = error?.response?.data;
+  if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') {
+    return 'The request timed out. Please try again.';
+  }
+  if (error?.isAxiosError && !error.response) {
+    return 'Could not connect to the server. Check your internet connection and try again.';
+  }
   const fieldErrors = data?.details?.fieldErrors;
   if (fieldErrors) {
     const messages = Object.values(fieldErrors).flat().filter(Boolean);

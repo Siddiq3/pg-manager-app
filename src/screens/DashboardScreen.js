@@ -112,12 +112,12 @@ export default function DashboardScreen({ navigation }) {
               <Text style={ds.overviewMeta}>{occupancy.totalBeds ? `${occupancy.vacantBeds || 0} vacant beds available for your next tenant` : 'Add rooms and beds to bring your property to life'}</Text>
             </FadeIn>
             <View style={ds.grid}>
-              <Stat icon="bed-outline" label="Occupied" value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} tone="info" />
-              <Stat icon="sparkles-outline" label="Vacant" value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
+              <Stat icon="bed-outline" label="Occupied" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} tone="info" />
+              <Stat icon="sparkles-outline" label="Vacant" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacant' })} value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
             </View>
             <View style={ds.grid}>
-              <Stat icon="exit-outline" label="Vacating" value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
-              <Stat icon="wallet-outline" label="Rent due" value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
+              <Stat icon="exit-outline" label="Vacating" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacating' })} value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
+              <Stat icon="wallet-outline" label="Rent due" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'rent' })} value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
             </View>
 
             {!occupancy.totalBeds && (
@@ -137,7 +137,7 @@ export default function DashboardScreen({ navigation }) {
               <QuickAction icon="bed-outline" label="Rooms" onPress={() => navigation.navigate('Rooms', { propertyId })} />
             </View>
 
-            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('Rooms', { propertyId })}>View all</Button>}>Vacant beds</SectionTitle>
+            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacant' })}>View all</Button>}>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
               <Text style={styles.empty}>{occupancy.totalBeds ? 'Every bed is occupied.' : 'No beds added yet.'}</Text>
             ) : (
@@ -153,7 +153,7 @@ export default function DashboardScreen({ navigation }) {
               ))
             )}
 
-            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('Rent', { propertyId })}>View all</Button>}>Rent pending</SectionTitle>
+            <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'rent' })}>View all</Button>}>Rent pending</SectionTitle>
             {pending.length === 0 ? (
               <Text style={styles.empty}>All rent collected.</Text>
             ) : (

@@ -168,17 +168,19 @@ export function Badge({ children }) {
   return <Pill tone={BADGE_TONES[children] || 'muted'}>{statusLabel(String(children))}</Pill>;
 }
 
-export function Stat({ label, value, hint, tone = 'default', icon }) {
+export function Stat({ label, value, hint, tone = 'default', icon, onPress }) {
   const accent = tone === 'default' ? theme.primary : theme[tone] || tones[tone]?.fg || theme.primary;
+  const Container = onPress ? Press : View;
   return (
-    <View style={styles.stat}>
+    <Container style={styles.stat} {...(onPress ? { onPress, accessibilityRole: 'button', accessibilityLabel: `${label}: ${value}`, accessibilityHint: `Open the full ${label.toLowerCase()} report` } : {})}>
       <View style={styles.statHead}>
         {icon ? <View style={[styles.statIcon, { backgroundColor: (tones[tone]?.bg || theme.primarySubtle) }]}><Ionicons name={icon} size={17} color={accent} /></View> : <View style={[styles.statDot, { backgroundColor: accent }]} />}
         <Text style={styles.statLabel}>{label}</Text>
+        {!!onPress && <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />}
       </View>
       <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{value}</Text>
       {!!hint && <Text style={styles.statHint}>{hint}</Text>}
-    </View>
+    </Container>
   );
 }
 

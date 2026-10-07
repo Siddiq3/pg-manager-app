@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Field, PageHeader, Press, QueryState, Row, Screen, Segmented, StateView, Stat, fonts, radius, shadow, typography, theme } from '../components/ui';
@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { billLabel, errorMessage, money, monthLabel } from '../lib/format';
 import { dayKey, history, monthSummary, overdue, upcoming } from '../lib/reports';
 
-const VIEWS = [{ label: 'This month', value: 'month' }, { label: 'Upcoming', value: 'upcoming' }, { label: 'Overdue', value: 'overdue' }, { label: 'Reports', value: 'reports' }];
+const VIEWS = [{ label: 'This month', value: 'month' }, { label: 'Pending', value: 'pending' }, { label: 'Upcoming', value: 'upcoming' }, { label: 'Overdue', value: 'overdue' }, { label: 'Reports', value: 'reports' }];
 const PERIODS = [{ label: '3 months', value: 3 }, { label: '6 months', value: 6 }, { label: '12 months', value: 12 }];
 const shortDate = (day) => new Date(`${day}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
@@ -21,8 +21,11 @@ export default function RentScreen({ navigation, route }) {
   const [payingId, setPayingId] = useState('');
   const [payment, setPayment] = useState(null);
   const [paymentForm, setPaymentForm] = useState({amount:'',method:'UPI',note:''});
-  const [view, setView] = useState('month');
+  const [view, setView] = useState(route.params?.initialView || 'month');
   const [period, setPeriod] = useState(3);
+  useEffect(() => {
+    if (route.params?.initialView) setView(route.params.initialView);
+  }, [route.params?.initialView]);
 
   const cycles = useQuery({
     queryKey: ['rentCycles', propertyId],
@@ -48,6 +51,7 @@ export default function RentScreen({ navigation, route }) {
 
   const phoneOf = (cycle) => String(cycle.tenantId?.phone || '').replace(/[^\d+]/g, '');
   const bills = cycles.data || [];
+  const pendingBills = bills.filter(cycle => cycle.status === 'PENDING' || cycle.status === 'PARTIAL');
   const today = dayKey(Date.now());
   const thisMonth = today.slice(0, 7);
   const month = monthSummary(bills, thisMonth);
@@ -104,6 +108,7 @@ export default function RentScreen({ navigation, route }) {
       <Segmented label="Rent view" value={view} onChange={setView} options={VIEWS} />
       <QueryState query={cycles} empty="No rent cycles yet. They start when you add a tenant.">
         {view === 'month' && (month.bills.length ? month.bills.map(card) : empty('No bills this month', 'Bills appear here as tenants\' due dates come round.'))}
+        {view === 'pending' && (pendingBills.length ? pendingBills.map(card) : empty('All rent collected', 'There are no unpaid or partially paid bills.'))}
         {view === 'overdue' && (late.length ? late.map(card) : empty('Nothing overdue', 'Every bill that has fallen due is paid.'))}
         {view === 'upcoming' && (soon.length ? soon.map((item) => (
           <Row key={item.key} icon={item.projected ? 'calendar-outline' : 'time-outline'} title={item.tenant?.name || 'Tenant'}
