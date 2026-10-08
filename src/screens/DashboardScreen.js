@@ -130,6 +130,8 @@ export default function DashboardScreen({ navigation }) {
               </Card>
             )}
 
+            <Row icon="receipt-outline" title="Staff & Expenses" subtitle="Salaries, daily wages and monthly spending" onPress={() => navigation.navigate('FinanceHub', { propertyId })} />
+
             <SectionTitle>Quick actions</SectionTitle>
             <View style={ds.grid}>
               <QuickAction icon="person-add-outline" label="Add tenant" primary onPress={() => navigation.navigate('AddTenant', { propertyId })} />

@@ -185,13 +185,13 @@ export function Stat({ label, value, hint, tone = 'default', icon, onPress }) {
 }
 
 /** A list item card. `icon` renders in a tinted medallion; a pressable row gets a chevron. */
-export function Row({ title, subtitle, right, badge, onPress, icon, chevron = true }) {
+export function Row({ title, subtitle, right, badge, onPress, icon, chevron = true, subtitleLines = 2 }) {
   const body = (
     <>
       {!!icon && <View style={styles.rowIcon}><Ionicons name={icon} size={19} color={theme.primary} /></View>}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.rowTitle} numberOfLines={2}>{title}</Text>
-        {!!subtitle && <Text style={styles.rowSubtitle} numberOfLines={2}>{subtitle}</Text>}
+        {!!subtitle && <Text style={styles.rowSubtitle} numberOfLines={subtitleLines}>{subtitle}</Text>}
       </View>
       {badge ? <Badge>{badge}</Badge> : null}
       {!!right && <Text style={styles.rowRight}>{right}</Text>}
