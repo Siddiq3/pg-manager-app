@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { RefreshControl, View } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Field, PageHeader, QueryState, Row, Screen, Segmented, StateView, Stat, theme } from '../components/ui';
+import { Button, Field, PageHeader, QueryState, Row, Screen, Segmented, StateView, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { money } from '../lib/format';
 import { isDaily } from '../lib/stay';
@@ -27,15 +27,10 @@ export default function TenantsScreen({ navigation, route }) {
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={tenants.isRefetching} onRefresh={tenants.refetch} tintColor={theme.brand} colors={[theme.brand]} />}>
       <PageHeader
-        eyebrow="People"
         title="Tenants"
         subtitle={tenants.data ? `${current} staying now · ${all.length - current} moved out` : undefined}
         right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add</Button>}
       />
-      {tenants.isSuccess && <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Stat icon="people-outline" label="Staying now" value={current} hint="Current tenants" tone="info" />
-        <Stat icon="exit-outline" label="Moved out" value={all.length - current} hint="Past tenants" />
-      </View>}
       <Segmented label="Tenant status" value={status} onChange={setStatus} options={[{ label: 'Staying now', value: 'ACTIVE' }, { label: 'Moved out', value: 'VACATED' }]} />
       {all.length > 0 && <Field label="Search" placeholder="Search by name or mobile number" value={search} onChangeText={setSearch} />}
       <QueryState query={tenants}>

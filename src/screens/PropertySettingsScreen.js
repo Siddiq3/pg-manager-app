@@ -60,7 +60,7 @@ export default function PropertySettingsScreen({ route }) {
 
   return (
     <Screen scroll>
-      <PageHeader title="Property settings" subtitle={isOwner ? "Your property's details and who can manage it." : 'You are a co-owner of this property.'} />
+      <PageHeader title="Property settings" subtitle={isOwner ? undefined : 'You are a co-owner of this property.'} />
       <QueryState query={properties}>
         <SectionTitle>Details</SectionTitle>
         <Field label="Property name" placeholder="Enter property name" value={form.name} onChangeText={(v) => setForm((p) => ({ ...p, name: v }))} autoCapitalize="words" editable={isOwner} />

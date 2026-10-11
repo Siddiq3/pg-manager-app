@@ -24,7 +24,8 @@ A light interface with cool neutral surfaces, restrained violet accents, deep in
 
 - `StartupScreen` uses system type while fonts load and while a session is being restored.
 - Welcome presents the Sai Residency demo card in the app primary violet, with white labels and no decorative circles. Its rent summary includes an animated mini bar chart, occupancy shows the animated percentage and bed count, and three white statistic tiles add visual hierarchy. It uses synchronized counting for occupancy, rent collected, rooms and beds; gentle floating motion; and a rent-received badge after counting completes. Values settle after the entrance sequence. Animation pauses while another route is active, and reduced motion shows the final values immediately. The headline and supporting copy stay minimal.
-- Dashboard emphasizes occupancy, then supporting statistics, quick actions, and actionable lists. Its data region uses explicit loading and error states.
+- Dashboard emphasizes occupancy (the card opens the occupied-beds report), then vacating and rent-due tiles, one Add tenant action, and actionable lists. Its data region uses explicit loading and error states.
+- Each figure appears once per screen: list screens state counts in the header subtitle instead of repeating them in stat tiles. Stack screens draw their own `PageHeader`, so the native bar shows only the back button. `Screen` drops its top safe-area inset under a native header, and `Segmented` scrolls horizontally past four options so labels never wrap mid-word.
 - Rooms, tenants, and rent expose concise summaries before their lists. Tenant search is available whenever tenants exist.
 - Authentication uses a centered heading and bordered form card. Bottom navigation pairs selected icon backgrounds with labels.
 - Entrance fades, welcome motion, sheets, skeleton pulses, and route transitions respect the OS reduced-motion preference. Animation loops are cleaned up on unmount.

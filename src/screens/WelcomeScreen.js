@@ -77,7 +77,6 @@ export default function WelcomeScreen({ navigation }) {
     <Screen scroll contentStyle={styles.page}>
       <FadeIn style={styles.header}>
         <BrandMark />
-        <View style={styles.brandSpark}><Ionicons name="sparkles" size={19} color={theme.primary} /></View>
       </FadeIn>
 
       <View style={[styles.stage, compact && styles.stageCompact]}>
@@ -155,7 +154,6 @@ function CollectionBar({ height, progress, index }) {
 const styles = StyleSheet.create({
   page: { maxWidth: 600, gap: 20, paddingTop: 20 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  brandSpark: { width: 40, height: 40, borderRadius: 15, backgroundColor: '#EEE8FC', alignItems: 'center', justifyContent: 'center' },
   stage: { flexGrow: 1, minHeight: 390, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
   stageCompact: { minHeight: 370 },
   preview: { width: '100%', maxWidth: 400, paddingHorizontal: 6 },
@@ -166,13 +164,13 @@ const styles = StyleSheet.create({
   propertyIcon: { width: 44, height: 44, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
   propertyName: { flex: 1, minWidth: 0 },
   name: { ...typography.bodyStrong, fontSize: 14, color: '#fff' },
-  propertyMeta: { ...typography.caption, fontSize: 10, color: '#FFFFFF', marginTop: 4 },
+  propertyMeta: { ...typography.caption, fontSize: 12, color: '#FFFFFF', marginTop: 4 },
   demoPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.08)' },
-  demoLabel: { ...typography.caption, fontSize: 9, color: '#FFFFFF' },
+  demoLabel: { ...typography.caption, fontSize: 11, color: '#FFFFFF' },
   occupancyPanel: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16, padding: 14, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   occupancyFigure: { gap: 3 },
   occupancyDetail: { flex: 1, minWidth: 110, gap: 10 },
-  bedCaption: { ...typography.caption, fontSize: 10, color: '#fff' },
+  bedCaption: { ...typography.caption, fontSize: 12, color: '#fff' },
   cardLabel: { ...typography.caption, color: '#FFFFFF' },
   occupancyValue: { ...typography.display, fontSize: 36, lineHeight: 40, color: '#fff', fontVariant: ['tabular-nums'] },
   percent: { fontSize: 19, color: '#FFFFFF' },
@@ -187,7 +185,7 @@ const styles = StyleSheet.create({
   stat: { flex: 1, minWidth: 0, gap: 4, backgroundColor: '#fff', borderRadius: 16, paddingVertical: 10, paddingHorizontal: 10 },
   statFigure: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statValue: { ...typography.h2, fontSize: 24, color: theme.text, fontVariant: ['tabular-nums'] },
-  statLabel: { ...typography.caption, fontSize: 10, color: theme.textMuted },
+  statLabel: { ...typography.caption, fontSize: 12, color: theme.textMuted },
   receipt: { alignSelf: 'flex-end', marginRight: 10, marginTop: -8, flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, paddingRight: 14, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#EEE7F6', ...shadow.lift },
   receiptCheck: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#E1F3EA', alignItems: 'center', justifyContent: 'center' },
   receiptLabel: { ...typography.label, fontSize: 12, color: theme.text },

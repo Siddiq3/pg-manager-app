@@ -105,16 +105,13 @@ export default function DashboardScreen({ navigation }) {
           </Card>
         ) : (
           <QueryState query={dashboard}>
-            <FadeIn style={ds.overview}>
-              <View style={ds.overviewHead}><Text style={ds.overviewLabel}>PROPERTY AT A GLANCE</Text><Ionicons name="business-outline" size={22} color="#C7B8FF" /></View>
-              <View style={ds.overviewFigures}><Text style={ds.overviewValue}>{occupancy.occupancyRate || 0}<Text style={ds.overviewPercent}>%</Text></Text><View style={{ flex: 1 }}><Text style={ds.overviewTitle}>Occupancy</Text><Text style={ds.overviewMeta}>{occupancy.occupiedBeds || 0} of {occupancy.totalBeds || 0} beds occupied</Text></View></View>
+            <FadeIn>
+              <Press onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} scaleTo={0.99} accessibilityRole="button"
+                accessibilityLabel={`Occupancy ${occupancy.occupancyRate || 0} percent, ${occupancy.occupiedBeds || 0} of ${occupancy.totalBeds || 0} beds occupied`} accessibilityHint="Open the occupied beds report" style={ds.overview}>
+              <View style={ds.overviewFigures}><Text style={ds.overviewValue}>{occupancy.occupancyRate || 0}<Text style={ds.overviewPercent}>%</Text></Text><View style={{ flex: 1 }}><Text style={ds.overviewTitle}>Occupancy</Text><Text style={ds.overviewMeta}>{occupancy.occupiedBeds || 0} of {occupancy.totalBeds || 0} beds occupied</Text></View><Ionicons name="chevron-forward" size={18} color={theme.inkMuted} /></View>
               <View style={ds.overviewTrack}><View style={[ds.overviewFill, { width: `${Math.max(0, Math.min(100, Number(occupancy.occupancyRate) || 0))}%` }]} /></View>
-              <Text style={ds.overviewMeta}>{occupancy.totalBeds ? `${occupancy.vacantBeds || 0} vacant beds available for your next tenant` : 'Add rooms and beds to bring your property to life'}</Text>
+              </Press>
             </FadeIn>
-            <View style={ds.grid}>
-              <Stat icon="bed-outline" label="Occupied" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} value={`${occupancy.occupiedBeds || 0}/${occupancy.totalBeds || 0}`} hint={`${occupancy.occupancyRate || 0}% full`} tone="info" />
-              <Stat icon="sparkles-outline" label="Vacant" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacant' })} value={occupancy.vacantBeds || 0} hint="Ready to fill" tone={occupancy.vacantBeds ? 'ok' : 'default'} />
-            </View>
             <View style={ds.grid}>
               <Stat icon="exit-outline" label="Vacating" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacating' })} value={dashboard.data?.vacatingSoon?.length || 0} hint="Next 30 days" tone={dashboard.data?.vacatingSoon?.length ? 'warn' : 'default'} />
               <Stat icon="wallet-outline" label="Rent due" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'rent' })} value={money(pendingAmount)} hint={`${pending.length} pending`} tone={pendingAmount ? 'danger' : 'ok'} />
@@ -132,12 +129,7 @@ export default function DashboardScreen({ navigation }) {
 
             <Row icon="receipt-outline" title="Staff & Expenses" subtitle="Salaries, daily wages and monthly spending" onPress={() => navigation.navigate('FinanceHub', { propertyId })} />
 
-            <SectionTitle>Quick actions</SectionTitle>
-            <View style={ds.grid}>
-              <QuickAction icon="person-add-outline" label="Add tenant" primary onPress={() => navigation.navigate('AddTenant', { propertyId })} />
-              <QuickAction icon="wallet-outline" label="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />
-              <QuickAction icon="bed-outline" label="Rooms" onPress={() => navigation.navigate('Rooms', { propertyId })} />
-            </View>
+            <Button icon={<Ionicons name="person-add-outline" size={19} color="#fff" />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
 
             <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'vacant' })}>View all</Button>}>Vacant beds</SectionTitle>
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
@@ -193,21 +185,8 @@ export default function DashboardScreen({ navigation }) {
   );
 }
 
-function QuickAction({ icon, label, onPress, primary }) {
-  return (
-    <Press onPress={onPress} haptics={primary ? 'press' : 'tap'} accessibilityRole="button" accessibilityLabel={label} style={[ds.action, primary && ds.actionPrimary]}>
-      <View style={[ds.actionIcon, primary && ds.actionIconPrimary]}>
-        <Ionicons name={icon} size={20} color={primary ? '#fff' : theme.primary} />
-      </View>
-      <Text style={[ds.actionLabel, primary && { color: '#fff' }]} numberOfLines={1}>{label}</Text>
-    </Press>
-  );
-}
-
 const ds = StyleSheet.create({
-  overview: { backgroundColor: theme.ink, borderRadius: radius.xl, padding: 24, gap: 14, ...shadow.card },
-  overviewHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  overviewLabel: { ...typography.overline, fontSize: 10, color: theme.inkMuted },
+  overview: { backgroundColor: theme.ink, borderRadius: radius.xl, padding: 20, gap: 14, ...shadow.card },
   overviewFigures: { flexDirection: 'row', gap: 20, alignItems: 'center' },
   overviewValue: { ...typography.display, fontSize: 48, lineHeight: 56, color: '#fff' },
   overviewPercent: { fontSize: 24, color: '#C7B8FF' },
@@ -219,9 +198,4 @@ const ds = StyleSheet.create({
   avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: fonts.display, fontSize: 19, color: theme.primaryText },
   setupIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
-  action: { flex: 1, minHeight: 92, borderRadius: radius.lg, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, padding: 14, justifyContent: 'space-between', ...shadow.subtle },
-  actionPrimary: { backgroundColor: theme.primary, borderColor: theme.primary },
-  actionIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
-  actionIconPrimary: { backgroundColor: 'rgba(255,255,255,0.2)' },
-  actionLabel: { ...typography.label, color: theme.text, marginTop: 10 },
 });

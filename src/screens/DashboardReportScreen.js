@@ -69,7 +69,7 @@ export default function DashboardReportScreen({ navigation, route }) {
         subtitle={report === 'vacating' ? 'Planned move-outs in the next 30 days' : report === 'rent' ? 'All unpaid and partially paid bills' : 'All matching beds in this property'} />
       <QueryState query={query}>
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Stat icon={config.icon} label={report === 'rent' ? 'Pending bills' : report === 'vacating' ? 'Tenants vacating' : 'Beds'} value={rows.length} hint="Full property report" />
+          <Stat icon={config.icon} label={report === 'rent' ? 'Pending bills' : report === 'vacating' ? 'Tenants vacating' : 'Beds'} value={rows.length} />
           {report === 'rent' && <Stat icon="cash-outline" label="Outstanding" value={money(totalDue)} tone={totalDue ? 'danger' : 'ok'} />}
         </View>
         {report === 'rent' && rows.length > 0 && <Button variant="secondary" onPress={() => navigation.navigate('Rent', { propertyId, initialView: 'pending' })}>Manage rent payments</Button>}

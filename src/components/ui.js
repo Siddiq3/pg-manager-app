@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { HeaderShownContext } from '@react-navigation/elements';
 import { SkeletonScreen } from './Skeleton';
 import { FadeIn, Press, useReducedMotion } from './motion';
 import { fonts, radius, shadow, spacing, theme, tones, typography } from './tokens';
@@ -37,18 +38,23 @@ export function PageHeader({ eyebrow, title, subtitle, right, onTitlePress, titl
 /* ───────────── Selection ───────────── */
 
 export function Segmented({ options, value, onChange, label }) {
+  // Past four options the equal-width segments break labels mid-word on phones, so scroll instead.
+  const scroll = options.length > 4;
+  const segments = options.map((option) => {
+    const selected = value === option.value;
+    return (
+      <Press key={option.value} haptics="select" scaleTo={1} accessibilityRole="tab" accessibilityState={{ selected }}
+        onPress={() => onChange(option.value)} style={[styles.segment, scroll && styles.segmentScroll, selected && styles.segmentSelected]}>
+        <Text style={[styles.segmentText, selected && styles.segmentTextSelected]} numberOfLines={1}>{option.label}</Text>
+      </Press>
+    );
+  });
+  if (!scroll) return <View accessibilityRole="tablist" accessibilityLabel={label} style={styles.segmented}>{segments}</View>;
   return (
-    <View accessibilityLabel={label} style={styles.segmented}>
-      {options.map((option) => {
-        const selected = value === option.value;
-        return (
-          <Press key={option.value} haptics="select" scaleTo={1} accessibilityRole="tab" accessibilityState={{ selected }}
-            onPress={() => onChange(option.value)} style={[styles.segment, selected && styles.segmentSelected]}>
-            <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{option.label}</Text>
-          </Press>
-        );
-      })}
-    </View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="tablist" accessibilityLabel={label}
+      style={styles.segmentedScroll} contentContainerStyle={styles.segmented}>
+      {segments}
+    </ScrollView>
   );
 }
 
@@ -58,6 +64,8 @@ export function Segmented({ options, value, onChange, label }) {
 export function Screen({ children, scroll = false, refreshControl, contentStyle, edges = ['top', 'left', 'right'] }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  // Under a native header the status-bar inset is already applied; adding it again leaves a gap.
+  if (useContext(HeaderShownContext)) edges = edges.filter((edge) => edge !== 'top');
   // Keep phone layouts full width, and give tablets a comfortable reading measure.
   const layout = { width: '100%', maxWidth: 960, alignSelf: 'center', paddingHorizontal: width < 360 ? 16 : width >= 768 ? 32 : 20 };
   const bottom = { paddingBottom: Math.max(insets.bottom, spacing.xl) };
@@ -114,7 +122,7 @@ export function Field({ label, value, onChangeText, keyboardType, secureTextEntr
       {!!label && <Text style={styles.label}>{label}</Text>}
       <View style={[styles.inputBox, focused && styles.inputFocused, inputProps.editable === false && styles.inputDisabled, !!error && styles.inputError]}>
         <TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} secureTextEntry={secureTextEntry} placeholder={placeholder || label}
-          placeholderTextColor={theme.textDisabled} accessibilityLabel={label} autoCapitalize={autoCapitalize}
+          placeholderTextColor={theme.textMuted} accessibilityLabel={label} accessibilityHint={error || hint} autoCapitalize={autoCapitalize}
           onFocus={(e) => { setFocused(true); onFocus?.(e); }} onBlur={(e) => { setFocused(false); onBlur?.(e); }}
           style={[styles.input, inputProps.multiline && styles.inputMultiline, inputStyle]} {...inputProps} />
         {right}
@@ -269,6 +277,8 @@ export const styles = StyleSheet.create({
 
   segmented: { flexDirection: 'row', padding: 4, gap: 4, backgroundColor: theme.surfaceMuted, borderRadius: radius.sm + 2 },
   segment: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: radius.sm - 1 },
+  segmentScroll: { flex: 0, paddingHorizontal: spacing.lg },
+  segmentedScroll: { flexGrow: 0, borderRadius: radius.sm + 2, backgroundColor: theme.surfaceMuted },
   segmentSelected: { backgroundColor: theme.surface, ...shadow.subtle },
   segmentText: { ...typography.label, color: theme.textMuted },
   segmentTextSelected: { color: theme.primaryText },
@@ -294,7 +304,7 @@ export const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: fonts.medium, fontSize: 16.5, lineHeight: 22, color: theme.text, paddingVertical: spacing.md },
   inputMultiline: { minHeight: 96, textAlignVertical: 'top' },
   fieldAction: { width: 40, minHeight: 44, alignItems: 'center', justifyContent: 'center', marginRight: -spacing.sm },
-  inputFocused: { borderColor: theme.primary, backgroundColor: theme.primarySubtle },
+  inputFocused: { borderColor: theme.primary },
   inputDisabled: { backgroundColor: theme.surfaceMuted },
   inputError: { borderColor: theme.error, backgroundColor: theme.errorSubtle },
   errorText: { ...typography.caption, color: theme.error, marginLeft: 2 },
@@ -310,7 +320,7 @@ export const styles = StyleSheet.create({
   pill: { alignSelf: 'flex-start', paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.pill, flexShrink: 0 },
   pillText: { ...typography.caption, fontFamily: fonts.semibold },
 
-  stat: { flex: 1, minHeight: 132, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, backgroundColor: theme.surface, padding: spacing.lg, gap: 6, justifyContent: 'center', ...shadow.card },
+  stat: { flex: 1, minHeight: 112, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, backgroundColor: theme.surface, padding: spacing.lg, gap: 6, justifyContent: 'center', ...shadow.card },
   statHead: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   statDot: { width: 7, height: 7, borderRadius: 4 },
@@ -318,7 +328,7 @@ export const styles = StyleSheet.create({
   statValue: { ...typography.figure, color: theme.text },
   statHint: { ...typography.caption, color: theme.textMuted },
 
-  row: { minHeight: 82, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, borderRadius: radius.lg, paddingVertical: 14, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, ...shadow.subtle },
+  row: { minHeight: 72, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, borderRadius: radius.lg, paddingVertical: 14, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, ...shadow.subtle },
   rowIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { ...typography.bodyStrong, color: theme.text },
   rowSubtitle: { ...typography.small, marginTop: 2, color: theme.textMuted },

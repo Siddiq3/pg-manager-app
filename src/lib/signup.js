@@ -1,6 +1,6 @@
 export const SIGNUP_STEPS = [
-  { title: 'Start with your email', subtitle: 'Your PG journey begins here.', label: 'Email', icon: 'mail-outline', fields: ['email'] },
-  { title: 'What should we call you?', subtitle: 'Let’s set up your owner profile.', label: 'Your name', icon: 'person-outline', fields: ['name'] },
+  { title: 'Start with your email', subtitle: 'You’ll use it to sign in.', label: 'Email', icon: 'mail-outline', fields: ['email'] },
+  { title: 'What should we call you?', subtitle: 'Shown on your owner profile.', label: 'Your name', icon: 'person-outline', fields: ['name'] },
   { title: 'Your mobile number', subtitle: 'Use a number you can sign in with.', label: 'Mobile', icon: 'call-outline', fields: ['phone'] },
   { title: 'Make it yours. Keep it safe.', subtitle: 'Create a password for your account.', label: 'Password', icon: 'shield-checkmark-outline', fields: ['password', 'confirmPassword'] },
 ];

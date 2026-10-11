@@ -85,7 +85,6 @@ export default function RegisterScreen({ navigation }) {
         <Animated.View key={step} entering={reduced ? undefined : (direction > 0 ? FadeInRight : FadeInLeft).duration(280)} style={styles.stepContent}>
           {focused && !keyboardOpen && <SignupIllustration step={step} icon={current.icon} name={form.name} />}
           <View style={styles.heading}>
-            <Text style={styles.eyebrow}>{current.label.toUpperCase()}</Text>
             <Text accessibilityRole="header" style={styles.title}>{current.title}</Text>
             <Text style={styles.subtitle}>{current.subtitle}</Text>
           </View>
@@ -123,7 +122,6 @@ const styles = StyleSheet.create({
   fill: { height: '100%', borderRadius: 3, backgroundColor: theme.primary },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 20, maxWidth: 560, width: '100%', alignSelf: 'center' },
   stepContent: { gap: 24 }, heading: { gap: 10 },
-  eyebrow: { ...typography.overline, color: theme.primaryText },
   title: { ...typography.display, color: theme.text }, subtitle: { ...typography.body, color: theme.textSecondary },
   form: { gap: 18 },
   footer: { paddingHorizontal: 24, paddingVertical: 16, gap: 12, maxWidth: 560, width: '100%', alignSelf: 'center' },

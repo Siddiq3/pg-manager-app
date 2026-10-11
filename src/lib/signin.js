@@ -1,6 +1,6 @@
 export const SIGNIN_STEPS = [
   { label: 'Your account', title: 'Welcome back', subtitle: 'Enter the email or mobile number linked to your PG.', icon: 'mail-outline' },
-  { label: 'Password', title: 'Secure sign in', subtitle: 'Enter your password to open your PG dashboard.', icon: 'lock-closed-outline' },
+  { label: 'Password', title: 'Secure sign in', subtitle: 'Enter your password to continue.', icon: 'lock-closed-outline' },
 ];
 
 export function signinErrors(step, form) {

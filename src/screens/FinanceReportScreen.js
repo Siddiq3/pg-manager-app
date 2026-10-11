@@ -13,7 +13,7 @@ export default function FinanceReportScreen({ route }) {
   const query = useQuery({ queryKey: ['financeReport', propertyId, month], queryFn: async () => (await api.get('/finance/reports/monthly', { params: { propertyId, month } })).data.data });
   const r = query.data;
   return <Screen scroll edges={['left', 'right']} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />}>
-    <PageHeader title="Monthly report" subtitle="Actual collections and recorded cash spending." />
+    <PageHeader title="Monthly report" />
     <MonthPicker month={month} onChange={setMonth} />
     <QueryState query={query}>
       {r && <>

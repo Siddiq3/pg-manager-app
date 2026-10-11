@@ -20,7 +20,7 @@ export default function AccountScreen({ navigation }) {
   ]);
   return (
     <Screen scroll>
-      <PageHeader eyebrow="Your workspace" title="Account" subtitle="Your profile, property and preferences." />
+      <PageHeader title="Account" />
 
       <Card style={styles.profile}>
         <View style={styles.avatar}><Text style={styles.avatarText}>{(user?.name || 'P').slice(0, 1).toUpperCase()}</Text></View>
@@ -64,7 +64,7 @@ export default function AccountScreen({ navigation }) {
 function Group({ title, children }) {
   return (
     <View style={styles.group}>
-      <Text style={styles.groupTitle}>{title.toUpperCase()}</Text>
+      <Text accessibilityRole="header" style={styles.groupTitle}>{title}</Text>
       <Card padded={false} style={styles.groupCard}>{children}</Card>
     </View>
   );
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   name: { ...typography.bodyStrong, color: theme.text },
   caption: { ...typography.caption, color: theme.textMuted, marginTop: 2 },
   group: { gap: spacing.sm, marginTop: spacing.xs },
-  groupTitle: { ...typography.caption, color: theme.textMuted, letterSpacing: 0.8 },
+  groupTitle: { ...typography.label, color: theme.textMuted },
   groupCard: { overflow: 'hidden' },
   item: { minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg },
   itemLabel: { ...typography.body, color: theme.text, flex: 1 },
@@ -101,5 +101,5 @@ const styles = StyleSheet.create({
   divider: { marginLeft: spacing.lg + 19 + spacing.md },
   logout: { minHeight: 52, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center' },
   logoutText: { ...typography.body, color: theme.danger },
-  version: { ...typography.caption, color: theme.textDisabled, textAlign: 'center', paddingBottom: spacing.lg },
+  version: { ...typography.caption, color: theme.textMuted, textAlign: 'center', paddingBottom: spacing.lg },
 });

@@ -163,7 +163,6 @@ export default function LoginScreen({ navigation, route }) {
         <Animated.View key={method + '-' + step} entering={reduced ? undefined : (direction > 0 ? FadeInRight : FadeInLeft).duration(280)} style={styles.stepContent}>
           {focused && !keyboardOpen && <SignupIllustration step={otpMode ? 0 : step === 0 ? 0 : 3} icon={current.icon} name="" />}
           <View style={styles.heading}>
-            <Text style={styles.eyebrow}>{current.label.toUpperCase()}</Text>
             <Text accessibilityRole="header" style={styles.title}>{current.title}</Text>
             <Text style={styles.subtitle}>{current.subtitle}</Text>
           </View>
@@ -224,7 +223,6 @@ const styles = StyleSheet.create({
   fill: { height: '100%', borderRadius: 3, backgroundColor: theme.primary },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 20, maxWidth: 560, width: '100%', alignSelf: 'center' },
   stepContent: { gap: 24 }, heading: { gap: 10 },
-  eyebrow: { ...typography.overline, color: theme.primaryText },
   title: { ...typography.display, color: theme.text },
   subtitle: { ...typography.body, color: theme.textSecondary },
   form: { gap: 18 },

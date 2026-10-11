@@ -101,7 +101,7 @@ export default function AddTenantScreen({ navigation, route }) {
 
   return (
     <Screen scroll>
-      <PageHeader eyebrow="New tenant" title="Add a tenant" subtitle="Pick a vacant bed, then fill in their details." />
+      <PageHeader title="Add a tenant" />
 
       <SectionTitle>Pick a vacant bed</SectionTitle>
       <QueryState query={beds} empty="No vacant beds. Add a room and beds first.">
@@ -139,7 +139,7 @@ export default function AddTenantScreen({ navigation, route }) {
         <Field label="Notice given date (optional)" placeholder="Enter date (YYYY-MM-DD)" value={form.noticeGivenDate} onChangeText={set('noticeGivenDate')} />
         <Field label="Expected vacate date (optional)" placeholder="Enter date (YYYY-MM-DD)" value={form.expectedVacateDate} onChangeText={set('expectedVacateDate')} />
       </>}
-      <Toggle label="Deposit paid" hint="Turn on if the tenant has paid the deposit." value={form.depositPaid} onChange={(v) => setForm((p) => ({ ...p, depositPaid: v }))} />
+      <Toggle label="Deposit paid" value={form.depositPaid} onChange={(v) => setForm((p) => ({ ...p, depositPaid: v }))} />
 
       {!selectedBed && <Notice tone="muted" icon="information-circle-outline" message="Select a bed above to continue." />}
       <Button size="lg" onPress={submit} loading={saving} disabled={!selectedBed}>Add tenant</Button>

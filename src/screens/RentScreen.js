@@ -97,9 +97,7 @@ export default function RentScreen({ navigation, route }) {
   return (
     <Screen scroll refreshControl={<RefreshControl refreshing={cycles.isRefetching} onRefresh={cycles.refetch} tintColor={theme.brand} colors={[theme.brand]} />}>
       <PageHeader
-        eyebrow="Collections"
         title="Rent"
-        subtitle={cycles.data ? `${money(month.collected)} collected in ${monthLabel(thisMonth)} · ${money(month.pending)} still due` : undefined}
       />
       {cycles.isSuccess && <View style={{ flexDirection: 'row', gap: 12 }}>
         <Stat icon="wallet-outline" label={`Collected · ${monthLabel(thisMonth).split(' ')[0]}`} value={money(month.collected)} hint={`Of ${money(month.billed)} billed this month`} tone="ok" />
