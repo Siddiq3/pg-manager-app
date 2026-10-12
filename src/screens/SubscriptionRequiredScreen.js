@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { TRIAL_DAYS } from '../lib/subscriptionPlans';
 
 export default function SubscriptionRequiredScreen({ navigation }) {
-  const { entitlement, logout, refreshEntitlement } = useAuth();
+  const { user, entitlement, logout, refreshEntitlement } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -17,7 +17,7 @@ export default function SubscriptionRequiredScreen({ navigation }) {
     setMessage('');
     try {
       const state = await refreshEntitlement({ background: true });
-      if (!state?.hasAccess) setMessage('No active subscription found yet. Try again after your subscription is active.');
+      if (!state?.hasAccess) setMessage(user?.accountType === 'STAFF' ? 'No active property access found. Contact the property owner.' : 'No active subscription found yet. Try again after your subscription is active.');
     } catch {
       // AuthContext displays the subscription verification error screen.
     } finally { setRefreshing(false); }
@@ -25,13 +25,13 @@ export default function SubscriptionRequiredScreen({ navigation }) {
 
   return <Screen scroll>
     <View style={s.icon}><Ionicons name="lock-closed-outline" size={28} color={theme.brand} /></View>
-    <Text style={s.title}>Subscription required</Text>
-    <Text style={s.body}>Your trial or subscription has ended. New accounts receive a {TRIAL_DAYS}-day free trial.</Text>
-    {entitlement?.trialEndsAt && <Text style={s.date}>Trial ended {new Date(entitlement.trialEndsAt).toLocaleDateString()}</Text>}
-    <SubscriptionPlans entitlement={entitlement} />
-    <Notice tone="muted" icon="information-circle-outline" message="Subscription purchases and billing are managed on the PG Manager website. After subscribing, refresh your status below or sign in again." />
+    <Text style={s.title}>{user?.accountType === 'STAFF' ? 'Staff access unavailable' : 'Subscription required'}</Text>
+    <Text style={s.body}>{user?.accountType === 'STAFF' ? 'Ask the property owner to restore your access or check their subscription. Staff do not need to buy a subscription.' : `Your trial or subscription has ended. New accounts receive a ${TRIAL_DAYS}-day free trial.`}</Text>
+    {user?.accountType !== 'STAFF' && entitlement?.trialEndsAt && <Text style={s.date}>Trial ended {new Date(entitlement.trialEndsAt).toLocaleDateString()}</Text>}
+    {user?.accountType !== 'STAFF' && <SubscriptionPlans entitlement={entitlement} />}
+    {user?.accountType !== 'STAFF' && <Notice tone="muted" icon="information-circle-outline" message="Subscription purchases and billing are managed on the PG Manager website. After subscribing, refresh your status below or sign in again." />}
     <Notice message={message} />
-    <Button onPress={refresh} loading={refreshing}>Refresh subscription status</Button>
+    <Button onPress={refresh} loading={refreshing}>{user?.accountType === 'STAFF' ? 'Refresh access status' : 'Refresh subscription status'}</Button>
     <Button variant="danger" onPress={() => navigation.navigate('DeleteAccount')}>Delete account</Button>
     <Button variant="secondary" onPress={logout}>Sign out</Button>
   </Screen>;

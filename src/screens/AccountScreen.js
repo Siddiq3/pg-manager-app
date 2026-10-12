@@ -38,12 +38,12 @@ export default function AccountScreen({ navigation }) {
 
       <Group title="You">
         <Item icon="person-outline" label="Profile" value={user?.phone} onPress={() => navigation.navigate('Profile')} />
-        {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value={<Pill tone="warn">Recommended</Pill>} onPress={() => navigation.navigate('EmailVerification')} />}
+        {!!user?.email && !user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value={<Pill tone="warn">Recommended</Pill>} onPress={() => navigation.navigate('EmailVerification')} />}
         {activePropertyId && property?.role !== 'STAFF' && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings', { propertyId: activePropertyId })} />}
         <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
       </Group>
-      <SubscriptionPlans entitlement={entitlement} />
-      <Button variant="secondary" onPress={refreshPlan} loading={refreshingPlan}>Refresh subscription status</Button>
+      {user?.accountType !== 'STAFF' && <SubscriptionPlans entitlement={entitlement} />}
+      <Button variant="secondary" onPress={refreshPlan} loading={refreshingPlan}>{user?.accountType === 'STAFF' ? 'Refresh access status' : 'Refresh subscription status'}</Button>
       <Group title="Support">
         <Item icon="help-circle-outline" label="Help centre" onPress={() => navigation.navigate('Help')} />
         <Item icon="chatbubble-ellipses-outline" label="Contact support" onPress={() => navigation.navigate('Support')} />
