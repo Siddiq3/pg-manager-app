@@ -1,3 +1,4 @@
+import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
 import { RefreshControl, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +10,8 @@ import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function RoomsScreen({ navigation, route }) {
+  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const canManage = allows('beds.manage');
   const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
@@ -83,7 +86,7 @@ export default function RoomsScreen({ navigation, route }) {
       <PageHeader
         title="Rooms"
         subtitle={rooms.data && beds.data ? `${rooms.data.length} room${rooms.data.length === 1 ? '' : 's'} · ${beds.data.filter((bed) => bed.status === 'VACANT').length} of ${beds.data.length} beds free` : undefined}
-        right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => setAdding(true)}>Add</Button>}
+        right={canManage && <Button disabled={!canManage} size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => setAdding(true)}>Add</Button>}
       />
       <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
         {(rooms.data || []).map((room) => {
@@ -109,7 +112,7 @@ export default function RoomsScreen({ navigation, route }) {
         <Field label="Room number" placeholder="Enter room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
         <Field label="Type (optional)" placeholder="Enter room type" value={form.type} onChangeText={set('type')} autoCapitalize="sentences" />
         <Field label="Monthly rent (optional)" placeholder="Enter monthly rent" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
-        <Button onPress={submit} loading={addRoom.isPending}>Add room</Button>
+        <Button disabled={!canManage} onPress={submit} loading={addRoom.isPending}>Add room</Button>
       </Sheet>
     </Screen>
   );

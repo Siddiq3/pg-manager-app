@@ -6,6 +6,7 @@ import { Button, Card, FadeIn, Field, PageHeader, Press, QueryState, Row, Screen
 import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
+import { can } from '../lib/access';
 import { billLabel, errorMessage, money } from '../lib/format';
 
 export default function DashboardScreen({ navigation }) {
@@ -29,9 +30,12 @@ export default function DashboardScreen({ navigation }) {
     if (!properties.data.some((property) => property._id === propertyId)) setPropertyId(properties.data[0]?._id || '');
   }, [properties.data, propertyId]);
 
+  const selectedProperty = properties.data?.find((p) => p._id === propertyId);
+  const isStaff = selectedProperty?.role === 'STAFF';
+  const canDashboard = !isStaff || ['reports.view', 'tenants.view', 'beds.view', 'rent.view'].every((p) => can(selectedProperty, p));
   const dashboard = useQuery({
     queryKey: ['dashboard', propertyId],
-    enabled: !!propertyId,
+    enabled: !!propertyId && !!selectedProperty && canDashboard,
     queryFn: async () => (await api.get(`/properties/${propertyId}/dashboard`)).data.data,
   });
 
@@ -61,6 +65,17 @@ export default function DashboardScreen({ navigation }) {
   const pendingAmount = pending.reduce((sum, cycle) => sum + (cycle.amountDue - cycle.amountPaid), 0);
   const refreshing = properties.isRefetching || dashboard.isRefetching;
 
+  if (isStaff) return <Screen scroll>
+    <PageHeader title={selectedProperty.name} subtitle="Staff access" />
+    <SectionTitle>Your properties</SectionTitle>
+    {(properties.data || []).map((p) => <Row key={p._id} title={p.name} badge={p.role} onPress={() => setPropertyId(p._id)} />)}
+    {can(selectedProperty, 'beds.view') && <Row title="Rooms and beds" onPress={() => navigation.navigate('Rooms', { propertyId })} />}
+    {can(selectedProperty, 'tenants.view') && <Row title="Tenants" onPress={() => navigation.navigate('TenantsTab')} />}
+    {can(selectedProperty, 'rent.view') && <Row title="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />}
+    {can(selectedProperty, 'reports.view') && <Row title="Monthly report" onPress={() => navigation.navigate('FinanceReport', { propertyId })} />}
+    {canDashboard && <Row title="Occupancy report" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} />}
+    {!selectedProperty.permissions?.length && <Text style={styles.empty}>Ask the property owner to assign your permissions.</Text>}
+  </Screen>;
   return (
     <Screen
       scroll

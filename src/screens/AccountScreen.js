@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { usePropertyAccess } from '../components/PropertyAccess';
 import SubscriptionPlans from '../components/SubscriptionPlans';
 import { Button, Card, Divider, Notice, Pill, Press, PageHeader, Screen, fonts, theme, typography, radius, spacing } from '../components/ui';
 
 export default function AccountScreen({ navigation }) {
   const { user, logout, activePropertyId, entitlement, refreshEntitlement } = useAuth();
+  const { property } = usePropertyAccess(activePropertyId);
   const [refreshingPlan, setRefreshingPlan] = useState(false);
   async function refreshPlan() {
     if (refreshingPlan) return;
@@ -37,7 +39,7 @@ export default function AccountScreen({ navigation }) {
       <Group title="You">
         <Item icon="person-outline" label="Profile" value={user?.phone} onPress={() => navigation.navigate('Profile')} />
         {!user?.emailVerified && <Item icon="mail-unread-outline" label="Verify email" value={<Pill tone="warn">Recommended</Pill>} onPress={() => navigation.navigate('EmailVerification')} />}
-        {activePropertyId && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings', { propertyId: activePropertyId })} />}
+        {activePropertyId && property?.role !== 'STAFF' && <Item icon="business-outline" label="Property settings" onPress={() => navigation.navigate('PropertySettings', { propertyId: activePropertyId })} />}
         <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
       </Group>
       <SubscriptionPlans entitlement={entitlement} />
