@@ -1,3 +1,4 @@
+import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,6 +15,8 @@ const PERIODS = [{ label: '3 months', value: 3 }, { label: '6 months', value: 6 
 const shortDate = (day) => new Date(`${day}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
 export default function RentScreen({ navigation, route }) {
+  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const canManage = allows('rent.manage');
   const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
@@ -59,7 +62,7 @@ export default function RentScreen({ navigation, route }) {
   const lateTotal = late.reduce((sum, c) => sum + c.amountDue - c.amountPaid, 0);
   const soon = upcoming(bills, today, 30);
   const report = history(bills, thisMonth, period);
-  const openTenant = (tenant) => tenant?._id && navigation.navigate('TenantDetail', { tenantId: tenant._id });
+  const openTenant = (tenant) => tenant?._id && navigation.navigate('TenantDetail', { tenantId: tenant._id, propertyId });
 
   const card = (cycle) => {
     const phone = phoneOf(cycle);
@@ -84,7 +87,7 @@ export default function RentScreen({ navigation, route }) {
           <IconAction icon="call-outline" label="Call" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')} />
           <IconAction icon="logo-whatsapp" label="WhatsApp" onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')} />
           {cycle.status !== 'PAID' && (
-            <Button size="sm" style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
+            <Button disabled={!canManage} size="sm" style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
               Mark paid
             </Button>
           )}
@@ -135,7 +138,7 @@ export default function RentScreen({ navigation, route }) {
         <Field label="Amount" placeholder="Enter amount received" value={paymentForm.amount} onChangeText={v=>setPaymentForm(p=>({...p,amount:v}))} keyboardType="numeric"/>
         <Segmented label="Payment method" value={paymentForm.method} onChange={v=>setPaymentForm(p=>({...p,method:v}))} options={[{label:'UPI',value:'UPI'},{label:'Cash',value:'CASH'},{label:'Bank',value:'BANK_TRANSFER'}]}/>
         <Field label="Note (optional)" placeholder="Add a note" value={paymentForm.note} onChangeText={v=>setPaymentForm(p=>({...p,note:v}))} autoCapitalize="sentences"/>
-        <Button onPress={recordPayment} loading={!!payingId}>Record payment</Button>
+        <Button disabled={!canManage} onPress={recordPayment} loading={!!payingId}>Record payment</Button>
       </Sheet>
     </Screen>
   );

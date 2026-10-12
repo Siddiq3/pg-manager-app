@@ -1,3 +1,4 @@
+import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
 
 export default function RoomDetailScreen({ navigation, route }) {
+  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const canManage = allows('beds.manage');
   const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
@@ -109,34 +112,34 @@ export default function RoomDetailScreen({ navigation, route }) {
               icon="bed-outline"
               title={`Bed ${bed.bedLabel}`}
               badge={bed.status}
-              right="Edit"
-              onPress={() => openBed(bed)}
+              right={canManage ? "Edit" : undefined}
+              onPress={canManage ? () => openBed(bed) : undefined}
             />
           ))
         )}
         <Card style={{ gap: 12 }}>
-          <Field label="New bed label" placeholder="Enter bed label" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" />
-          <Button variant="ghost" onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
+          <Field editable={canManage} label="New bed label" placeholder="Enter bed label" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" />
+          <Button variant="ghost" onPress={() => canManage && bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!canManage || !bedLabel.trim()}>
             Add bed
           </Button>
         </Card>
 
         <SectionTitle>Room details</SectionTitle>
-        <Field label="Room number" placeholder="Enter room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
-        <Field label="Floor" placeholder="Enter floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
-        <Field label="Type" placeholder="Enter room type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
-        <Field label="Monthly rent" placeholder="Enter monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
-        <Field label="Notes" placeholder="Add notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
-        <Button disabled={!Object.keys(roomEdits).length} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
+        <Field editable={canManage} label="Room number" placeholder="Enter room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
+        <Field editable={canManage} label="Floor" placeholder="Enter floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
+        <Field editable={canManage} label="Type" placeholder="Enter room type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
+        <Field editable={canManage} label="Monthly rent" placeholder="Enter monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
+        <Field editable={canManage} label="Notes" placeholder="Add notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
+        <Button disabled={!canManage || (!Object.keys(roomEdits).length)} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>
 
         <SectionTitle>Danger zone</SectionTitle>
-        <Button variant="danger" onPress={confirmDeleteRoom} loading={deleteRoom.isPending}>
+        <Button disabled={!canManage} variant="danger" onPress={confirmDeleteRoom} loading={deleteRoom.isPending}>
           Delete room
         </Button>
       </QueryState>
       <Sheet visible={!!editingBed} onClose={() => setEditingBed(null)} title={editingBed ? `Bed ${editingBed.bedLabel}` : 'Bed'}>
-        <Field label="Bed label" placeholder="Enter bed label" value={newLabel} onChangeText={setNewLabel} autoCapitalize="characters" />
-        <Button
+        <Field editable={canManage} label="Bed label" placeholder="Enter bed label" value={newLabel} onChangeText={setNewLabel} autoCapitalize="characters" />
+        <Button disabled={!canManage}
           onPress={() => updateBed.mutate({ id: editingBed._id, body: { bedLabel: newLabel.trim() } })}
           loading={updateBed.isPending}
           disabled={!newLabel.trim() || newLabel.trim() === editingBed?.bedLabel}
@@ -146,7 +149,7 @@ export default function RoomDetailScreen({ navigation, route }) {
         {editingBed?.status === 'OCCUPIED' ? (
           <Notice tone="muted" icon="information-circle-outline" message="Someone is staying in this bed. Check them out or move them before deleting it." />
         ) : (
-          <Button variant="danger" onPress={() => { const bed = editingBed; setEditingBed(null); confirmRemoveBed(bed); }}>Delete bed</Button>
+          <Button disabled={!canManage} variant="danger" onPress={() => { const bed = editingBed; setEditingBed(null); confirmRemoveBed(bed); }}>Delete bed</Button>
         )}
       </Sheet>
     </Screen>

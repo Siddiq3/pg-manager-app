@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import { API_URL, buildApi } from '../api/client';
 
 const REFRESH_KEY = 'pg_manager_refresh_token';
@@ -10,6 +11,8 @@ const PROPERTY_KEY = 'pg_manager_active_property';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
+  const sessionUserId = useRef('');
   const accessTokenRef = useRef('');
   const [accessToken, setAccessToken] = useState('');
   const [user, setUser] = useState(null);
@@ -24,16 +27,22 @@ export function AuthProvider({ children }) {
   const [entitlementError, setEntitlementError] = useState('');
 
   const setSession = useCallback(async (data) => {
+    if (data.user && data.user.id !== sessionUserId.current) {
+      queryClient.clear();
+      sessionUserId.current = data.user.id;
+    }
     const nextAccessToken = data.accessToken || '';
     accessTokenRef.current = nextAccessToken;
     setAccessToken(nextAccessToken);
     if (data.user) setUser(data.user);
     if (data.refreshToken) await SecureStore.setItemAsync(REFRESH_KEY, data.refreshToken);
-  }, []);
+  }, [queryClient]);
 
   function updateUser(nextUser) { setUser(nextUser); }
 
   const clearSession = useCallback(async () => {
+    queryClient.clear();
+    sessionUserId.current = '';
     accessTokenRef.current = '';
     setAccessToken('');
     setUser(null);
@@ -42,7 +51,7 @@ export function AuthProvider({ children }) {
     setEntitlementError('');
     setActivePropertyId('');
     await SecureStore.deleteItemAsync(REFRESH_KEY);
-  }, [setActivePropertyId]);
+  }, [queryClient, setActivePropertyId]);
 
   useEffect(() => {
     (async () => {
@@ -78,6 +87,7 @@ export function AuthProvider({ children }) {
   async function register({ name, email, phone, password, confirmPassword }) { const { data } = await axios.post(`${API_URL}/auth/register`, { name, email, phone, password, confirmPassword }); await setSession(data); }
   async function forgotPassword({ email }) { const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { email }); return data; }
   async function resetPassword({ email, otp, newPassword, confirmPassword }) { const { data } = await axios.post(`${API_URL}/auth/reset-password`, { email, otp, newPassword, confirmPassword }); return data; }
+  async function changePassword(form) { const { data } = await api.post('/auth/change-password', form); await setSession(data); return data; }
 
   async function refreshEntitlement({ background = false } = {}) {
     if (!accessTokenRef.current) return null;
@@ -112,6 +122,6 @@ export function AuthProvider({ children }) {
     await clearSession();
   }
 
-  return <AuthContext.Provider value={{ accessToken, activePropertyId, setActivePropertyId, api, clearSession, entitlement, entitlementError, entitlementLoading: entitlementState === 'loading', entitlementState, refreshEntitlement, forgotPassword, login, loginWithOtp, logout, register, resetPassword, restoring, sendOtp, user, updateUser }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ accessToken, activePropertyId, setActivePropertyId, api, changePassword, clearSession, entitlement, entitlementError, entitlementLoading: entitlementState === 'loading', entitlementState, refreshEntitlement, forgotPassword, login, loginWithOtp, logout, register, resetPassword, restoring, sendOtp, user, updateUser }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { return useContext(AuthContext); }

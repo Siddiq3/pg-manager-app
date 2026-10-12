@@ -9,7 +9,7 @@ import { PLAN_LIMIT_NOTE, currentPlan } from '../lib/subscriptionPlans';
 
 const emptyCoOwner = { name: '', email: '', phone: '', password: '' };
 
-export default function PropertySettingsScreen({ route }) {
+export default function PropertySettingsScreen({ route, navigation }) {
   const { propertyId } = route.params;
   const { api, user, entitlement } = useAuth();
   const toast = useToast();
@@ -69,6 +69,7 @@ export default function PropertySettingsScreen({ route }) {
         {isOwner ? <Button onPress={save} loading={busy === 'save'}>Save property</Button> : <Notice tone="muted" icon="information-circle-outline" message="Only the owner can change these details or add co-owners." />}
       </QueryState>
 
+      {isOwner && <Button variant="secondary" onPress={() => navigation.navigate('StaffAccess', { propertyId })}>Manage staff access</Button>}
       <SectionTitle>Owners & access</SectionTitle>
       <QueryState query={members}>
         {(members.data || []).map((m) => (

@@ -59,7 +59,7 @@ export default function DashboardReportScreen({ navigation, route }) {
   const shown = rows.filter(row => `${row.title} ${row.subtitle}`.toLowerCase().includes(term));
   const totalDue = rows.reduce((sum, row) => sum + (row.amount || 0), 0);
   function openRow(row) {
-    if (row.tenantId) navigation.navigate('TenantDetail', { tenantId: row.tenantId });
+    if (row.tenantId) navigation.navigate('TenantDetail', { tenantId: row.tenantId, propertyId });
     else if (row.roomId) navigation.navigate('RoomDetail', { roomId: row.roomId, propertyId });
   }
 

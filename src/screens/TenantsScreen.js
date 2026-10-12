@@ -1,3 +1,4 @@
+import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +10,8 @@ import { isDaily } from '../lib/stay';
 
 /** Everyone who has stayed at the property: current tenants, and those who moved out. */
 export default function TenantsScreen({ navigation, route }) {
+  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const canManage = allows('tenants.manage');
   const { api } = useAuth();
   const { propertyId } = route.params;
   const [status, setStatus] = useState('ACTIVE');
@@ -29,7 +32,7 @@ export default function TenantsScreen({ navigation, route }) {
       <PageHeader
         title="Tenants"
         subtitle={tenants.data ? `${current} staying now · ${all.length - current} moved out` : undefined}
-        right={<Button size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add</Button>}
+        right={canManage && <Button disabled={!canManage} size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add</Button>}
       />
       <Segmented label="Tenant status" value={status} onChange={setStatus} options={[{ label: 'Staying now', value: 'ACTIVE' }, { label: 'Moved out', value: 'VACATED' }]} />
       {all.length > 0 && <Field label="Search" placeholder="Search by name or mobile number" value={search} onChangeText={setSearch} />}
@@ -47,7 +50,7 @@ export default function TenantsScreen({ navigation, route }) {
             title={t.name}
             subtitle={[t.roomId?.roomNumber && `Room ${t.roomId.roomNumber}`, t.bedId?.bedLabel && `Bed ${t.bedId.bedLabel}`, isDaily(t) ? `${money(t.dailyRate)}/day` : money(t.rentAmount)].filter(Boolean).join(' · ')}
             badge={isDaily(t) ? 'Daily' : t.status === 'ACTIVE' && t.expectedVacateDate ? 'ON_NOTICE' : undefined}
-            onPress={() => navigation.navigate('TenantDetail', { tenantId: t._id })}
+            onPress={() => navigation.navigate('TenantDetail', { tenantId: t._id, propertyId })}
           />
         ))}
       </QueryState>

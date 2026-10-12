@@ -1,3 +1,4 @@
+import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +13,9 @@ const METHOD = { UPI: 'UPI', CASH: 'Cash', BANK_TRANSFER: 'Bank transfer' };
 const idOf = (value) => value?._id || value;
 
 export default function TenantDetailScreen({ navigation, route }) {
+  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const canManage = allows('tenants.manage');
+  const canViewRent = allows('rent.view');
   const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
@@ -31,6 +35,7 @@ export default function TenantDetailScreen({ navigation, route }) {
   // Every month's rent for this tenant, newest first, with each payment's method and note.
   const history = useQuery({
     queryKey: ['tenantCycles', tenantId],
+    enabled: canViewRent,
     queryFn: async () => (await api.get('/rent-cycles', { params: { tenantId } })).data.data,
   });
 
@@ -189,32 +194,32 @@ export default function TenantDetailScreen({ navigation, route }) {
 
         <SectionTitle>Details</SectionTitle>
 
-        <Field label="Name" placeholder="Enter tenant's name" value={String(data.name || '')} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
-        <Field label="Mobile number" placeholder="Enter tenant's mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
+        <Field editable={canManage} label="Name" placeholder="Enter tenant's name" value={String(data.name || '')} onChangeText={set('name')} error={errors.name} autoCapitalize="words" />
+        <Field editable={canManage} label="Mobile number" placeholder="Enter tenant's mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
         {daily ? <>
-          <Field label="Per-day rate" placeholder="Enter per-day rate" value={String(data.dailyRate ?? '')} onChangeText={set('dailyRate')} keyboardType="numeric" error={errors.dailyRate} />
-          <Field label="Planned check-out date" placeholder="Enter date (YYYY-MM-DD)" value={checkOut} onChangeText={set('expectedVacateDate')} error={errors.expectedVacateDate} />
+          <Field editable={canManage} label="Per-day rate" placeholder="Enter per-day rate" value={String(data.dailyRate ?? '')} onChangeText={set('dailyRate')} keyboardType="numeric" error={errors.dailyRate} />
+          <Field editable={canManage} label="Planned check-out date" placeholder="Enter date (YYYY-MM-DD)" value={checkOut} onChangeText={set('expectedVacateDate')} error={errors.expectedVacateDate} />
           {overstayed && <Notice tone="warn" icon="time-outline" message={`Planned check-out was ${checkOut}. Extend the stay or check them out.`} />}
           {checkOut >= checkIn && Number(data.dailyRate) > 0 && <Notice tone="muted" icon="calculator-outline" message={`Checked in ${checkIn}: ${stayNights(checkIn, checkOut)} days × ${money(data.dailyRate)} = ${money(stayNights(checkIn, checkOut) * Number(data.dailyRate))}`} />}
         </> : (
-          <Field label="Monthly rent" placeholder="Enter monthly rent" value={String(data.rentAmount ?? '')} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
+          <Field editable={canManage} label="Monthly rent" placeholder="Enter monthly rent" value={String(data.rentAmount ?? '')} onChangeText={set('rentAmount')} keyboardType="numeric" error={errors.rentAmount} />
         )}
-        <Field label="Deposit amount" placeholder="Enter deposit amount" value={String(data.depositAmount ?? '')} onChangeText={set('depositAmount')} keyboardType="numeric" />
-        <Field label="ID proof URL" placeholder="Enter ID proof link" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
+        <Field editable={canManage} label="Deposit amount" placeholder="Enter deposit amount" value={String(data.depositAmount ?? '')} onChangeText={set('depositAmount')} keyboardType="numeric" />
+        <Field editable={canManage} label="ID proof URL" placeholder="Enter ID proof link" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
         {!daily && <>
-          <Field label="Notice given date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} />
-          <Field label="Expected vacate date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} />
+          <Field editable={canManage} label="Notice given date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} />
+          <Field editable={canManage} label="Expected vacate date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} />
         </>}
         <SectionTitle>Deposit</SectionTitle>
-        <Toggle label="Deposit paid" value={!!data.depositPaid} onChange={set('depositPaid')} />
-        <Toggle label="Deposit refunded" value={!!data.depositRefunded} onChange={set('depositRefunded')} />
+        <Toggle label="Deposit paid" value={!!data.depositPaid} onChange={canManage ? set('depositPaid') : () => {}} />
+        <Toggle label="Deposit refunded" value={!!data.depositRefunded} onChange={canManage ? set('depositRefunded') : () => {}} />
 
-        <Button size="lg" onPress={save} loading={busy === 'save'}>Save changes</Button>
+        <Button disabled={!canManage} size="lg" onPress={save} loading={busy === 'save'}>Save changes</Button>
         {data.status !== 'VACATED' && (
-          <Button variant="secondary" onPress={() => setMoving(true)}>Move to another bed</Button>
+          <Button disabled={!canManage} variant="secondary" onPress={() => setMoving(true)}>Move to another bed</Button>
         )}
 
-        <SectionTitle>Rent history</SectionTitle>
+        {canViewRent && <><SectionTitle>Rent history</SectionTitle>
         <QueryState query={history} empty="No rent recorded yet.">
           {[...(history.data || [])].sort((a, b) => b.month.localeCompare(a.month)).map((cycle) => (
             <Card key={cycle._id} style={st.cycle}>
@@ -236,15 +241,15 @@ export default function TenantDetailScreen({ navigation, route }) {
               ))}
             </Card>
           ))}
-        </QueryState>
+        </QueryState></>}
 
         <SectionTitle>Danger zone</SectionTitle>
         {data.status !== 'VACATED' && (
-          <Button variant="danger" onPress={confirmCheckout} loading={busy === 'checkout'}>
+          <Button disabled={!canManage} variant="danger" onPress={confirmCheckout} loading={busy === 'checkout'}>
             Check out tenant
           </Button>
         )}
-        <Button variant="tertiary" onPress={confirmDelete} loading={busy === 'delete'}>Delete tenant record</Button>
+        <Button disabled={!canManage} variant="tertiary" onPress={confirmDelete} loading={busy === 'delete'}>Delete tenant record</Button>
       </QueryState>
 
       <Sheet visible={moving} onClose={() => setMoving(false)} title="Move to another bed">
