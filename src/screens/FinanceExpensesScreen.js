@@ -1,3 +1,4 @@
+import { DateField } from '../components/DateField';
 import React, { useState } from 'react';
 import { RefreshControl, Text } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -66,10 +67,10 @@ export default function FinanceExpensesScreen({ route }) {
         {form.void ? <FinanceLine label="Expense to void" value={moneyPaise(form.original.amountPaise)} /> : <>
           <ChoiceField label="Category" options={EXPENSE_CATEGORIES} value={form.category} onChange={set('category')} />
           <Field label="Amount (₹)" value={form.amount} onChangeText={set('amount')} editable={form.original?.status !== 'PAID'} keyboardType="decimal-pad" />
-          <Field label="Expense date" value={form.date} onChangeText={set('date')} editable={!form.original} placeholder="YYYY-MM-DD" />
+          <DateField minDate="2000-01-01" maxDate="2099-12-31" label="Expense date" value={form.date} onChange={set('date')} editable={!form.original} />
           {form.original?.status !== 'PAID' && <ChoiceField label="Status" options={[{ label: 'Paid', value: 'PAID' }, { label: 'Unpaid', value: 'UNPAID' }]} value={form.status} onChange={set('status')} />}
           {form.status === 'PAID' && form.original?.status !== 'PAID' && <>
-            <Field label="Actual payment date" value={form.paidDate} onChangeText={set('paidDate')} placeholder="YYYY-MM-DD" />
+            <DateField minDate="2000-01-01" maxDate="2099-12-31" label="Actual payment date" value={form.paidDate} onChange={set('paidDate')} />
             <ChoiceField label="Payment method" options={PAYMENT_METHODS} value={form.method} onChange={set('method')} />
           </>}
           {form.original?.status === 'PAID' && <Text style={{ ...typography.small, color: theme.textMuted }}>Paid {new Date(form.original.paidDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} · {labelOf(PAYMENT_METHODS, form.original.method)}. Void and replace to correct payment details.</Text>}

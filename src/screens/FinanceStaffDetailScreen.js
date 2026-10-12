@@ -1,3 +1,4 @@
+import { DateField } from '../components/DateField';
 import React, { useState } from 'react';
 import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -94,12 +95,12 @@ export default function FinanceStaffDetailScreen({ route }) {
           <ChoiceField label="Role" options={STAFF_ROLES} value={form.role} onChange={set('role')} />
           <ChoiceField label="Payment type" options={[{ label: 'Monthly', value: 'MONTHLY' }, { label: 'Daily', value: 'DAILY' }]} value={form.paymentType} onChange={set('paymentType')} />
           <Field label="Rate (₹)" value={form.rate} onChangeText={set('rate')} keyboardType="decimal-pad" />
-          <Field label="Rate effective month" value={form.effectiveMonth} onChangeText={set('effectiveMonth')} placeholder="YYYY-MM" hint="Existing salary periods keep their recorded rate." />
+          <DateField minDate="2000-01-01" maxDate="2099-12-31" mode="month" label="Rate effective month" value={form.effectiveMonth} onChange={set('effectiveMonth')} hint="Existing salary periods keep their recorded rate." />
           <Field label="Notes" value={form.notes} onChangeText={set('notes')} />
         </> : form.kind === 'payment' ? <>
           <ChoiceField label="Payment type" options={[{ label: 'Advance', value: 'ADVANCE' }, { label: period?.paymentType === 'DAILY' ? 'Wage payment' : 'Salary payment', value: period?.paymentType === 'DAILY' ? 'WAGE' : 'SALARY' }]} value={form.type} onChange={set('type')} />
           <Field label="Amount (₹)" value={form.amount} onChangeText={set('amount')} keyboardType="decimal-pad" />
-          <Field label="Payment date" value={form.date} onChangeText={set('date')} placeholder="YYYY-MM-DD" />
+          <DateField minDate="2000-01-01" maxDate="2099-12-31" label="Payment date" value={form.date} onChange={set('date')} />
           <ChoiceField label="Payment method" options={PAYMENT_METHODS} value={form.method} onChange={set('method')} />
           <Field label="Note (optional)" value={form.note} onChangeText={set('note')} />
         </> : <>

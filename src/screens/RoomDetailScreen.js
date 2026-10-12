@@ -7,6 +7,8 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
+import { SelectField } from '../components/SelectField';
+import { FLOORS, ROOM_TYPES, floorLabel } from '../lib/roomOptions';
 
 export default function RoomDetailScreen({ navigation, route }) {
   const { can: allows } = usePropertyAccess(route.params?.propertyId);
@@ -98,7 +100,7 @@ export default function RoomDetailScreen({ navigation, route }) {
       <PageHeader
         eyebrow={beds.length ? `${occupied}/${beds.length} beds filled` : 'Room'}
         title={`Room ${room.data?.roomNumber || ''}`}
-        subtitle={room.data ? [room.data.type, room.data.floor && `Floor ${room.data.floor}`, money(room.data.monthlyRent)].filter(Boolean).join(' · ') : undefined}
+        subtitle={room.data ? [room.data.type, floorLabel(room.data.floor), money(room.data.monthlyRent)].filter(Boolean).join(' · ') : undefined}
       />
 
       <QueryState query={room}>
@@ -126,8 +128,8 @@ export default function RoomDetailScreen({ navigation, route }) {
 
         <SectionTitle>Room details</SectionTitle>
         <Field editable={canManage} label="Room number" placeholder="Enter room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>
-        <Field editable={canManage} label="Floor" placeholder="Enter floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,floor:v}))}/>
-        <Field editable={canManage} label="Type" placeholder="Enter room type" value={String(roomEdits.type ?? room.data?.type ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,type:v}))}/>
+        <SelectField editable={canManage && !updateRoom.isPending} label="Floor" value={String(roomEdits.floor ?? room.data?.floor ?? '')} options={FLOORS} onChange={v=>setRoomEdits(p=>({...p,floor:v}))} maxLength={40} />
+        <SelectField editable={canManage && !updateRoom.isPending} label="Room type" value={String(roomEdits.type ?? room.data?.type ?? '')} options={ROOM_TYPES} onChange={v=>setRoomEdits(p=>({...p,type:v}))} />
         <Field editable={canManage} label="Monthly rent" placeholder="Enter monthly rent" value={String(roomEdits.monthlyRent ?? room.data?.monthlyRent ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,monthlyRent:v}))} keyboardType="numeric"/>
         <Field editable={canManage} label="Notes" placeholder="Add notes" value={String(roomEdits.notes ?? room.data?.notes ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,notes:v}))} multiline/>
         <Button disabled={!canManage || (!Object.keys(roomEdits).length)} loading={updateRoom.isPending} onPress={()=>updateRoom.mutate({...roomEdits,...('monthlyRent' in roomEdits?{monthlyRent:Number(roomEdits.monthlyRent||0)}:{})})}>Save room details</Button>

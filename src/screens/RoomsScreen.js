@@ -8,6 +8,8 @@ import { Button, Field, PageHeader, QueryState, Row, Screen, typography, theme }
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
+import { SelectField } from '../components/SelectField';
+import { FLOORS, ROOM_TYPES, floorLabel } from '../lib/roomOptions';
 
 export default function RoomsScreen({ navigation, route }) {
   const { can: allows } = usePropertyAccess(route.params?.propertyId);
@@ -16,7 +18,7 @@ export default function RoomsScreen({ navigation, route }) {
   const { api } = useAuth();
   const queryClient = useQueryClient();
   const { propertyId } = route.params;
-  const [form, setForm] = useState({ roomNumber: '', type: '', monthlyRent: '' });
+  const [form, setForm] = useState({ roomNumber: '', floor: '', type: '', monthlyRent: '' });
   const [errors, setErrors] = useState({});
   const [adding, setAdding] = useState(false);
 
@@ -33,7 +35,7 @@ export default function RoomsScreen({ navigation, route }) {
   const addRoom = useMutation({
     mutationFn: (body) => api.post('/rooms', body),
     onSuccess: ({ data }) => {
-      setForm({ roomNumber: '', type: '', monthlyRent: '' });
+      setForm({ roomNumber: '', floor: '', type: '', monthlyRent: '' });
       queryClient.setQueryData(['rooms', propertyId], (current = []) => [
         ...current.filter((room) => room._id !== data.data._id),
         data.data,
@@ -62,6 +64,7 @@ export default function RoomsScreen({ navigation, route }) {
       propertyId,
       roomNumber: form.roomNumber.trim(),
       type: form.type.trim() || undefined,
+      floor: form.floor.trim() || undefined,
       monthlyRent: form.monthlyRent ? Number(form.monthlyRent) : undefined,
     });
   }
@@ -97,7 +100,7 @@ export default function RoomsScreen({ navigation, route }) {
               key={room._id}
               icon="bed-outline"
               title={`Room ${room.roomNumber}`}
-              subtitle={[room.type, money(room.monthlyRent)].filter(Boolean).join(' · ')}
+              subtitle={[room.type, floorLabel(room.floor), money(room.monthlyRent)].filter(Boolean).join(' · ')}
               badge={roomBeds.length ? `${occupied}/${roomBeds.length} filled` : 'No beds'}
               onPress={() => navigation.navigate('RoomDetail', { roomId: room._id, propertyId })}
             />
@@ -110,7 +113,8 @@ export default function RoomsScreen({ navigation, route }) {
       )}
       <Sheet visible={adding} onClose={() => setAdding(false)} title="Add a room">
         <Field label="Room number" placeholder="Enter room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
-        <Field label="Type (optional)" placeholder="Enter room type" value={form.type} onChangeText={set('type')} autoCapitalize="sentences" />
+        <SelectField label="Room type (optional)" value={form.type} options={ROOM_TYPES} onChange={set('type')} editable={canManage && !addRoom.isPending} />
+        <SelectField label="Floor (optional)" value={form.floor} options={FLOORS} onChange={set('floor')} editable={canManage && !addRoom.isPending} maxLength={40} />
         <Field label="Monthly rent (optional)" placeholder="Enter monthly rent" value={form.monthlyRent} onChangeText={set('monthlyRent')} keyboardType="numeric" error={errors.monthlyRent} />
         <Button disabled={!canManage} onPress={submit} loading={addRoom.isPending}>Add room</Button>
       </Sheet>

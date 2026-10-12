@@ -1,4 +1,5 @@
 import { usePropertyAccess } from '../components/PropertyAccess';
+import { DateField } from '../components/DateField';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,12 +9,13 @@ import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { billLabel, errorMessage, money } from '../lib/format';
 import { isDaily, stayNights } from '../lib/stay';
+import { RentReminderButton } from '../components/RentReminderButton';
 
 const METHOD = { UPI: 'UPI', CASH: 'Cash', BANK_TRANSFER: 'Bank transfer' };
 const idOf = (value) => value?._id || value;
 
 export default function TenantDetailScreen({ navigation, route }) {
-  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const { can: allows, property } = usePropertyAccess(route.params?.propertyId);
   const canManage = allows('tenants.manage');
   const canViewRent = allows('rent.view');
   const toast = useToast();
@@ -198,7 +200,7 @@ export default function TenantDetailScreen({ navigation, route }) {
         <Field editable={canManage} label="Mobile number" placeholder="Enter tenant's mobile number" value={String(data.phone || '')} onChangeText={set('phone')} keyboardType="phone-pad" error={errors.phone} />
         {daily ? <>
           <Field editable={canManage} label="Per-day rate" placeholder="Enter per-day rate" value={String(data.dailyRate ?? '')} onChangeText={set('dailyRate')} keyboardType="numeric" error={errors.dailyRate} />
-          <Field editable={canManage} label="Planned check-out date" placeholder="Enter date (YYYY-MM-DD)" value={checkOut} onChangeText={set('expectedVacateDate')} error={errors.expectedVacateDate} />
+          <DateField minDate={checkIn} editable={canManage} label="Planned check-out date" value={checkOut} onChange={set('expectedVacateDate')} error={errors.expectedVacateDate} />
           {overstayed && <Notice tone="warn" icon="time-outline" message={`Planned check-out was ${checkOut}. Extend the stay or check them out.`} />}
           {checkOut >= checkIn && Number(data.dailyRate) > 0 && <Notice tone="muted" icon="calculator-outline" message={`Checked in ${checkIn}: ${stayNights(checkIn, checkOut)} days × ${money(data.dailyRate)} = ${money(stayNights(checkIn, checkOut) * Number(data.dailyRate))}`} />}
         </> : (
@@ -207,8 +209,8 @@ export default function TenantDetailScreen({ navigation, route }) {
         <Field editable={canManage} label="Deposit amount" placeholder="Enter deposit amount" value={String(data.depositAmount ?? '')} onChangeText={set('depositAmount')} keyboardType="numeric" />
         <Field editable={canManage} label="ID proof URL" placeholder="Enter ID proof link" value={String(data.idProofUrl || '')} onChangeText={set('idProofUrl')} keyboardType="url" />
         {!daily && <>
-          <Field editable={canManage} label="Notice given date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.noticeGivenDate || '').slice(0,10)} onChangeText={set('noticeGivenDate')} />
-          <Field editable={canManage} label="Expected vacate date" placeholder="Enter date (YYYY-MM-DD)" value={String(data.expectedVacateDate || '').slice(0,10)} onChangeText={set('expectedVacateDate')} />
+          <DateField editable={canManage} label="Notice given date" value={String(data.noticeGivenDate || '').slice(0,10)} onChange={set('noticeGivenDate')} />
+          <DateField editable={canManage} label="Expected vacate date" value={String(data.expectedVacateDate || '').slice(0,10)} onChange={set('expectedVacateDate')} />
         </>}
         <SectionTitle>Deposit</SectionTitle>
         <Toggle label="Deposit paid" value={!!data.depositPaid} onChange={canManage ? set('depositPaid') : () => {}} />
@@ -229,6 +231,7 @@ export default function TenantDetailScreen({ navigation, route }) {
               </View>
               <Text style={st.cycleAmount}>{money(cycle.amountPaid)} <Text style={st.cycleOf}>of {money(cycle.amountDue)}</Text></Text>
               {cycle.amountPaid > cycle.amountDue && <Text style={st.refund}>{money(cycle.amountPaid - cycle.amountDue)} to refund: they left before the paid-up date.</Text>}
+              <RentReminderButton cycle={cycle} tenant={data} propertyName={property?.name} />
               {(cycle.payments || []).map((p) => (
                 <View key={p._id}>
                   <Divider style={{ marginVertical: 8 }} />

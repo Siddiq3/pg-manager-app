@@ -1,3 +1,4 @@
+import { DateField } from '../components/DateField';
 import React, { useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -48,7 +49,7 @@ export default function FinanceStaffScreen({ navigation, route }) {
         <Field label="Name" value={form.name} onChangeText={set('name')} autoCapitalize="words" />
         <Field label="Phone" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" />
         <ChoiceField label="Role" options={STAFF_ROLES} value={form.role} onChange={set('role')} />
-        <Field label="Joining date" value={form.joinedDate} onChangeText={set('joinedDate')} placeholder="YYYY-MM-DD" />
+        <DateField minDate="2000-01-01" maxDate="2099-12-31" label="Joining date" value={form.joinedDate} onChange={set('joinedDate')} />
         <ChoiceField label="Payment type" options={[{ label: 'Monthly salary', value: 'MONTHLY' }, { label: 'Daily wage', value: 'DAILY' }]} value={form.paymentType} onChange={set('paymentType')} />
         <Field label={form.paymentType === 'MONTHLY' ? 'Monthly salary (₹)' : 'Daily rate (₹)'} value={form.rate} onChangeText={set('rate')} keyboardType="decimal-pad" />
         <Field label="Notes (optional)" value={form.notes} onChangeText={set('notes')} />
