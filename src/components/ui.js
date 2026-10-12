@@ -92,12 +92,13 @@ const BUTTON_TONES = {
   danger: { bg: theme.errorSubtle, fg: theme.error },
 };
 
-export function Button({ children, onPress, variant = 'primary', size = 'md', disabled = false, loading = false, style, icon }) {
+export function Button({ children, onPress, variant = 'primary', size = 'md', disabled = false, loading = false, style, icon, accessibilityLabel }) {
   const tone = BUTTON_TONES[variant] || BUTTON_TONES.primary;
   const blocked = disabled || loading;
   return (
     <Press
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: blocked, busy: loading }}
       onPress={onPress}
       disabled={blocked}

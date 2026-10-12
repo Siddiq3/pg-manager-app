@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { Button, Press, theme, typography } from './ui';
-import { monthLabel } from '../lib/format';
+import { DateField } from './DateField';
 import { shiftMonth } from '../lib/finance';
 
 export function MonthPicker({ month, onChange, disabled }) {
   return <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
     <Button size="sm" variant="secondary" disabled={disabled || month <= '2000-01'} accessibilityLabel="Previous month" onPress={() => onChange(shiftMonth(month, -1))}>‹</Button>
-    <Text style={{ ...typography.bodyStrong, color: theme.text, flex: 1, textAlign: 'center' }}>{monthLabel(month)}</Text>
+    <View style={{ flex: 1 }}><DateField mode="month" value={month} onChange={onChange} disabled={disabled} minDate="2000-01-01" maxDate="2099-12-31" /></View>
     <Button size="sm" variant="secondary" disabled={disabled || month >= '2099-12'} accessibilityLabel="Next month" onPress={() => onChange(shiftMonth(month, 1))}>›</Button>
   </View>;
 }

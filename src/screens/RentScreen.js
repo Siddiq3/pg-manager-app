@@ -9,13 +9,14 @@ import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { billLabel, errorMessage, money, monthLabel } from '../lib/format';
 import { dayKey, history, monthSummary, overdue, upcoming } from '../lib/reports';
+import { RentReminderButton } from '../components/RentReminderButton';
 
 const VIEWS = [{ label: 'This month', value: 'month' }, { label: 'Pending', value: 'pending' }, { label: 'Upcoming', value: 'upcoming' }, { label: 'Overdue', value: 'overdue' }, { label: 'Reports', value: 'reports' }];
 const PERIODS = [{ label: '3 months', value: 3 }, { label: '6 months', value: 6 }, { label: '12 months', value: 12 }];
 const shortDate = (day) => new Date(`${day}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
 export default function RentScreen({ navigation, route }) {
-  const { can: allows } = usePropertyAccess(route.params?.propertyId);
+  const { can: allows, property } = usePropertyAccess(route.params?.propertyId);
   const canManage = allows('rent.manage');
   const toast = useToast();
   const { api } = useAuth();
@@ -85,13 +86,14 @@ export default function RentScreen({ navigation, route }) {
         <View style={rs.bar}><View style={[rs.barFill, { width: `${progress * 100}%` }, cycle.status === 'PAID' && { backgroundColor: theme.success }]} /></View>
         <View style={rs.actions}>
           <IconAction icon="call-outline" label="Call" onPress={() => open(phone && `tel:${phone}`, 'This tenant has no mobile number saved.')} />
-          <IconAction icon="logo-whatsapp" label="WhatsApp" onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')} />
+          {!(cycle.amountDue - cycle.amountPaid > 0) && <IconAction icon="logo-whatsapp" label="WhatsApp" onPress={() => open(phone && `https://wa.me/${phone.replace(/^\+/, '')}`, 'This tenant has no mobile number saved.')} />}
           {cycle.status !== 'PAID' && (
             <Button disabled={!canManage} size="sm" style={{ flex: 1 }} loading={payingId === cycle._id} onPress={() => openPayment(cycle)}>
               Mark paid
             </Button>
           )}
         </View>
+        <RentReminderButton cycle={cycle} tenant={cycle.tenantId} propertyName={property?.name} />
       </View>
     );
   };
