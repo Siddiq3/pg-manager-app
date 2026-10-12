@@ -15,6 +15,7 @@ const idOf = (value) => value?._id || value;
 export default function TenantDetailScreen({ navigation, route }) {
   const { can: allows } = usePropertyAccess(route.params?.propertyId);
   const canManage = allows('tenants.manage');
+  const canViewRent = allows('rent.view');
   const toast = useToast();
   const { api } = useAuth();
   const queryClient = useQueryClient();
@@ -34,6 +35,7 @@ export default function TenantDetailScreen({ navigation, route }) {
   // Every month's rent for this tenant, newest first, with each payment's method and note.
   const history = useQuery({
     queryKey: ['tenantCycles', tenantId],
+    enabled: canViewRent,
     queryFn: async () => (await api.get('/rent-cycles', { params: { tenantId } })).data.data,
   });
 
@@ -217,7 +219,7 @@ export default function TenantDetailScreen({ navigation, route }) {
           <Button disabled={!canManage} variant="secondary" onPress={() => setMoving(true)}>Move to another bed</Button>
         )}
 
-        <SectionTitle>Rent history</SectionTitle>
+        {canViewRent && <><SectionTitle>Rent history</SectionTitle>
         <QueryState query={history} empty="No rent recorded yet.">
           {[...(history.data || [])].sort((a, b) => b.month.localeCompare(a.month)).map((cycle) => (
             <Card key={cycle._id} style={st.cycle}>
@@ -239,7 +241,7 @@ export default function TenantDetailScreen({ navigation, route }) {
               ))}
             </Card>
           ))}
-        </QueryState>
+        </QueryState></>}
 
         <SectionTitle>Danger zone</SectionTitle>
         {data.status !== 'VACATED' && (

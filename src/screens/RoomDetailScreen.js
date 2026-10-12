@@ -119,7 +119,7 @@ export default function RoomDetailScreen({ navigation, route }) {
         )}
         <Card style={{ gap: 12 }}>
           <Field editable={canManage} label="New bed label" placeholder="Enter bed label" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" />
-          <Button disabled={!canManage} variant="ghost" onPress={() => bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!bedLabel.trim()}>
+          <Button variant="ghost" onPress={() => canManage && bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!canManage || !bedLabel.trim()}>
             Add bed
           </Button>
         </Card>

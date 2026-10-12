@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { can } from '../lib/access';
 import { QueryState, Screen, StateView } from './ui';
 export function usePropertyAccess(propertyId) {
   const { api, activePropertyId } = useAuth();
   const query = useQuery({ queryKey: ['properties'], queryFn: async () => (await api.get('/properties')).data.data, staleTime: 0 });
+  const { refetch } = query;
+  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
   const property = query.data?.find((p) => p._id === (propertyId || activePropertyId));
   return { property, query, can: (permission) => can(property, permission) };
 }

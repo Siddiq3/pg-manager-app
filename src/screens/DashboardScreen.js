@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, FadeIn, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
+import { Button, Card, FadeIn, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, StateView, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +24,8 @@ export default function DashboardScreen({ navigation }) {
     queryKey: ['properties'],
     queryFn: async () => (await api.get('/properties')).data.data,
   });
+  const { refetch: refetchProperties } = properties;
+  useFocusEffect(useCallback(() => { refetchProperties(); }, [refetchProperties]));
 
   // Keep the selection valid: a saved property can be deleted, or a co-owner can lose access.
   useEffect(() => {
@@ -65,8 +68,11 @@ export default function DashboardScreen({ navigation }) {
   const pendingAmount = pending.reduce((sum, cycle) => sum + (cycle.amountDue - cycle.amountPaid), 0);
   const refreshing = properties.isRefetching || dashboard.isRefetching;
 
-  if (isStaff) return <Screen scroll>
-    <PageHeader title={selectedProperty.name} subtitle="Staff access" />
+  if (isStaff || user?.accountType === 'STAFF') return <Screen scroll refreshControl={<RefreshControl refreshing={properties.isRefetching} onRefresh={refetchProperties} tintColor={theme.brand} colors={[theme.brand]} />}>
+    <PageHeader title={selectedProperty?.name || 'Your properties'} subtitle="Staff access" />
+    <QueryState query={properties}>
+    {!selectedProperty && <StateView icon="lock-closed-outline" title="No property access" message="Ask the property owner to assign access, then refresh." actionLabel="Refresh access" onAction={refetchProperties} />}
+    {selectedProperty && <>
     <SectionTitle>Your properties</SectionTitle>
     {(properties.data || []).map((p) => <Row key={p._id} title={p.name} badge={p.role} onPress={() => setPropertyId(p._id)} />)}
     {can(selectedProperty, 'beds.view') && <Row title="Rooms and beds" onPress={() => navigation.navigate('Rooms', { propertyId })} />}
@@ -75,6 +81,8 @@ export default function DashboardScreen({ navigation }) {
     {can(selectedProperty, 'reports.view') && <Row title="Monthly report" onPress={() => navigation.navigate('FinanceReport', { propertyId })} />}
     {canDashboard && <Row title="Occupancy report" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} />}
     {!selectedProperty.permissions?.length && <Text style={styles.empty}>Ask the property owner to assign your permissions.</Text>}
+    </>}
+    </QueryState>
   </Screen>;
   return (
     <Screen
