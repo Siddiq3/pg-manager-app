@@ -43,7 +43,7 @@ export default function AccountScreen({ navigation }) {
         <Item icon="lock-closed-outline" label="Password & devices" onPress={() => navigation.navigate('Security')} last />
       </Group>
       {user?.accountType !== 'STAFF' && <SubscriptionPlans entitlement={entitlement} />}
-      <Button variant="secondary" onPress={refreshPlan} loading={refreshingPlan}>{user?.accountType === 'STAFF' ? 'Refresh access status' : 'Refresh subscription status'}</Button>
+      <Button variant="tertiary" size="sm" onPress={refreshPlan} loading={refreshingPlan}>{user?.accountType === 'STAFF' ? 'Refresh access status' : 'Refresh subscription status'}</Button>
       <Group title="Support">
         <Item icon="help-circle-outline" label="Help centre" onPress={() => navigation.navigate('Help')} />
         <Item icon="chatbubble-ellipses-outline" label="Contact support" onPress={() => navigation.navigate('Support')} />
@@ -89,19 +89,19 @@ function Item({ icon, label, value, onPress, last, tone }) {
 
 const styles = StyleSheet.create({
   title: { ...typography.h1, color: theme.text },
-  profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: fonts.display, fontSize: 21, color: theme.primaryText },
+  profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontFamily: fonts.display, fontSize: 18, color: theme.primaryText },
   name: { ...typography.bodyStrong, color: theme.text },
   caption: { ...typography.caption, color: theme.textMuted, marginTop: 2 },
-  group: { gap: spacing.sm, marginTop: spacing.xs },
-  groupTitle: { ...typography.label, color: theme.textMuted },
+  group: { gap: spacing.xs + 2 },
+  groupTitle: { ...typography.label, color: theme.textMuted, marginLeft: spacing.xs },
   groupCard: { overflow: 'hidden' },
-  item: { minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg },
+  item: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   itemLabel: { ...typography.body, color: theme.text, flex: 1 },
   value: { ...typography.caption, color: theme.textMuted, maxWidth: '35%' },
   divider: { marginLeft: spacing.lg + 19 + spacing.md },
-  logout: { minHeight: 52, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center' },
+  logout: { minHeight: 44, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center' },
   logoutText: { ...typography.body, color: theme.danger },
-  version: { ...typography.caption, color: theme.textMuted, textAlign: 'center', paddingBottom: spacing.lg },
+  version: { ...typography.caption, color: theme.textDisabled, textAlign: 'center' },
 });

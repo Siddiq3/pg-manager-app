@@ -1,8 +1,8 @@
 import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
-import { Alert, RefreshControl, Text } from 'react-native';
+import { Alert, RefreshControl, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Field, Notice, PageHeader, QueryState, Row, Screen, SectionTitle, styles, typography, theme } from '../components/ui';
+import { Button, Field, List, Notice, PageHeader, QueryState, Row, Screen, SectionTitle, styles, typography, theme } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
@@ -108,7 +108,7 @@ export default function RoomDetailScreen({ navigation, route }) {
         {beds.length === 0 ? (
           <Text style={styles.empty}>No beds yet. Add the first one below.</Text>
         ) : (
-          beds.map((bed) => (
+          <List>{beds.map((bed) => (
             <Row
               key={bed._id}
               icon="bed-outline"
@@ -117,14 +117,14 @@ export default function RoomDetailScreen({ navigation, route }) {
               right={canManage ? "Edit" : undefined}
               onPress={canManage ? () => openBed(bed) : undefined}
             />
-          ))
+          ))}</List>
         )}
-        <Card style={{ gap: 12 }}>
-          <Field editable={canManage} label="New bed label" placeholder="Enter bed label" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" />
-          <Button variant="ghost" onPress={() => canManage && bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!canManage || !bedLabel.trim()}>
+        {canManage && <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <View style={{ flex: 1 }}><Field accessibilityLabel="New bed label" placeholder="New bed label, e.g. C" value={bedLabel} onChangeText={setBedLabel} autoCapitalize="characters" /></View>
+          <Button variant="ghost" style={{ minHeight: 48 }} onPress={() => canManage && bedLabel.trim() && addBed.mutate(bedLabel.trim())} loading={addBed.isPending} disabled={!canManage || !bedLabel.trim()}>
             Add bed
           </Button>
-        </Card>
+        </View>}
 
         <SectionTitle>Room details</SectionTitle>
         <Field editable={canManage} label="Room number" placeholder="Enter room number" value={String(roomEdits.roomNumber ?? room.data?.roomNumber ?? '')} onChangeText={v=>setRoomEdits(p=>({...p,roomNumber:v}))}/>

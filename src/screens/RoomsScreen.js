@@ -1,10 +1,10 @@
 import { usePropertyAccess } from '../components/PropertyAccess';
 import React, { useState } from 'react';
-import { RefreshControl, Text } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Sheet } from '../components/Sheet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, PageHeader, QueryState, Row, Screen, typography, theme } from '../components/ui';
+import { Button, Field, List, PageHeader, QueryState, Row, Screen, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, money } from '../lib/format';
@@ -91,8 +91,8 @@ export default function RoomsScreen({ navigation, route }) {
         subtitle={rooms.data && beds.data ? `${rooms.data.length} room${rooms.data.length === 1 ? '' : 's'} · ${beds.data.filter((bed) => bed.status === 'VACANT').length} of ${beds.data.length} beds free` : undefined}
         right={canManage && <Button disabled={!canManage} size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => setAdding(true)}>Add</Button>}
       />
-      <QueryState query={rooms} empty="No rooms yet. Add your first room above.">
-        {(rooms.data || []).map((room) => {
+      <QueryState query={rooms} empty="Tap Add to create your first room.">
+        <List>{(rooms.data || []).map((room) => {
           const roomBeds = bedsOf(room._id);
           const occupied = roomBeds.filter((bed) => bed.status === 'OCCUPIED').length;
           return (
@@ -100,17 +100,15 @@ export default function RoomsScreen({ navigation, route }) {
               key={room._id}
               icon="bed-outline"
               title={`Room ${room.roomNumber}`}
-              subtitle={[room.type, floorLabel(room.floor), money(room.monthlyRent)].filter(Boolean).join(' · ')}
-              badge={roomBeds.length ? `${occupied}/${roomBeds.length} filled` : 'No beds'}
+              subtitle={[money(room.monthlyRent), room.type, floorLabel(room.floor)].filter(Boolean).join(' · ')}
+              subtitleLines={1}
+              badge={!roomBeds.length ? 'No beds' : occupied === roomBeds.length ? 'Full' : `${roomBeds.length - occupied} free`}
               onPress={() => navigation.navigate('RoomDetail', { roomId: room._id, propertyId })}
             />
           );
-        })}
+        })}</List>
       </QueryState>
 
-      {!!(rooms.data || []).length && (
-        <Text style={{ ...typography.caption, color: theme.textMuted, textAlign: 'center' }}>Open a room to add or remove its beds.</Text>
-      )}
       <Sheet visible={adding} onClose={() => setAdding(false)} title="Add a room">
         <Field label="Room number" placeholder="Enter room number" value={form.roomNumber} onChangeText={set('roomNumber')} error={errors.roomNumber} />
         <SelectField label="Room type (optional)" value={form.type} options={ROOM_TYPES} onChange={set('type')} editable={canManage && !addRoom.isPending} />

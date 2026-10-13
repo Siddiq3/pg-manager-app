@@ -37,8 +37,8 @@ export function SelectField({ label, value, options, onChange, editable = true, 
 
 const s = StyleSheet.create({
   label: { ...typography.label, color: theme.textSecondary },
-  input: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: theme.borderStrong, borderRadius: radius.md, backgroundColor: theme.surface, paddingHorizontal: 16, paddingVertical: 12 },
+  input: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: theme.border, borderRadius: radius.md, backgroundColor: theme.surface, paddingHorizontal: 14, paddingVertical: 10 },
   value: { ...typography.body, color: theme.text, flex: 1 }, disabled: { backgroundColor: theme.surfaceMuted, opacity: 0.7 },
-  option: { minHeight: 52, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: radius.md },
+  option: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: radius.md },
   selected: { backgroundColor: theme.primarySubtle },
 });

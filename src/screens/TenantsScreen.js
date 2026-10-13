@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Field, PageHeader, QueryState, Row, Screen, Segmented, StateView, theme } from '../components/ui';
+import { Button, Field, List, PageHeader, QueryState, Row, Screen, Segmented, StateView, theme } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { money } from '../lib/format';
 import { isDaily } from '../lib/stay';
@@ -35,7 +35,7 @@ export default function TenantsScreen({ navigation, route }) {
         right={canManage && <Button disabled={!canManage} size="sm" variant="ghost" icon={<Ionicons name="add" size={18} color={theme.primaryText} />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add</Button>}
       />
       <Segmented label="Tenant status" value={status} onChange={setStatus} options={[{ label: 'Staying now', value: 'ACTIVE' }, { label: 'Moved out', value: 'VACATED' }]} />
-      {all.length > 0 && <Field label="Search" placeholder="Search by name or mobile number" value={search} onChangeText={setSearch} />}
+      {all.length > 0 && <Field accessibilityLabel="Search tenants" placeholder="Search name or mobile" value={search} onChangeText={setSearch} returnKeyType="search" />}
       <QueryState query={tenants}>
         {shown.length === 0 ? (
           <StateView
@@ -43,7 +43,7 @@ export default function TenantsScreen({ navigation, route }) {
             title={term ? 'No matches' : status === 'ACTIVE' ? 'No tenants staying yet' : 'Nobody has moved out yet'}
             message={term ? 'Try a different name or number.' : status === 'ACTIVE' ? 'Add a tenant to a vacant bed to start tracking their rent.' : 'Tenants you check out appear here with their history.'}
           />
-        ) : shown.map((t) => (
+        ) : <List>{shown.map((t) => (
           <Row
             key={t._id}
             icon="person-outline"
@@ -52,7 +52,7 @@ export default function TenantsScreen({ navigation, route }) {
             badge={isDaily(t) ? 'Daily' : t.status === 'ACTIVE' && t.expectedVacateDate ? 'ON_NOTICE' : undefined}
             onPress={() => navigation.navigate('TenantDetail', { tenantId: t._id, propertyId })}
           />
-        ))}
+        ))}</List>}
       </QueryState>
     </Screen>
   );

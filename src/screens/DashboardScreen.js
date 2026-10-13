@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, FadeIn, Field, PageHeader, Press, QueryState, Row, Screen, SectionTitle, StateView, Stat, fonts, radius, shadow, styles, typography, theme } from '../components/ui';
+import { Button, Card, FadeIn, Field, List, PageHeader, Press, QueryState, Row, Screen, SectionTitle, StateView, Stat, fonts, radius, shadow, spacing, styles, typography, theme } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../context/AuthContext';
@@ -74,12 +74,14 @@ export default function DashboardScreen({ navigation }) {
     {!selectedProperty && <StateView icon="lock-closed-outline" title="No property access" message="Ask the property owner to assign access, then refresh." actionLabel="Refresh access" onAction={refetchProperties} />}
     {selectedProperty && <>
     <SectionTitle>Your properties</SectionTitle>
-    {(properties.data || []).map((p) => <Row key={p._id} title={p.name} badge={p.role} onPress={() => setPropertyId(p._id)} />)}
+    <List>{(properties.data || []).map((p) => <Row key={p._id} title={p.name} badge={p.role} onPress={() => setPropertyId(p._id)} />)}</List>
+    <List>
     {can(selectedProperty, 'beds.view') && <Row title="Rooms and beds" onPress={() => navigation.navigate('Rooms', { propertyId })} />}
     {can(selectedProperty, 'tenants.view') && <Row title="Tenants" onPress={() => navigation.navigate('TenantsTab')} />}
     {can(selectedProperty, 'rent.view') && <Row title="Rent" onPress={() => navigation.navigate('Rent', { propertyId })} />}
     {can(selectedProperty, 'reports.view') && <Row title="Monthly report" onPress={() => navigation.navigate('FinanceReport', { propertyId })} />}
     {canDashboard && <Row title="Occupancy report" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'occupied' })} />}
+    </List>
     {!selectedProperty.permissions?.length && <Text style={styles.empty}>Ask the property owner to assign your permissions.</Text>}
     </>}
     </QueryState>
@@ -104,7 +106,6 @@ export default function DashboardScreen({ navigation }) {
       }
     >
       <PageHeader
-        eyebrow={user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'Welcome back'}
         title={dashboard.data?.property?.name || 'Your PG'}
         onTitlePress={propertyId ? () => setSwitching(true) : undefined}
         titleHint="Switch property or add another"
@@ -117,8 +118,8 @@ export default function DashboardScreen({ navigation }) {
 
       <QueryState query={properties}>
         {!propertyId ? (
-          <Card style={{ gap: 16 }}>
-            <View style={ds.setupIcon}><Ionicons name="business-outline" size={26} color={theme.primary} /></View>
+          <Card style={{ gap: 12 }}>
+            <View style={ds.setupIcon}><Ionicons name="business-outline" size={22} color={theme.primary} /></View>
             <View style={{ gap: 4 }}>
               <Text style={{ ...typography.h3, color: theme.text }}>Add your first property</Text>
               <Text style={{ ...typography.body, color: theme.textMuted }}>Create a property to start tracking occupancy and rent.</Text>
@@ -150,7 +151,7 @@ export default function DashboardScreen({ navigation }) {
               </Card>
             )}
 
-            <Row icon="receipt-outline" title="Staff & Expenses" subtitle="Salaries, daily wages and monthly spending" onPress={() => navigation.navigate('FinanceHub', { propertyId })} />
+            <Row icon="receipt-outline" title="Staff & Expenses" subtitle="Salaries, wages and spending" onPress={() => navigation.navigate('FinanceHub', { propertyId })} />
 
             <Button icon={<Ionicons name="person-add-outline" size={19} color="#fff" />} onPress={() => navigation.navigate('AddTenant', { propertyId })}>Add tenant</Button>
 
@@ -158,7 +159,7 @@ export default function DashboardScreen({ navigation }) {
             {(dashboard.data?.vacantBeds || []).length === 0 ? (
               <Text style={styles.empty}>{occupancy.totalBeds ? 'Every bed is occupied.' : 'No beds added yet.'}</Text>
             ) : (
-              (dashboard.data?.vacantBeds || []).slice(0, 5).map((bed) => (
+              <List>{(dashboard.data?.vacantBeds || []).slice(0, 5).map((bed) => (
                 <Row
                   key={bed._id}
                   icon="bed-outline"
@@ -167,14 +168,14 @@ export default function DashboardScreen({ navigation }) {
                   badge="VACANT"
                   onPress={() => navigation.navigate('Rooms', { propertyId })}
                 />
-              ))
+              ))}</List>
             )}
 
             <SectionTitle action={<Button size="sm" variant="tertiary" onPress={() => navigation.navigate('DashboardReport', { propertyId, report: 'rent' })}>View all</Button>}>Rent pending</SectionTitle>
             {pending.length === 0 ? (
               <Text style={styles.empty}>All rent collected.</Text>
             ) : (
-              pending.slice(0, 5).map((cycle) => (
+              <List>{pending.slice(0, 5).map((cycle) => (
                 <Row
                   key={cycle._id}
                   icon="person-outline"
@@ -183,13 +184,13 @@ export default function DashboardScreen({ navigation }) {
                   badge={cycle.status}
                   onPress={() => navigation.navigate('Rent', { propertyId })}
                 />
-              ))
+              ))}</List>
             )}
           </QueryState>
         )}
       </QueryState>
       <Sheet visible={switching} onClose={() => setSwitching(false)} title="Your properties">
-        {(properties.data || []).map((property) => (
+        <List>{(properties.data || []).map((property) => (
           <Row
             key={property._id}
             icon="business-outline"
@@ -199,7 +200,7 @@ export default function DashboardScreen({ navigation }) {
             chevron={false}
             onPress={() => { setPropertyId(property._id); setSwitching(false); }}
           />
-        ))}
+        ))}</List>
         <SectionTitle>Add another property</SectionTitle>
         <Field label="Property name" placeholder="Enter property name" value={newProperty} onChangeText={setNewProperty} autoCapitalize="words" />
         <Button onPress={addProperty} loading={creating} disabled={!newProperty.trim()}>Add property</Button>
@@ -209,16 +210,16 @@ export default function DashboardScreen({ navigation }) {
 }
 
 const ds = StyleSheet.create({
-  overview: { backgroundColor: theme.ink, borderRadius: radius.xl, padding: 20, gap: 14, ...shadow.card },
-  overviewFigures: { flexDirection: 'row', gap: 20, alignItems: 'center' },
-  overviewValue: { ...typography.display, fontSize: 48, lineHeight: 56, color: '#fff' },
-  overviewPercent: { fontSize: 24, color: '#C7B8FF' },
+  overview: { backgroundColor: theme.ink, borderRadius: radius.lg, padding: 16, gap: 12, ...shadow.subtle },
+  overviewFigures: { flexDirection: 'row', gap: 16, alignItems: 'center' },
+  overviewValue: { ...typography.display, fontSize: 38, lineHeight: 44, color: '#fff' },
+  overviewPercent: { fontSize: 20, color: '#C7B8FF' },
   overviewTitle: { ...typography.bodyStrong, color: '#fff' },
   overviewMeta: { ...typography.caption, color: theme.inkMuted },
-  overviewTrack: { height: 7, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 4, overflow: 'hidden' },
+  overviewTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 4, overflow: 'hidden' },
   overviewFill: { height: '100%', backgroundColor: '#B7A5FF', borderRadius: 4 },
-  grid: { flexDirection: 'row', gap: 12 },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: fonts.display, fontSize: 19, color: theme.primaryText },
-  setupIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  grid: { flexDirection: 'row', gap: spacing.md },
+  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.primaryTint, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontFamily: fonts.display, fontSize: 17, color: theme.primaryText },
+  setupIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
 });

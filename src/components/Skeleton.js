@@ -23,11 +23,11 @@ export function SkeletonRow() {
 }
 
 export function SkeletonScreen({ rows = 4 }) {
-  return <View style={styles.screen}><Skeleton width="42%" height={13} /><Skeleton width="68%" height={28} style={{ marginTop: 8, marginBottom: 24 }} />{Array.from({ length: rows }, (_, i) => <SkeletonRow key={i} />)}</View>;
+  return <View style={styles.screen}><Skeleton width="42%" height={13} /><Skeleton width="68%" height={28} style={{ marginTop: 6, marginBottom: 8 }} />{Array.from({ length: rows }, (_, i) => <SkeletonRow key={i} />)}</View>;
 }
 
 const styles = StyleSheet.create({
   screen: { gap: 12, paddingVertical: 4 },
-  row: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.borderSubtle },
+  row: { minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, backgroundColor: theme.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.borderSubtle },
   body: { flex: 1, gap: 10 },
 });

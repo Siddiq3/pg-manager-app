@@ -3,7 +3,7 @@ import { Alert, Switch, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
-import { Button, Card, Field, Notice, PageHeader, PasswordField, QueryState, Row, Screen, SectionTitle, theme, typography } from '../components/ui';
+import { Button, Card, Field, List, Notice, PageHeader, PasswordField, QueryState, Row, Screen, SectionTitle, theme, typography } from '../components/ui';
 import { usePropertyAccess } from '../components/PropertyAccess';
 import { STAFF_PERMISSIONS } from '../lib/access';
 import { errorMessage } from '../lib/format';
@@ -55,23 +55,25 @@ export default function StaffAccessScreen({ route }) {
   if (property?.role !== 'OWNER') return <Screen><QueryState query={query}><Notice message="Only the property owner can manage staff access." /></QueryState></Screen>;
   return <Screen scroll>
     <PageHeader title="Staff access" subtitle={property.name} />
-    <Notice tone="muted" message="Create a staff login using a mobile number or email and a password. Share those details with staff; they choose Sign in without signing up or verifying an OTP. Access applies only to this property. Salary records are separate." />
+    <Notice tone="muted" icon="information-circle-outline" message="Staff sign in with the login you create here. Access is limited to this property." />
     <SectionTitle>Staff members</SectionTitle>
     <QueryState query={members} empty="No staff invited yet.">
-      {(members.data || []).map((member) => <Card key={member._id}>
+      {(members.data || []).map((member) => <List key={member._id}>
         <Row icon="person-outline" title={member.name || member.contact || member.email} subtitle={(member.permissions || []).map((p) => labels[p]).join(' · ') || 'No permissions assigned'} badge={member.status} />
-        <Button variant="secondary" onPress={() => { setEditing(member); setEmail(member.contact || member.email); setPermissions(member.permissions || []); }}>Edit permissions</Button>
-        <Button variant="danger" onPress={() => revoke(member)}>Remove access</Button>
-      </Card>)}
+        <View style={{ flexDirection: 'row', gap: 8, padding: 10 }}>
+          <Button size="sm" variant="secondary" style={{ flex: 1 }} onPress={() => { setEditing(member); setEmail(member.contact || member.email); setPermissions(member.permissions || []); }}>Edit permissions</Button>
+          <Button size="sm" variant="danger" style={{ flex: 1 }} onPress={() => revoke(member)}>Remove</Button>
+        </View>
+      </List>)}
     </QueryState>
     <SectionTitle>{editing ? 'Edit staff permissions' : createLogin ? 'Create staff login' : 'Invite an existing account'}</SectionTitle>
     {!editing && <Button variant="secondary" onPress={() => { setCreateLogin(!createLogin); setEmail(''); setPassword(''); }}>{createLogin ? 'Invite by email instead' : 'Create mobile or email login instead'}</Button>}
     {!editing && createLogin && <Field label="Staff name" value={name} onChangeText={setName} autoCapitalize="words" />}
     <Field label={createLogin || editing ? 'Mobile number or email' : 'Staff email'} value={email} onChangeText={setEmail} editable={!editing} autoCapitalize="none" />
     {!editing && createLogin && <PasswordField label="Password for staff" value={password} onChangeText={setPassword} hint="8+ characters with uppercase, lowercase, number and symbol." />}
-    {!editing && createLogin && <Notice tone="muted" message="An existing account's password cannot be replaced. For an existing email account, use Invite by email instead. Staff can change their password from Password & devices." />}
-    <Card>{STAFF_PERMISSIONS.map((permission) => <View key={permission} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 }}><Text style={{ ...typography.body, color: theme.text, flex: 1 }}>{labels[permission]}</Text><Switch accessibilityLabel={labels[permission]} value={permissions.includes(permission)} onValueChange={(enabled) => toggle(permission, enabled)} /></View>)}</Card>
-    <Notice tone="muted" message="The dashboard requires all four view permissions: tenants, beds, rent and reports. Staff with fewer permissions use their assigned sections." />
+    {!editing && createLogin && <Notice tone="muted" message="Already have an account? Use Invite by email instead." />}
+    <Card>{STAFF_PERMISSIONS.map((permission) => <View key={permission} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 }}><Text style={{ ...typography.body, color: theme.text, flex: 1 }}>{labels[permission]}</Text><Switch accessibilityLabel={labels[permission]} value={permissions.includes(permission)} onValueChange={(enabled) => toggle(permission, enabled)} /></View>)}</Card>
+    <Text style={{ ...typography.caption, color: theme.textMuted }}>Dashboard access needs all four view permissions.</Text>
     <Button onPress={save} disabled={!email.trim() || (!editing && createLogin && (!name.trim() || !password))} loading={busy}>{editing ? 'Save permissions' : createLogin ? 'Create staff login' : 'Invite staff'}</Button>
     {editing && <Button variant="tertiary" onPress={() => { setEditing(null); setEmail(''); setPermissions([]); }}>Cancel editing</Button>}
   </Screen>;

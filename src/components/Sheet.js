@@ -49,8 +49,8 @@ const s = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(16,16,20,.38)' },
   sheet: { width: '100%', maxWidth: 720, alignSelf: 'center', backgroundColor: theme.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, ...shadow.sheet },
   handle: { alignSelf: 'center', width: 38, height: 5, borderRadius: 3, backgroundColor: theme.borderStrong, marginTop: 10 },
-  head: { minHeight: 56, flexDirection: 'row', alignItems: 'center', paddingLeft: spacing.xl, paddingRight: spacing.md },
+  head: { minHeight: 52, flexDirection: 'row', alignItems: 'center', paddingLeft: spacing.lg, paddingRight: spacing.md },
   title: { ...typography.h2, color: theme.text, flex: 1 },
-  close: { width: 44, height: 44, borderRadius: 20, backgroundColor: theme.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
-  body: { paddingHorizontal: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.lg, gap: spacing.lg },
+  close: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
+  body: { paddingHorizontal: spacing.lg, paddingTop: spacing.xs, paddingBottom: spacing.lg, gap: spacing.md },
 });

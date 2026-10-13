@@ -5,7 +5,7 @@ import { Button, Notice, theme, typography } from './ui';
 import { Sheet } from './Sheet';
 import { rentReminder } from '../lib/rentReminder';
 
-export function RentReminderButton({ cycle, tenant, propertyName }) {
+export function RentReminderButton({ cycle, tenant, propertyName, compact = false }) {
   const [preview, setPreview] = useState(null);
   const [opening, setOpening] = useState(false);
   if (!(Number(cycle.amountDue) - Number(cycle.amountPaid) > 0)) return null;
@@ -28,7 +28,9 @@ export function RentReminderButton({ cycle, tenant, propertyName }) {
     } finally { setOpening(false); }
   }
   return <>
-    <Button variant="secondary" onPress={prepare} icon={<Ionicons name="logo-whatsapp" size={20} color={theme.primary} />}>Share due on WhatsApp</Button>
+    {compact
+      ? <Button variant="ghost" size="sm" onPress={prepare} accessibilityLabel="Share due on WhatsApp" icon={<Ionicons name="logo-whatsapp" size={18} color={theme.primaryText} />}>Remind</Button>
+      : <Button variant="secondary" onPress={prepare} icon={<Ionicons name="logo-whatsapp" size={20} color={theme.primary} />}>Share due on WhatsApp</Button>}
     <Sheet visible={!!preview} title="Rent reminder" onClose={() => !opening && setPreview(null)}>
       <Text style={{ ...typography.label, color: theme.textSecondary }}>To: {tenant?.name || 'Tenant'} · +{preview?.phone}</Text>
       <Text selectable style={{ ...typography.body, color: theme.text }}>{preview?.message}</Text>

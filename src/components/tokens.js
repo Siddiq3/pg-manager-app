@@ -45,21 +45,21 @@ export const tones = {
 };
 
 export const typography = {
-  display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, letterSpacing: -1 },
-  h1: { fontFamily: fonts.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.8 },
-  h2: { fontFamily: fonts.display, fontSize: 24, lineHeight: 30, letterSpacing: -0.6 },
-  h3: { fontFamily: fonts.semibold, fontSize: 18, lineHeight: 24, letterSpacing: -0.3 },
-  body: { fontFamily: fonts.regular, fontSize: 15.5, lineHeight: 23 },
-  bodyStrong: { fontFamily: fonts.semibold, fontSize: 15.5, lineHeight: 23 },
-  small: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 21 },
-  label: { fontFamily: fonts.semibold, fontSize: 13.5, lineHeight: 18, letterSpacing: -0.1 },
-  caption: { fontFamily: fonts.medium, fontSize: 12.5, lineHeight: 17.5 },
+  display: { fontFamily: fonts.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.7 },
+  h1: { fontFamily: fonts.display, fontSize: 24, lineHeight: 30, letterSpacing: -0.6 },
+  h2: { fontFamily: fonts.display, fontSize: 20, lineHeight: 26, letterSpacing: -0.4 },
+  h3: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 22, letterSpacing: -0.2 },
+  body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21 },
+  bodyStrong: { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 21 },
+  small: { fontFamily: fonts.regular, fontSize: 13.5, lineHeight: 19 },
+  label: { fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, letterSpacing: -0.1 },
+  caption: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16 },
   overline: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14, letterSpacing: 1.2, textTransform: 'uppercase' },
-  figure: { fontFamily: fonts.display, fontSize: 30, letterSpacing: -0.9, fontVariant: ['tabular-nums'] },
+  figure: { fontFamily: fonts.display, fontSize: 24, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
 };
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
-export const radius = { xs: 6, sm: 12, md: 18, lg: 22, xl: 28, pill: 999 };
+export const radius = { xs: 6, sm: 10, md: 12, lg: 14, xl: 20, pill: 999 };
 export const motion = { fast: 180, base: 280, slow: 440 };
 
 /** iOS soft shadow, Android elevation — setting both gives a grey box on Android. */

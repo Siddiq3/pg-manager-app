@@ -92,8 +92,8 @@ export default function RentScreen({ navigation, route }) {
               Mark paid
             </Button>
           )}
+          <RentReminderButton compact cycle={cycle} tenant={cycle.tenantId} propertyName={property?.name} />
         </View>
-        <RentReminderButton cycle={cycle} tenant={cycle.tenantId} propertyName={property?.name} />
       </View>
     );
   };
@@ -105,8 +105,8 @@ export default function RentScreen({ navigation, route }) {
         title="Rent"
       />
       {cycles.isSuccess && <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Stat icon="wallet-outline" label={`Collected · ${monthLabel(thisMonth).split(' ')[0]}`} value={money(month.collected)} hint={`Of ${money(month.billed)} billed this month`} tone="ok" />
-        <Stat icon="alert-circle-outline" label="Overdue" value={money(lateTotal)} hint={`${late.length} ${late.length === 1 ? 'bill' : 'bills'} past due`} tone={lateTotal ? 'danger' : 'ok'} />
+        <Stat icon="wallet-outline" label={`Collected · ${monthLabel(thisMonth).split(' ')[0]}`} value={money(month.collected)} hint={`of ${money(month.billed)} billed`} tone="ok" />
+        <Stat icon="alert-circle-outline" label="Overdue" value={money(lateTotal)} hint={`${late.length} ${late.length === 1 ? 'bill' : 'bills'}`} tone={lateTotal ? 'danger' : 'ok'} />
       </View>}
       <Segmented label="Rent view" value={view} onChange={setView} options={VIEWS} />
       <QueryState query={cycles} empty="No rent cycles yet. They start when you add a tenant.">
@@ -155,7 +155,7 @@ function IconAction({ icon, label, onPress }) {
 }
 
 const rs = StyleSheet.create({
-  card: { backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, padding: 16, gap: 12, ...shadow.card },
+  card: { backgroundColor: theme.surface, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, padding: 14, gap: 10, ...shadow.subtle },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: fonts.display, fontSize: 17, color: theme.primaryText },
@@ -168,8 +168,8 @@ const rs = StyleSheet.create({
   bar: { height: 6, borderRadius: 3, backgroundColor: theme.surfaceMuted, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3, backgroundColor: theme.primary },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  reportRow: { backgroundColor: theme.surface, borderRadius: radius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, padding: 14, gap: 10 },
+  reportRow: { backgroundColor: theme.surface, borderRadius: radius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.border, paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   reportHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   note: { ...typography.caption, color: theme.textMuted },
-  iconAction: { width: 44, height: 44, borderRadius: radius.sm, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  iconAction: { width: 40, height: 40, borderRadius: radius.sm, backgroundColor: theme.primarySubtle, alignItems: 'center', justifyContent: 'center' },
 });

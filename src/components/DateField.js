@@ -92,7 +92,7 @@ export function DateField({ label, value, onChange, editable = true, disabled = 
 
 const s = StyleSheet.create({
   field: { gap: 8 }, label: { ...typography.label, color: theme.textSecondary },
-  input: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: theme.borderStrong, borderRadius: radius.md, backgroundColor: theme.surface, paddingHorizontal: 16, paddingVertical: 12 },
+  input: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: theme.border, borderRadius: radius.md, backgroundColor: theme.surface, paddingHorizontal: 14, paddingVertical: 10 },
   locked: { backgroundColor: theme.surfaceMuted, opacity: 0.7 }, value: { ...typography.body, color: theme.text, flex: 1 }, hint: { ...typography.small, color: theme.textMuted },
   navigation: { flexDirection: 'row', alignItems: 'center', gap: 8 }, heading: { flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }, headingText: { ...typography.bodyStrong, color: theme.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap' }, weekday: { width: '14.2857%', textAlign: 'center', ...typography.small, color: theme.textMuted, paddingVertical: 8 },
